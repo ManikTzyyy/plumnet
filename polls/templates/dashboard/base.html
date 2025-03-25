@@ -1,0 +1,80 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PLUMNET | Network Automation</title>
+    <link href="{% static 'css/style.css' %}" rel="stylesheet" />
+
+    <!-- font awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+  </head>
+  <body>
+    <div class="base-wrapper row">
+      <div class="sidebar column">
+        <div class="logo row menu-collapse">
+          <div class="img-wrapper menu-text">
+            <img src="{% static 'assets/logo.png' %}" alt="" />
+          </div>
+          <button id="toggle-menu">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+        </div>
+        <div class="menu column">
+          <a href="{% url 'dashboard' %}" class="menu-link" data-url="{% url 'dashboard' %}">
+            <div class="row menu-collapse">
+              <i class="fa-solid fa-gauge"></i>
+              <span class="menu-text">Dashboard</span>
+            </div>
+          </a>
+          <a href="{% url 'server' %}"  class="menu-link" data-url="{% url 'server' %}">
+            <div class="row menu-collapse">
+              <i class="fa-solid fa-server"></i>
+              <span class="menu-text">Server</span>
+            </div>
+          </a>
+          <a href="{% url 'paket' %}"  class="menu-link" data-url="{% url 'paket' %}">
+            <div class="row menu-collapse">
+              <i class="fa-solid fa-coins"></i>
+              <span class="menu-text">Paket</span>
+            </div>
+          </a>
+          <a href="{% url 'client' %}"  class="menu-link" data-url="{% url 'client' %}">
+            <div class="row menu-collapse">
+              <i class="fa-solid fa-user-group"></i>
+              <span class="menu-text">Client</span>
+            </div>
+          </a>
+          <a href="{% url 'verifikasi' %}"  class="menu-link" data-url="{% url 'verifikasi' %}">
+            <div class="row menu-collapse">
+              <i class="fa-solid fa-check-to-slot"></i>
+              <span class="menu-text">Verifikasi</span>
+            </div>
+          </a>
+          <a href="{% url 'setting' %}"  class="menu-link" data-url="{% url 'setting' %}">
+            <div class="row menu-collapse">
+              <i class="fa-solid fa-gear"></i>
+              <span class="menu-text">Setting</span>
+            </div>
+          </a>
+          <a href="{% url 'informasi' %}"  class="menu-link" data-url="{% url 'informasi' %}">
+            <div class="row menu-collapse">
+              <i class="fa-solid fa-circle-info"></i>
+              <span class="menu-text">Informasi</span>
+            </div>
+          </a>
+        </div>
+      </div>
+
+   
+
+      <div class="content">{% block content %} {% endblock %}</div>
+    </div>
+
+    <script src="{% static 'js/app.js' %}"></script>
+  </body>
+</html>
