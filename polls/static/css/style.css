@@ -38,16 +38,15 @@ i {
 }
 
 button {
-    text-decoration: none;
-    border: none;
-    background-color: transparent;
-    scale: 1.3;
+  text-decoration: none;
+  border: none;
+  background-color: transparent;
+  scale: 1.3;
 }
 
 button:hover {
-    cursor: pointer;
+  cursor: pointer;
 }
-
 
 .row {
   display: flex;
@@ -71,13 +70,31 @@ button:hover {
 }
 
 .content {
-    background-color: var(--clr-bg);
-    width: 100%;
-    min-height: 100vh;
+  background-color: var(--clr-bg);
+  width: 100%;
+  flex: 1;
+  overflow-y: auto;
 }
+
+.base-wrapper {
+  height: 100vh;
+}
+
 /* ======================================================= */
 .sidebar {
-    padding: 20px;
+  padding: 20px;
+  height: 100%; /* Tinggi sidebar 100% dari wrapper */
+  position: fixed; /* Memperbaiki sidebar di tempat */
+  top: 0;
+  left: 0;
+}
+.sidebar-box {
+  width: 205px;
+  position: relative;
+}
+
+.sidebar-box.collapse {
+  width: 96px;
 }
 
 .menu {
@@ -102,7 +119,6 @@ button:hover {
 .menu .row {
   color: black;
   padding: 10px 12px;
-
 }
 
 .sidebar .logo.collapse {
@@ -116,7 +132,6 @@ button:hover {
   align-items: center;
 }
 
-
 /* .menu-collapse.collapse i:hover{
   rotate: -360deg;
 } */
@@ -125,15 +140,13 @@ button:hover {
   border-radius: 20px;
 }
 
-.menu-link:hover{
+.menu-link:hover {
   background-color: #e8e2f544;
-
 }
 
 .menu-link.active .row {
   color: var(--clr-second);
 }
-
 
 .menu-link.active {
   background-color: var(--clr-fourth);
@@ -145,11 +158,43 @@ button:hover {
 
 /* ============dashboard================= */
 
-.container-grid{
+.dashboard .container-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: 1fr 1fr 1fr 2fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 2px;
 }
 
-*{
-  border: 1px solid red;
+.card-client {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.card-client:nth-child(2) {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.card-client:nth-child(3) {
+  grid-column: 3;
+  grid-row: 1;
+}
+
+.card-config {
+  grid-column: 4;
+  grid-row: 1 / span 2;
+}
+
+.card-quick {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.card-genieacs {
+  grid-column: 2 / span 2;
+  grid-row: 2;
+}
+
+* {
+  /* border: 1px solid red; */
 }
