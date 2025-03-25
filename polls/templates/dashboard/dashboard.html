@@ -1,17 +1,115 @@
-{% extends 'dashboard/base.html' %}
+{% extends 'dashboard/base.html' %} {% block content %}
 
-{% block content %}
-
-<div class="column dashboard">
-    <div class="container-grid">
-        <div class="item card-client">1</div>
-        <div class="item card-client">2</div>
-        <div class="item card-client">3</div>
-        <div class="item card-config">4</div>
+<div class="column dashboard content-page">
+  <div class="main-container row">
+    <div class="column">
+      <div class="item1 row">
+        <div class="item card-client column">
+          <div class="title row">
+            <div class="text">
+              <div class="main-text" style="--clr: var(--clr-second)">
+                Total Client
+              </div>
+              <div class="text-grey">Last 30 Days</div>
+            </div>
+            <i
+              class="fa-solid fa-user"
+              style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
+            ></i>
+          </div>
+          <div class="number" style="--clr: var(--clr-second)">100</div>
+        </div>
+        <div class="item card-client column">
+          <div class="title row">
+            <div class="text">
+              <div class="main-text" style="--clr: var(--clr-g1)">
+                Client Active
+              </div>
+              <div class="text-grey">Last 30 Days</div>
+            </div>
+            <i
+              class="fa-solid fa-user-check"
+              style="--clr: var(--clr-g2); --icon-clr: var(--clr-g1)"
+            ></i>
+          </div>
+          <div class="number" style="--clr: var(--clr-g1)">94</div>
+        </div>
+        <div class="item card-client column">
+          <div class="title row">
+            <div class="text">
+              <div class="main-text" style="--clr: var(--clr-y1)">
+                Menunggu Konfirmasi
+              </div>
+              <div class="text-grey">Last 30 Days</div>
+            </div>
+            <i
+              class="fa-solid fa-user-clock"
+              style="--clr: var(--clr-y2); --icon-clr: var(--clr-y1)"
+            ></i>
+          </div>
+          <div class="number" style="--clr: var(--clr-y1)">6</div>
+        </div>
+      </div>
+      <div class="item2 row">
         <div class="item card-quick">5</div>
         <div class="item card-genieacs">6</div>
+      </div>
     </div>
-    <div class="table">Ini table</div>
+    <div class="item card-config column">
+      <div class="title row">
+        <div class="main-text" style="--clr: var(--clr-second)">
+          Konfigurasi
+        </div>
+        <i
+          class="fa-solid fa-gears"
+          style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
+        ></i>
+      </div>
+      <div class="config-wrapper column">
+        <div class="config-t row">
+          <i
+            class="fa-solid fa-server"
+            style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
+          ></i>
+          <div class="config-text column">
+            <div class="text-grey">Server</div>
+            <div class="config-r">3</div>
+          </div>
+        </div>
+        <div class="config-t row">
+            <i
+              class="fa-solid fa-coins"
+              style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
+            ></i>
+            <div class="config-text column">
+              <div class="text-grey">Paket Tersedia</div>
+              <div class="config-r">3</div>
+            </div>
+          </div>
+          <div class="config-t row">
+            <i
+              class="fa-solid fa-user-lock"
+              style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
+            ></i>
+            <div class="config-text column">
+              <div class="text-grey">Profile Isollir</div>
+              <div class="enable-t">enabled</div>
+            </div>
+          </div>
+          <div class="config-t row">
+            <i
+              class="fa-solid fa-user"
+              style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
+            ></i>
+            <div class="config-text column">
+              <div class="text-grey">GenieACS Server</div>
+              <div class="disable-t">disabled</div>
+            </div>
+          </div>
+      </div>
+    </div>
+  </div>
+  <div class="table">Ini table</div>
 </div>
 
 {% endblock %}

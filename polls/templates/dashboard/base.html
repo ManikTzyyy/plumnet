@@ -73,7 +73,14 @@
 
    
 
-      <div class="content">{% block content %} {% endblock %}</div>
+      <div class="content">
+        <div class="header row">
+          <div class="text-wrapper">
+            <div class="main-text">Halo Admin!</div>
+            <div class="text-grey">19 april 2025</div>
+          </div>
+        </div>
+        {% block content %} {% endblock %}</div>
     </div>
 
     <script src="{% static 'js/app.js' %}"></script>

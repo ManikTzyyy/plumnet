@@ -48,6 +48,10 @@ button:hover {
   cursor: pointer;
 }
 
+.text-grey {
+  color: var(--clr-grey);
+}
+
 .row {
   display: flex;
 }
@@ -69,15 +73,57 @@ button:hover {
   object-fit: cover;
 }
 
+.header{
+  width: 100%;
+  background-color: white;
+  justify-content: end;
+  text-align: end;
+  box-shadow: 1px 0 5px rgba(128, 128, 128, 0.26);
+}
+
+.header .text-wrapper{
+  padding: 10px;
+}
+
+.header .text-grey{
+  font-size: 0.7em;
+}
+
+.content-page {
+  padding: 10px;
+}
+
 .content {
   background-color: var(--clr-bg);
   width: 100%;
   flex: 1;
   overflow-y: auto;
+  overflow: hidden;
 }
 
 .base-wrapper {
   height: 100vh;
+}
+/* ================================================== */
+
+.enable-t{
+  color: var(--clr-g1);
+  background-color: var(--clr-g2);
+  text-align: center;
+  border-radius: 20px;
+  padding: 0 10px;
+  margin: 0;
+  width: fit-content;
+}
+
+.disable-t{
+  color: var(--clr-r1);
+  background-color: var(--clr-r2);
+  text-align: center;
+  border-radius: 20px;
+  padding: 0 10px;
+  margin: 0;
+  width: fit-content;
 }
 
 /* ======================================================= */
@@ -124,7 +170,6 @@ button:hover {
 .sidebar .logo.collapse {
   justify-content: center;
   align-items: center;
-  border-radius: 20px;
 }
 
 .menu-collapse.collapse {
@@ -158,43 +203,99 @@ button:hover {
 
 /* ============dashboard================= */
 
-.dashboard .container-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr 2fr;
-  grid-template-rows: 1fr 1fr;
-  gap: 2px;
+.dashboard .main-container {
+  /* flex-wrap: wrap-reverse; */
+}
+
+.dashboard .item1{
+  /* flex-wrap: wrap; */
+  justify-content: center;
+  align-items: center;
 }
 
 .card-client {
-  grid-column: 1;
-  grid-row: 1;
+  justify-content: space-between;
+  gap: 20px;
+  min-width: 200px;
 }
 
-.card-client:nth-child(2) {
-  grid-column: 2;
-  grid-row: 1;
+.dashboard .row, .dashboard .column {
+  gap: 5px;
 }
 
-.card-client:nth-child(3) {
-  grid-column: 3;
-  grid-row: 1;
+
+
+.dashboard .item{
+  background-color: white;
+  box-shadow: 1px 1px 5px rgba(128, 128, 128, 0.096);
+  padding: 20px;
 }
 
-.card-config {
-  grid-column: 4;
-  grid-row: 1 / span 2;
+
+.dashboard .item .main-text{
+  color: var(--clr);
 }
 
-.card-quick {
-  grid-column: 1;
-  grid-row: 2;
+.dashboard .item .number{
+  color: var(--clr);
+  font-weight: bold;
+  font-size: 2em;
 }
 
-.card-genieacs {
-  grid-column: 2 / span 2;
-  grid-row: 2;
+.dashboard .card-client .title{
+  justify-content: space-between;
+  font-weight: 700;
+  font-size: 0.8em;
 }
+
+.dashboard .card-client .text-grey{
+  font-size: 0.6em;
+}
+
+.dashboard .item i{
+  background-color: var(--clr);
+  margin: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 100%;
+  color: var(--icon-clr);
+}
+
+.dashboard .card-config {
+ width: 100%;
+}
+
+.dashboard .card-config .title i{
+  font-size: 1.1em;
+}
+
+.dashboard .card-config .title{
+  font-weight: bold;
+  font-size: 1em;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-config .config-t{
+  gap: 10px;
+  justify-content: start;
+  align-items: start;
+}
+
+.card-config .config-t i{
+  font-size: 0.8em;
+}
+
+.card-config .config-text{
+  gap: 10px;
+  justify-content: center;
+}
+
+
 
 * {
-  /* border: 1px solid red; */
+  /* border: 1px solid rgba(255, 0, 0, 0.178); */
 }
