@@ -203,8 +203,12 @@ button:hover {
 
 /* ============dashboard================= */
 
+.dashboard {
+  position: relative;
+}
 .dashboard .main-container {
   /* flex-wrap: wrap-reverse; */
+  position: relative;
 }
 
 .dashboard .item1{
@@ -213,10 +217,10 @@ button:hover {
   align-items: center;
 }
 
-.card-client {
+.dashboard .item1 .item.card-client {
   justify-content: space-between;
-  gap: 20px;
   min-width: 200px;
+  gap: 10px;
 }
 
 .dashboard .row, .dashboard .column {
@@ -228,7 +232,7 @@ button:hover {
 .dashboard .item{
   background-color: white;
   box-shadow: 1px 1px 5px rgba(128, 128, 128, 0.096);
-  padding: 20px;
+  padding: 15px;
 }
 
 
@@ -236,10 +240,11 @@ button:hover {
   color: var(--clr);
 }
 
-.dashboard .item .number{
+.dashboard .card-client .number{
   color: var(--clr);
   font-weight: bold;
   font-size: 2em;
+  line-height: 1;
 }
 
 .dashboard .card-client .title{
@@ -266,6 +271,7 @@ button:hover {
 
 .dashboard .card-config {
  width: 100%;
+ gap: 20px;
 }
 
 .dashboard .card-config .title i{
@@ -279,22 +285,96 @@ button:hover {
   align-items: center;
 }
 
-.card-config .config-t{
+.dashboard .card-config .config-t{
   gap: 10px;
   justify-content: start;
   align-items: start;
 }
 
-.card-config .config-t i{
+.dashboard .card-config .config-t i{
   font-size: 0.8em;
 }
 
-.card-config .config-text{
+.dashboard .card-config .config-text{
   gap: 10px;
   justify-content: center;
 }
 
+.dashboard .item2 {
+  height: 100%;
+}
 
+.dashboard .card-quick .quick-wrapper{
+  gap: 10px;
+}
+
+.dashboard .item2 .card-quick {
+  gap: 20px;
+  min-width: 200px;
+}
+
+.dashboard .card-quick a{
+  margin: 0;
+  font-size: 0.7em;
+  justify-content: start;
+  align-items: center;
+  color: var(--clr-second);
+  transition: all ease-in-out 0.4s;
+  
+}
+
+.dashboard .card-genieacs {
+  width: 100%;
+}
+
+.dashboard .card-quick a:hover i{
+  rotate: 90deg;
+}
+
+.dashboard .card-genieacs .item1-genieacs {
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.dashboard .genieacs-wrapper{
+  justify-content: space-around;
+  padding-top: 10px;
+  flex-wrap: wrap;
+}
+
+.dashboard .genieacs-wrapper .title{
+  font-weight: bold;
+}
+
+.dashboard .card-genieacs .item1-genieacs .number{
+  color: var(--clr-main);
+  font-weight: bold;
+  font-size: 2em;
+}
+.dashboard .card-genieacs .item1-genieacs .desc{
+  font-size: 0.7em;
+}
+
+.dashboard .card-genieacs .item2-genieacs{
+  gap: 20px;
+  height: 100%;
+}
+
+.dashboard .card-genieacs .item2-genieacs .row{
+  align-items: center;
+}
+
+.dashboard .card-genieacs .item2-genieacs .item-data{
+  font-size: 0.7em;
+}
+
+.dashboard .card-genieacs .item2-genieacs .circle{
+  width: 15px;
+  height: 15px;
+  border-radius: 100%;
+  background-color: var(--clr);
+}
 
 * {
   /* border: 1px solid rgba(255, 0, 0, 0.178); */
