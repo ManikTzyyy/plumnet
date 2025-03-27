@@ -78,7 +78,13 @@
           </div>
         </div>
         <div class="item card-genieacs column">
-          <div class="title-sec-card">GenieACS Server</div>
+          <div class="title-sec-card row">
+            <div class="">GenieACS Server</div>
+            <select name="server" id="server">
+              <option value="Mikrotik 1">Mikrotik 1</option>
+              <option value="Mikrotik 2">Mikrotik 2</option>
+            </select>
+          </div>
           <div class="genieacs-wrapper row">
             <div class="item1-genieacs column">
               <div class="title">Terdaftar</div>
@@ -184,7 +190,64 @@
       </div>
     </div>
   </div>
-  <div class="table">Ini table</div>
+  <div class="dashboard-table column">
+    <div class="header-dashboard-table column">
+      <div class="row title-head-td">
+        <i
+          class="fa-solid fa-user"
+          style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
+        ></i>
+        <span class="title">Client List</span>
+      </div>
+      <form action="" class="form-search row">
+        <input
+          class="search-box"
+          type="search"
+          placeholder="Search"
+          id="gsearch"
+          name="search"
+        />
+        <input class="search-button" type="submit" />
+      </form>
+    </div>
+    <div class="table-container">
+      <table class="table">
+        <tr class="t-head">
+          <th>#</th>
+          <th>Nama</th>
+          <th>Paket</th>
+          <th class="center-th">Status</th>
+          <th>ID PPPoE</th>
+          <th>Rx</th>
+          <th >Aktif</th>
+          <th>IP TR069</th>
+          <th>Action</th>
+        </tr>
+        <tr class="t-d">
+          <td>1</td>
+          <td>John Doe</td>
+          <td>Paket A</td>
+          <td><div class="disable-t">Non Aktif</div></td>
+          <td>pppoe123</td>
+          <td>-18 dbm</td>
+          <td>5</td>
+          <td>192.168.1.1</td>
+          <td><a href="#" class="main-button">View</a></td>
+        </tr>
+        <tr class="t-d">
+          <td>2</td>
+          <td>Kumar De Jahe</td>
+          <td>Paket B</td>
+          <td><div class="enable-t">Aktif</div></td>
+          <td>yoi123</td>
+          <td>-23 dbm</td>
+          <td>5</td>
+          <td>192.168.1.2</td>
+          <td><a href="#" class="main-button">View</a></td>
+        </tr>
+      </table>
+    </div>
+  </div>
 </div>
 
 {% endblock %}

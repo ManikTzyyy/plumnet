@@ -1,7 +1,113 @@
-{% extends 'dashboard/base.html' %}
+{% extends 'dashboard/base.html' %} {% block content %}
 
-{% block content %}
+<div class="content-page client">
+  <div class="table-wrapper column">
+    <div class="header-table column">
+      <div class="row title-head-td">
+        <i
+          class="fa-solid fa-user-group"
+          style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
+        ></i>
+        <span class="title">Client List</span>
+      </div>
+      <a href="#" class="success-button">Add CLient +</a>
+      <form action="" class="form-search row">
+        <input
+          class="search-box"
+          type="search"
+          placeholder="Search"
+          id="gsearch"
+          name="search"
+        />
+        <input class="search-button" type="submit" />
+      </form>
+    </div>
 
-<p>ini client</p>
+    <div class="table-container">
+      <table class="table">
+        <tr class="t-head">
+          <th>#</th>
+          <th>Nama</th>
+          <th>Alamat</th>
+          <th>Tipe</th>
+          <th>Paket</th>
+          <th>No HP</th>
+          <th>Status</th>
+          <th>Jatuh Tempo</th>
+          <th class="center-th">Action</th>
+        </tr>
+        <tr class="t-d">
+          <td>1</td>
+          <td>John Doe</td>
+          <td>Palembang</td>
+          <td>Rumah Pribadi</td>
+          <td>Pro</td>
+          <td>0981231321</td>
+          <td><div class="enable-t">Aktif</div></td>
+          <td>12 Hari</td>
+          <td>
+            <div class="row button-wrapper">
+              <a href="#" class="main-button">View</a>
+              <a href="#" class="warning-button">Edit</a>
+              <a href="#" class="danger-button">Delete</a>
+            </div>
+          </td>
+        </tr>
+        <tr class="t-d">
+          <td>2</td>
+          <td>Cacacola</td>
+          <td>Bogor</td>
+          <td>Perusahaan</td>
+          <td>Company</td>
+          <td>12232941</td>
+          <td><div class="enable-t">Aktif</div></td>
+          <td>3 hari</td>
+          <td>
+            <div class="row button-wrapper">
+              <a href="#" class="main-button">View</a>
+              <a href="#" class="warning-button">Edit</a>
+              <a href="#" class="danger-button">Delete</a>
+            </div>
+          </td>
+        </tr>
+        <tr class="t-d">
+            <td>3</td>
+            <td>Rumah Sakit</td>
+            <td>Jakarta</td>
+            <td>Layanan Public</td>
+            <td>Pro</td>
+            <td>9999999</td>
+            <td><div class="enable-t">Aktif</div></td>
+            <td>5 hari</td>
+            <td>
+              <div class="row button-wrapper">
+                <a href="#" class="main-button">View</a>
+                <a href="#" class="warning-button">Edit</a>
+                <a href="#" class="danger-button">Delete</a>
+              </div>
+            </td>
+          </tr>
+        <tr class="t-d">
+            <td>4</td>
+            <td>Eka Skibidi</td>
+            <td>Bali</td>
+            <td>Pribadi</td>
+            <td>basic</td>
+            <td>1234567</td>
+            <td><div class="disable-t">Non Aktif</div></td>
+            <td>Sudah Jatuh tempo</td>
+            <td>
+              <div class="row button-wrapper">
+                <a href="#" class="main-button">View</a>
+                <a href="#" class="warning-button">Edit</a>
+                <a href="#" class="danger-button">Delete</a>
+              </div>
+            </td>
+          </tr>
+        
+      </table>
+    </div>
+  </div>
+</div>
 
 {% endblock %}

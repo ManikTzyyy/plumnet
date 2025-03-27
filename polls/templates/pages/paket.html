@@ -1,7 +1,76 @@
-{% extends 'dashboard/base.html' %}
+{% extends 'dashboard/base.html' %} {% block content %}
 
-{% block content %}
+<div class="content-page server">
+  <div class="table-wrapper column">
+    <div class="header-table column">
+      <div class="row title-head-td">
+        <i
+          class="fa-solid fa-coins"
+          style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
+        ></i>
+        <span class="title">Paket List</span>
+      </div>
+      <a href="#" class="success-button">Add Paket +</a>
+      <form action="" class="form-search row">
+        <input
+          class="search-box"
+          type="search"
+          placeholder="Search"
+          id="gsearch"
+          name="search"
+        />
+        <input class="search-button" type="submit" />
+      </form>
+    </div>
 
-<p>ini paket</p>
+    <div class="table-container">
+      <table class="table">
+        <tr class="t-head">
+          <th>#</th>
+          <th>Nama Paket</th>
+          <th>Price</th>
+          <th>Internet</th>
+          <th class="center-th">Action</th>
+        </tr>
+        <tr class="t-d">
+          <td>1</td>
+          <td>Basic</td>
+          <td>IDR 120.000</td>
+          <td>5Mb</td>
+          <td>
+            <div class="row button-wrapper">
+              <a href="#" class="warning-button">Edit</a>
+              <a href="#" class="danger-button">Delete</a>
+            </div>
+          </td>
+        </tr>
+        <tr class="t-d">
+          <td>2</td>
+          <td>Pro</td>
+          <td>IDR 200.000</td>
+          <td>15Mb</td>
+          <td>
+            <div class="row button-wrapper">
+              <a href="#" class="warning-button">Edit</a>
+              <a href="#" class="danger-button">Delete</a>
+            </div>
+          </td>
+        </tr>
+        <tr class="t-d">
+          <td>3</td>
+          <td>Company</td>
+          <td>IDR 300.000</td>
+          <td>20Mb</td>
+          <td>
+            <div class="row button-wrapper">
+              <a href="#" class="warning-button">Edit</a>
+              <a href="#" class="danger-button">Delete</a>
+            </div>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</div>
 
 {% endblock %}
