@@ -34,3 +34,9 @@ def addProfile(request) :
 
 def addClient(request) : 
     return render(request, 'form-pages/form-client.html')
+
+
+#detail
+
+def detailServer(request) : 
+    return render(request, 'detail-pages/detail-server.html')
