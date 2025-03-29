@@ -23,3 +23,14 @@ def setting(request) :
 
 def informasi(request) : 
     return render(request, 'pages/info.html')
+
+#forms
+
+def addServer(request) : 
+    return render(request, 'form-pages/form-server.html')
+
+def addProfile(request) : 
+    return render(request, 'form-pages/form-profile.html')
+
+def addClient(request) : 
+    return render(request, 'form-pages/form-client.html')
