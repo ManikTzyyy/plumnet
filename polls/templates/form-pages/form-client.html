@@ -1,0 +1,112 @@
+{% extends 'dashboard/base.html' %} {% block content %}
+
+<div class="content-page server">
+  <div class="form-wrapper column">
+    <div class="form-header column">
+      <div class="row title-head-td">
+        <i
+          class="fa-solid fa-user"
+          style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
+        ></i>
+        <span class="title">Add Client</span>
+      </div>
+    </div>
+
+    <form action="" class="column">
+      <div class="column">
+        <label for="fullname">Name Lengkap</label>
+        <input
+          type="text"
+          id="fullname"
+          name="fullname"
+          placeholder="Masukan Nama Lengkap Client"
+        />
+      </div>
+      <div class="column">
+        <label for="address">Alamat</label>
+        <input
+          type="text"
+          id="address"
+          name="address"
+          placeholder="Masukan Alamat Client"
+        />
+      </div>
+      <div class="column">
+        <label for="phone">No Hp </label>
+        <input
+          type="text"
+          id="phone"
+          name="phone"
+          placeholder="Masukan No HP Client"
+        />
+      </div>
+      <div class="column">
+        <label for="type">Tipe Client</label>
+        <select id="type">
+          <option value="house">Rumah Pribadi</option>
+          <option value="company">Perusahaan</option>
+          <option value="publicService">Layanan Public</option>
+        </select>
+      </div>
+      <div class="column">
+        <label for="pppoeID">ID PPPoE</label>
+        <input
+          type="text"
+          id="pppoeID"
+          name="pppoeID"
+          placeholder="Masukan ID PPPoE"
+        />
+      </div>
+      <div class="column">
+        <label for="pppoePass">Password PPPoE</label>
+        <input
+          type="password"
+          id="pppoePass"
+          name="pppoePass"
+          placeholder="Masukan Password PPPoE"
+        />
+      </div>
+      <div class="column">
+        <label for="localAdd">Local Address</label>
+        <input
+          type="text"
+          id="localAdd"
+          name="localAdd"
+          placeholder="contoh 192.168.0.1"
+        />
+      </div>
+      <div class="column">
+        <label for="remoteAdd">Remote Address</label>
+        <input
+          type="text"
+          id="remoteAdd"
+          name="remoteAdd"
+          placeholder="contoh 192.168.0.1"
+        />
+      </div>
+      <div class="column">
+        <label for="profile">Paket</label>
+        <select id="profile">
+          <option value="basic">Basic</option>
+          <option value="pro">Pro</option>
+        </select>
+      </div>
+      <div class="column">
+        <label for="due">Tanggal Pembayaran</label>
+        <input type="date" id="due" name="due" />
+      </div>
+      <div class="row button-wrapper">
+        <button class="success-button" type="submit">Simpan</button>
+        <button
+          class="warning-button"
+          type="button"
+          onclick="window.history.back();"
+        >
+          Batal
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

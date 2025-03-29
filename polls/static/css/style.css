@@ -28,20 +28,20 @@ body {
 
 a {
   text-decoration: none;
-  transition: all 0.4s ease-in-out;
+  transition: all 0.2s ease-in-out;
 }
 
 i {
   color: var(--clr-second);
   font-size: 1.5em;
-  transition: all 0.4s ease-in-out;
+  transition: all 0.2s ease-in-out;
 }
 
 button {
   text-decoration: none;
   border: none;
   background-color: transparent;
-  scale: 1.3;
+  
 }
 
 button:hover {
@@ -242,13 +242,13 @@ button:hover {
 }
 
 .main-button, .success-button, .warning-button, .danger-button {
-  border-radius: 20px;
-  padding: 5px 20px;
+  border-radius: 5px;
+  padding: 5px 10px;
   width: fit-content;
   text-align: center;
-  font-weight: bold;
+  font-weight: 500;
   transition: all ease-in-out 0.2s;
-  font-size: 0.8em;
+  font-size: 1em;
   cursor: pointer; /* Menambahkan cursor pointer di sini */
 }
 
@@ -317,7 +317,7 @@ button:hover {
 
 .logo {
   justify-content: space-between;
-  transition: all ease-in-out 0.4s;
+  transition: all ease-in-out 0.5s;
   align-items: center;
   font-size: 1.2em;
   padding-bottom: 15px;
@@ -500,7 +500,7 @@ button:hover {
   justify-content: start;
   align-items: center;
   color: var(--clr-second);
-  transition: all ease-in-out 0.4s;
+  transition: all ease-in-out 0.2s;
 }
 
 .dashboard .card-genieacs {
@@ -594,6 +594,65 @@ button:hover {
 
 .center-th {
   text-align: center!important;
+}
+
+
+
+.form-wrapper .title-head-td {
+  font-size: 0.8em;
+  align-items: center;
+  gap: 10px;
+}
+
+.form-wrapper .button-wrapper {
+  gap: 10px;
+  justify-content: start;
+  align-items: center;
+  padding-top: 10px;
+}
+
+.form-wrapper i {
+  background-color: var(--clr);
+  margin: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 100%;
+  color: var(--icon-clr);
+}
+
+.form-wrapper {
+  background-color: white;
+  padding: 20px;
+  gap: 20px;
+}
+
+.form-header {
+  gap: 20px;
+}
+
+.form-wrapper form {
+gap: 20px;
+}
+
+.form-wrapper form .column{
+  gap: 5px;
+  }
+
+.form-wrapper input{
+  padding: 10px 10px 5px 0px;
+  outline: none;
+  border: none;
+  border-bottom: 1px solid var(--clr-second);
+}
+
+.form-wrapper select {
+  border: 1px solid var(--clr-second);
+  outline: none;
+  padding: 10px 10px 10px 2px;
+
 }
 
 * {

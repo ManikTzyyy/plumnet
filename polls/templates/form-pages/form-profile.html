@@ -1,0 +1,57 @@
+{% extends 'dashboard/base.html' %} {% block content %}
+
+<div class="content-page server">
+  <div class="form-wrapper column">
+    <div class="form-header column">
+      <div class="row title-head-td">
+        <i
+          class="fa-solid fa-coins"
+          style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
+        ></i>
+        <span class="title">Add Paket</span>
+      </div>
+    </div>
+
+    <form action="" class="column">
+      <div class="column">
+        <label for="name">Name</label>
+        <input
+          type="text"
+          id="name"
+          name="name"
+          placeholder="Masukan Nama Paket"
+        />
+      </div>
+      <div class="column">
+        <label for="price">Price</label>
+        <input
+          type="text"
+          id="price"
+          name="price"
+          placeholder="Masukan Harga"
+        />
+      </div>
+      <div class="column">
+        <label for="maxRate">Limit Upload/Download </label>
+        <input
+          type="text"
+          id="maxRate"
+          name="maxRate"
+          placeholder="Masukan Limit Speed Upload dan Download"
+        />
+      </div>
+      <div class="row button-wrapper">
+        <button class="success-button" type="submit">Simpan</button>
+        <button
+          class="warning-button"
+          type="button"
+          onclick="window.history.back();"
+        >
+          Batal
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

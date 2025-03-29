@@ -1,7 +1,58 @@
-{% extends 'dashboard/base.html' %}
+{% extends 'dashboard/base.html' %} {% block content %}
 
-{% block content %}
+<div class="content-page client">
+  <div class="table-wrapper column">
+    <div class="header-table column">
+      <div class="row title-head-td">
+        <i
+          class="fa-solid fa-check-to-slot"
+          style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
+        ></i>
+        <span class="title">Client List</span>
+      </div>
+      <a href="{% url 'client' %}" class="main-button">View All Client</a>
+      <form action="" class="form-search row">
+        <input
+          class="search-box"
+          type="search"
+          placeholder="Search"
+          id="gsearch"
+          name="search"
+        />
+        <input class="search-button" type="submit" />
+      </form>
+    </div>
 
-<p>ini verifikasi</p>
+    <div class="table-container">
+      <table class="table">
+        <tr class="t-head">
+          <th>#</th>
+          <th>Nama</th>
+          <th>Alamat</th>
+          <th>Tipe</th>
+          <th>No HP</th>
+          <th>Bill</th>
+
+          <th class="center-th">Action</th>
+        </tr>
+
+        <tr class="t-d">
+          <td>4</td>
+          <td>Eka Skibidi</td>
+          <td>Bali</td>
+          <td>Pribadi</td>
+          <td>1234567</td>
+          <td>Rp 200.000</td>
+
+          <td>
+            <div class="row button-wrapper">
+              <a href="#" class="main-button">Konfirmasi</a>
+            </div>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</div>
 
 {% endblock %}
