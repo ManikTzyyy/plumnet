@@ -1,0 +1,76 @@
+{% extends 'dashboard/base.html' %} {% block content %}
+
+<div class="content-page server">
+  <div class="form-wrapper column">
+    <div class="form-header column">
+      <div class="row title-head-td">
+        <i
+          class="fa-solid fa-server"
+          style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
+        ></i>
+        <span class="title">Add Server</span>
+      </div>
+    </div>
+
+    <form action="" class="column">
+      <div class="column">
+        <label for="name">Name</label>
+        <input
+          type="text"
+          id="name"
+          name="name"
+          placeholder="Masukan Nama Server"
+        />
+      </div>
+      <div class="column">
+        <label for="host">Host IP</label>
+        <input
+          type="text"
+          id="host"
+          name="host"
+          placeholder="Masukan Host IP"
+        />
+      </div>
+      <div class="column">
+        <label for="username">Username </label>
+        <input
+          type="text"
+          id="username"
+          name="username"
+          placeholder="Masukan Username Untuk Login"
+        />
+      </div>
+      <div class="column">
+        <label for="password">Password</label>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          placeholder="Masukan Password Untuk Login"
+        />
+      </div>
+      <div class="column">
+        <label for="genieacs">GenieACS</label>
+        <input
+          type="text"
+          id="genieacs"
+          name="genieacs"
+          placeholder="Masukan Ip GeniACS. Kosongkan jika tidak ada"
+        />
+      </div>
+
+      <div class="row button-wrapper">
+        <button class="success-button" type="submit">Simpan</button>
+        <button
+          class="warning-button"
+          type="button"
+          onclick="window.history.back();"
+        >
+          Batal
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}
