@@ -18,5 +18,6 @@ urlpatterns = [
 
     #detailPages
     path('server/detail-server/', views.detailServer, name='detail-server'),
+    path('client/detail-client/', views.detailClient, name='detail-client'),
    
 ]

@@ -1,0 +1,86 @@
+{% extends 'dashboard/base.html' %} {% block content %}
+
+<div class="content-page">
+  <div class="form-wrapper column">
+    <div class="form-header column">
+      <div class="row title-head-td">
+        <i
+          class="fa-solid fa-server"
+          style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
+        ></i>
+        <span class="title">Detail Client</span>
+      </div>
+    </div>
+    <div class="info-client row">
+      <div class="wrapper column">
+        <h2>Informasi Client</h2>
+        <div class="column">
+          <div class="title">Nama Lengkap</div>
+          <div class="text">John Kenedy</div>
+        </div>
+        <div class="column">
+          <div class="title">Alamat</div>
+          <div class="text">Kampung cibubur, Jalan kecubung no 12 RT 3</div>
+        </div>
+        <div class="column">
+          <div class="title">No HP</div>
+          <div class="text">087273742</div>
+        </div>
+        <div class="column">
+          <div class="title">Tipe</div>
+          <div class="text">Rumah Pribadi</div>
+        </div>
+        <div class="column">
+          <div class="title">Paket</div>
+          <div class="text">Basic - Rp 200.000</div>
+        </div>
+      </div>
+      <div class="wrapper column">
+        <h2>Informasi Server</h2>
+        <div class="column">
+          <div class="title">ID PPPoE</div>
+          <div class="text">johnking</div>
+        </div>
+        <div class="column">
+          <div class="title">Password</div>
+          <div class="text">john</div>
+        </div>
+        <div class="column">
+          <div class="title">Local Address</div>
+          <div class="text">192.168.3.1</div>
+        </div>
+        <div class="column">
+          <div class="title">Remote Address</div>
+          <div class="text row">
+            192.168.3.12
+            <a href="http://192.168.3.12"
+              ><i class="fa-solid fa-up-right-from-square"></i>
+            </a>
+          </div>
+        </div>
+        <div class="column">
+          <div class="title">Tanggal Pembayaran</div>
+          <div class="text">Tanggal 5</div>
+        </div>
+        <div class="column">
+          <div class="title">Status</div>
+          <div class="enable-t">Aktif</div>
+        </div>
+      </div>
+    </div>
+    <div class="row button-wrapper">
+        <button
+          class="main-button"
+          type="button"
+          onclick="window.history.back();"
+        >
+          Kembali
+        </button>
+        
+      <button class="warning-button">Edit</button>
+      <button class="danger-button">Delete</button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
