@@ -1,4 +1,4 @@
-{% extends 'dashboard/base.html' %} {% block content %}
+{% extends 'dashboard/base.html' %} {% block content %} {% load static %}
 
 <div class="content-page server">
   <div class="table-wrapper column">
@@ -30,8 +30,8 @@
           <th>Nama Perangkat</th>
           <th>Host IP</th>
           <th>Username</th>
-
           <th>Server GenieACS</th>
+
           <th class="center-th">Action</th>
         </tr>
 
@@ -41,15 +41,20 @@
           <td>{{ server.name }}</td>
           <td>{{ server.host }}</td>
           <td>{{ server.username }}</td>
-
           <td>{{ server.genieacs|default:"-" }}</td>
+
           <td>
             <div class="row button-wrapper">
               <a href="{% url 'detail-server' server.id %}" class="main-button"
                 >View</a
               >
-              <a href="#" class="warning-button">Edit</a>
-              <a href="#" class="danger-button">Delete</a>
+
+              <button
+                onclick="testConnection('{{ server.id }}')"
+                class="main-button"
+              >
+                Test Connection
+              </button>
             </div>
           </td>
         </tr>
@@ -94,5 +99,100 @@
     </div>
   </div>
 </div>
+
+<!-- Konfirmasi Modal -->
+<div id="deleteModal" class="modal" style="display: none">
+  <div class="modal-content">
+    <span class="close" onclick="closeModal()">&times;</span>
+    <h3>Konfirmasi Hapus</h3>
+    <p>Apakah Anda yakin ingin menghapus server ini?</p>
+    <form id="deleteForm" method="POST">
+      {% csrf_token %}
+      <button type="submit" class="danger-button">Ya, Hapus</button>
+      <button type="button" onclick="closeModal()" class="warning-button">
+        Batal
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- Custom Modal -->
+
+
+<script>
+  function openDeleteModal(serverId) {
+    const modal = document.getElementById("deleteModal");
+    const form = document.getElementById("deleteForm");
+    form.action = `/server-list/${serverId}/delete/`; // sesuaikan dengan URL kamu
+    modal.style.display = "block";
+  }
+
+  function closeModal() {
+    document.getElementById("deleteModal").style.display = "none";
+  }
+
+  // Menutup modal jika diklik di luar area modal
+  window.onclick = function (event) {
+    const modal = document.getElementById("deleteModal");
+    if (event.target === modal) {
+      closeModal();
+    }
+  };
+</script>
+
+
+
+<script>
+  function showLoader() {
+    document.querySelector(".loader-wrapper").style.display = "flex"; // atau "block" sesuai CSS-mu
+  }
+
+  function hideLoader() {
+    document.querySelector(".loader-wrapper").style.display = "none";
+  }
+
+  function testConnection(serverId) {
+    showLoader(); // Tampilkan loader
+
+    fetch(`/server-list/test-connection/${serverId}/`)
+      .then((response) => response.json())
+      .then((data) => {
+        const modal = document.getElementById("connectionModal");
+        const statusText = document.getElementById("connectionStatus");
+
+        if (data.status === "Aktif") {
+          statusText.innerHTML =
+            "<div class='column'><h2>Terkoneksi</h2><div class='modal-icon'><i class='fa-regular fa-circle-check' style='--clr:green'></i></div></div>";
+        } else {
+          statusText.innerHTML =
+            "<div class='column'><h2>Tidak Terkoneksi</h2><div class='modal-icon'><i class='fa-solid fa-xmark' style='--clr:red'></i></div></div>";
+        }
+
+        modal.style.display = "block";
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        const modal = document.getElementById("connectionModal");
+        const statusText = document.getElementById("connectionStatus");
+        statusText.innerHTML =
+          '<span style="color: orange;">Terjadi kesalahan saat mencoba koneksi.</span>';
+        modal.style.display = "block";
+      })
+      .finally(() => {
+        hideLoader(); // Sembunyikan loader setelah fetch selesai
+      });
+  }
+
+  function closeModal() {
+    document.getElementById("connectionModal").style.display = "none";
+  }
+
+  window.onclick = function (event) {
+    const modal = document.getElementById("connectionModal");
+    if (event.target == modal) {
+      modal.style.display = "none";
+    }
+  };
+</script>
 
 {% endblock %}

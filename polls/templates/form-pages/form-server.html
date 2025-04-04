@@ -8,55 +8,37 @@
           class="fa-solid fa-server"
           style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
         ></i>
-        <span class="title">Add Server</span>
+        <span class="title"
+          >{{ form.instance.pk|yesno:"Edit Server,Buat Server Baru" }}
+        </span>
       </div>
     </div>
 
-    <!-- <form action="" class="column">
+    <form method="post" class="column">
+      {% csrf_token %}
       <div class="column">
-        <label for="name">Name</label>
-        <input
-          type="text"
-          id="name"
-          name="name"
-          placeholder="Masukan Nama Server"
-        />
+        <label for="{{ form.name.id_for_label }}">Name</label>
+        {{ form.name }}
       </div>
+
       <div class="column">
-        <label for="host">Host IP</label>
-        <input
-          type="text"
-          id="host"
-          name="host"
-          placeholder="Masukan Host IP"
-        />
+        <label for="{{ form.host.id_for_label }}">Host IP</label>
+        {{ form.host }}
       </div>
+
       <div class="column">
-        <label for="username">Username </label>
-        <input
-          type="text"
-          id="username"
-          name="username"
-          placeholder="Masukan Username Untuk Login"
-        />
+        <label for="{{ form.username.id_for_label }}">Username</label>
+        {{ form.username }}
       </div>
+
       <div class="column">
-        <label for="password">Password</label>
-        <input
-          type="password"
-          id="password"
-          name="password"
-          placeholder="Masukan Password Untuk Login"
-        />
+        <label for="{{ form.password.id_for_label }}">Password</label>
+        {{ form.password }}
       </div>
+
       <div class="column">
-        <label for="genieacs">GenieACS</label>
-        <input
-          type="text"
-          id="genieacs"
-          name="genieacs"
-          placeholder="Masukan Ip GeniACS. Kosongkan jika tidak ada"
-        />
+        <label for="{{ form.genieacs.id_for_label }}">GenieACS</label>
+        {{ form.genieacs }}
       </div>
 
       <div class="row button-wrapper">
@@ -69,43 +51,7 @@
           Batal
         </button>
       </div>
-    </form> -->
-
-    <form method="post" class="column">
-      {% csrf_token %}
-      <div class="column">
-          <label for="{{ form.name.id_for_label }}">Name</label>
-          {{ form.name }}
-      </div>
-  
-      <div class="column">
-          <label for="{{ form.host.id_for_label }}">Host IP</label>
-          {{ form.host }}
-      </div>
-  
-      <div class="column">
-          <label for="{{ form.username.id_for_label }}">Username</label>
-          {{ form.username }}
-      </div>
-  
-      <div class="column">
-          <label for="{{ form.password.id_for_label }}">Password</label>
-          {{ form.password }}
-      </div>
-  
-      <div class="column">
-          <label for="{{ form.genieacs.id_for_label }}">GenieACS</label>
-          {{ form.genieacs }}
-      </div>
-  
-      <div class="row button-wrapper">
-          <button class="success-button" type="submit">Simpan</button>
-          <button class="warning-button" type="button" onclick="window.history.back();">Batal</button>
-      </div>
-  </form>
-
-    
-  
+    </form>
   </div>
 </div>
 

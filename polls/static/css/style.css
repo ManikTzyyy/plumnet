@@ -41,7 +41,6 @@ button {
   text-decoration: none;
   border: none;
   background-color: transparent;
-  
 }
 
 button:hover {
@@ -154,7 +153,6 @@ button:hover {
 
 .form-wrapper .title {
   font-size: 1.5em;
-
 }
 
 .title-head-td .title {
@@ -246,7 +244,10 @@ button:hover {
   align-items: center;
 }
 
-.main-button, .success-button, .warning-button, .danger-button {
+.main-button,
+.success-button,
+.warning-button,
+.danger-button {
   border-radius: 5px;
   padding: 5px 10px;
   width: fit-content;
@@ -296,7 +297,6 @@ button:hover {
   background-color: var(--clr-r1);
   color: white;
 }
-
 
 /* ======================================================= */
 .sidebar {
@@ -598,10 +598,8 @@ button:hover {
 /* r here the template */
 
 .center-th {
-  text-align: center!important;
+  text-align: center !important;
 }
-
-
 
 .form-wrapper .title-head-td {
   font-size: 0.8em;
@@ -639,14 +637,14 @@ button:hover {
 }
 
 .form-wrapper form {
-gap: 20px;
+  gap: 20px;
 }
 
-.form-wrapper form .column{
+.form-wrapper form .column {
   gap: 5px;
-  }
+}
 
-.form-wrapper input{
+.form-wrapper input {
   padding: 10px 10px 5px 0px;
   outline: none;
   border: none;
@@ -657,30 +655,29 @@ gap: 20px;
   border: 1px solid var(--clr-second);
   outline: none;
   padding: 10px 10px 10px 2px;
-
 }
 
-.form-wrapper .info-server h2{
+.form-wrapper .info-server h2 {
   color: var(--clr-second);
   padding: 0;
   margin: 0;
   font-size: 1em;
 }
 
-.form-wrapper .wrapper{
+.form-wrapper .wrapper {
   gap: 10px;
 }
 
-.form-wrapper .info-server .text{
- font-size: 0.9em;
- color: var(--clr-grey);
+.form-wrapper .info-server .text {
+  font-size: 0.9em;
+  color: var(--clr-grey);
 }
 
-.form-wrapper .info-server .button-wrapper{
+.form-wrapper .info-server .button-wrapper {
   flex-wrap: wrap;
 }
 
-.form-wrapper .info-server textarea{
+.form-wrapper .info-server textarea {
   border: 1px solid var(--clr-second);
   padding: 5px;
 }
@@ -694,48 +691,228 @@ gap: 20px;
 .form-wrapper .info-client {
   gap: 30px;
   flex-wrap: wrap;
-  justify-content: start
+  justify-content: start;
 }
 
-.form-wrapper .info-client h2{
+.form-wrapper .info-client h2 {
   color: var(--clr-second);
   padding: 0;
   margin: 0;
   font-size: 1em;
 }
 
-.form-wrapper .wrapper .column{
+.form-wrapper .wrapper .column {
   max-width: 200px;
 }
 
-.form-wrapper .info-client .title{
+.form-wrapper .info-client .title {
   font-size: 0.9em;
   /* color: var(--clr-grey); */
- }
-
-.form-wrapper .info-client .text{
- font-size: 1em;
- color: var(--clr-grey);
 }
 
-.form-wrapper .info-client .text.row{
+.form-wrapper .info-client .text {
+  font-size: 1em;
+  color: var(--clr-grey);
+}
+
+.form-wrapper .info-client .text.row {
   justify-content: start;
   align-items: center;
-
- }
-
- .form-wrapper .info-client .text.row i{
-font-size: 1em;
-color: var(--clr-second);
- }
-
-.form-wrapper .info-client .button-wrapper{
-  flex-wrap: wrap;
 }
 
+.form-wrapper .info-client .text.row i {
+  font-size: 1em;
+  color: var(--clr-second);
+}
+
+.form-wrapper .info-client .button-wrapper {
+  flex-wrap: wrap;
+}
 
 * {
   /* border: 1px solid rgba(255, 0, 0, 0.178); */
 }
 
+.modal {
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+}
 
+.modal-content {
+  background-color: #fff;
+  margin: 10% auto;
+  padding: 20px;
+  width: 30%;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.close {
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+/* Modal Container */
+.custom-modal {
+  display: none; /* Default hidden */
+  position: fixed;
+  z-index: 999;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.5); /* Background hitam transparan */
+}
+
+/* Modal Box */
+.custom-modal-content {
+  background-color: #fff;
+  margin: 15% auto;
+  padding: 20px;
+  border-radius: 8px;
+  width: 250px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Close Button */
+.custom-modal-close {
+  color: #aaa;
+  float: right;
+  font-size: 24px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.custom-modal-close:hover {
+  color: #000;
+}
+
+.connectionStatus .column {
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-icon i {
+  font-size: 5em;
+  color: var(--clr);
+  animation: hu__hu__ 0.5s ease-in-out;
+}
+
+@keyframes hu__hu__ {
+  from {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Animasi muncul */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* #loader */
+
+.loader-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.301);
+  width: 100%;
+  height: 100%;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(2px);
+  flex-direction: column;
+  color: white;
+}
+
+.loader {
+  animation: rotate 1s infinite;
+  height: 50px;
+  width: 50px;
+  
+}
+
+.loader:before,
+.loader:after {
+  border-radius: 50%;
+  content: "";
+  display: block;
+  height: 20px;
+  width: 20px;
+}
+.loader:before {
+  animation: ball1 1s infinite;
+  background-color: var(--clr-third);
+  box-shadow: 30px 0 0 var(--clr-main);
+  margin-bottom: 10px;
+}
+.loader:after {
+  animation: ball2 1s infinite;
+  background-color: var(--clr-main);
+  box-shadow: 30px 0 0 var(--clr-third);
+}
+
+@keyframes rotate {
+  0% {
+    transform: rotate(0deg) scale(0.8);
+  }
+  50% {
+    transform: rotate(360deg) scale(1.2);
+  }
+  100% {
+    transform: rotate(720deg) scale(0.8);
+  }
+}
+
+@keyframes ball1 {
+  0% {
+    box-shadow: 30px 0 0 var(--clr-main);
+  }
+  50% {
+    box-shadow: 0 0 0 var(--clr-main);
+    margin-bottom: 0;
+    transform: translate(15px, 15px);
+  }
+  100% {
+    box-shadow: 30px 0 0 var(--clr-main);
+    margin-bottom: 10px;
+  }
+}
+
+@keyframes ball2 {
+  0% {
+    box-shadow: 30px 0 0 var(--clr-third);
+  }
+  50% {
+    box-shadow: 0 0 0 var(--clr-third);
+    margin-top: -20px;
+    transform: translate(15px, 15px);
+  }
+  100% {
+    box-shadow: 30px 0 0 var(--clr-third);
+    margin-top: 0;
+  }
+}

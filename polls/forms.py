@@ -12,7 +12,7 @@ class ServerForm(forms.ModelForm):
             'host': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Masukan Host IP'}),
             'username': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Masukan Username'}),
             'password': forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Masukan Password'}),
-            'genieacs': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Masukan IP GenieACS, Kosongkan Jika tida ada'}),
+            'genieacs': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Masukan IP GenieACS, Kosongkan Jika tidak ada'}),
         }
 
 class PaketForm(forms.ModelForm):

@@ -16,10 +16,16 @@ urlpatterns = [
     path('add-paket/', views.addProfile, name='add-paket'),
     path('add-client/', views.addClient, name='add-client'),
 
+    #edit
+    path('server-list/edit/<int:pk>/', views.edit_server, name='edit-server'),
+    #delete
+    path('server-list/<int:pk>/delete/', views.delete_server, name='delete-server'),
+
     #detailPages
     path('server-list/detail/id=<int:server_id>/', views.detailServer, name='detail-server'),
 
     path('client/detail-client/', views.detailClient, name='detail-client'),
 
-    
+    #==========================
+    path('server-list/test-connection/<int:pk>/', views.test_connection, name='test-connection'),
 ]

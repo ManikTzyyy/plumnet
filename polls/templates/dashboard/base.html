@@ -84,6 +84,18 @@
         {% block content %} {% endblock %}</div>
     </div>
 
+    <div id="connectionModal" class="custom-modal">
+      <div class="custom-modal-content">
+        <span class="custom-modal-close" onclick="closeModal()">&times;</span>
+        <div id="connectionStatus"></div>
+      </div>
+    </div>
+    
+    <div class="loader-wrapper">
+      <span class="loader"></span>
+      <p>Sabar ngab...</p>
+    </div>
+
     <script src="{% static 'js/app.js' %}"></script>
   </body>
 </html>
