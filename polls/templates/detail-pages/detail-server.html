@@ -1,0 +1,53 @@
+{% extends 'dashboard/base.html' %} {% block content %}
+
+<div class="content-page">
+  <div class="form-wrapper column">
+    <div class="form-header column">
+      <div class="row title-head-td">
+        <i
+          class="fa-solid fa-server"
+          style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
+        ></i>
+        <span class="title">Server Name</span>
+      </div>
+    </div>
+    <div class="info-server">
+      <h2>Mikrotik 1</h2>
+      <div class="wrapper column">
+        <div class="column">
+          <div class="">Host IP</div>
+          <div class="text">192.168.0.1</div>
+        </div>
+        <div class="column">
+          <div class="">Username</div>
+          <div class="text">admin</div>
+        </div>
+        <div class="column">
+          <div class="">Password</div>
+          <div class="text">admin</div>
+        </div>
+        <div class="column">
+          <div class="">GeniACS</div>
+          <div class="text">-</div>
+        </div>
+        <div class="row button-wrapper">
+          <button class="main-button">Test Connection</button>
+          <button class="warning-button">Edit</button>
+          <button class="danger-button">Delete</button>
+        </div>
+        <br />
+        <form action="" class="column">
+          <div class="column">
+            <label for="command">Terminal</label>
+            <textarea name="command" id="command" placeholder="masukan perintah"></textarea>
+          </div>
+          <button class="main-button" type="submit">Kirim</button>
+        </form>
+        <div class="text-grey">Output Here</div>
+        <div class="output-command"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

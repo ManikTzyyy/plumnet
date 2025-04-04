@@ -1,6 +1,6 @@
 {% extends 'dashboard/base.html' %} {% block content %}
 
-<div class="content-page server">
+<div class="content-page">
   <div class="form-wrapper column">
     <div class="form-header column">
       <div class="row title-head-td">
@@ -13,6 +13,12 @@
     </div>
 
     <form action="" class="column">
+      <div class="column">
+        <label for="server">Server</label>
+        <select id="server">
+          <option value="mikrotik1">Mikrotik 1</option>
+        </select>
+      </div>
       <div class="column">
         <label for="fullname">Name Lengkap</label>
         <input
@@ -48,6 +54,7 @@
           <option value="publicService">Layanan Public</option>
         </select>
       </div>
+
       <div class="column">
         <label for="pppoeID">ID PPPoE</label>
         <input

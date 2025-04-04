@@ -15,5 +15,9 @@ urlpatterns = [
     path('add-server/', views.addServer, name='add-server'),
     path('add-paket/', views.addProfile, name='add-paket'),
     path('add-client/', views.addClient, name='add-client'),
+
+    #detailPages
+    path('server/detail-server/', views.detailServer, name='detail-server'),
+    path('client/detail-client/', views.detailClient, name='detail-client'),
    
 ]
