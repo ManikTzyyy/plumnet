@@ -5,7 +5,7 @@ urlpatterns = [
     #dashboard
     path('', views.dashboard, name='dashboard'),
     path('server-list/', views.server, name='server'),
-    path('paket/', views.paket, name='paket'),
+    path('paket-list/', views.paket, name='paket'),
     path('client/', views.client, name='client'),
     path('verifikasi/', views.verifikasi, name='verifikasi'),
     path('setting/', views.setting, name='setting'),
@@ -18,6 +18,8 @@ urlpatterns = [
 
     #detailPages
     path('server-list/detail/id=<int:server_id>/', views.detailServer, name='detail-server'),
+
     path('client/detail-client/', views.detailClient, name='detail-client'),
-   
+
+    
 ]

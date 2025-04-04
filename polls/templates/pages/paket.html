@@ -1,4 +1,5 @@
 {% extends 'dashboard/base.html' %} {% block content %}
+{% load currency_filters %}
 
 <div class="content-page server">
   <div class="table-wrapper column">
@@ -11,15 +12,15 @@
         <span class="title">Paket List</span>
       </div>
       <a href="{% url 'add-paket' %}" class="success-button">Add Paket +</a>
-      <form action="" class="form-search row">
+      <form method="GET" class="form-search row">
         <input
           class="search-box"
           type="search"
           placeholder="Search"
-          id="gsearch"
           name="search"
+          value="{{ query }}"
         />
-        <input class="search-button" type="submit" />
+        <input class="search-button" type="submit" value="Search" />
       </form>
     </div>
 
@@ -32,11 +33,12 @@
           <th>Internet</th>
           <th class="center-th">Action</th>
         </tr>
+        {% for paket in pakets %}
         <tr class="t-d">
-          <td>1</td>
-          <td>Basic</td>
-          <td>IDR 120.000</td>
-          <td>5Mb</td>
+          <td>{{ paket.id }}</td>
+          <td>{{ paket.name }}</td>
+          <td>{{ paket.price|rupiah }}</td>
+          <td>{{ paket.limit }}</td>
           <td>
             <div class="row button-wrapper">
               <a href="#" class="warning-button">Edit</a>
@@ -44,31 +46,45 @@
             </div>
           </td>
         </tr>
-        <tr class="t-d">
-          <td>2</td>
-          <td>Pro</td>
-          <td>IDR 200.000</td>
-          <td>15Mb</td>
-          <td>
-            <div class="row button-wrapper">
-              <a href="#" class="warning-button">Edit</a>
-              <a href="#" class="danger-button">Delete</a>
-            </div>
-          </td>
+        {% empty %}
+        <tr>
+          <td colspan="7" class="center">Tidak ada data yang ditemukan</td>
         </tr>
-        <tr class="t-d">
-          <td>3</td>
-          <td>Company</td>
-          <td>IDR 300.000</td>
-          <td>20Mb</td>
-          <td>
-            <div class="row button-wrapper">
-              <a href="#" class="warning-button">Edit</a>
-              <a href="#" class="danger-button">Delete</a>
-            </div>
-          </td>
-        </tr>
+        {% endfor %}
+        
       </table>
+    </div>
+
+    <div class="pagination row">
+      {% if pakets.has_previous %}
+      <a
+        href="?page=1{% if query %}&search={{ query }}{% endif %}"
+        class="page-button"
+        >First</a
+      >
+      <a
+        href="?page={{ pakets.previous_page_number }}{% if query %}&search={{ query }}{% endif %}"
+        class="page-button"
+        ><i class="fa-solid fa-angle-left"></i
+      ></a>
+      {% endif %}
+
+      <span class="current-page"
+        >Page {{ pakets.number }} of {{ pakets.paginator.num_pages }}</span
+      >
+
+      {% if pakets.has_next %}
+      <a
+        href="?page={{ pakets.next_page_number }}{% if query %}&search={{ query }}{% endif %}"
+        class="page-button"
+        ><i class="fa-solid fa-angle-right"></i
+      ></a>
+      <a
+        href="?page={{ pakets.paginator.num_pages }}{% if query %}&search={{ query }}{% endif %}"
+        class="page-button"
+        >Last</a
+      >
+      {% endif %}
     </div>
   </div>
 </div>
