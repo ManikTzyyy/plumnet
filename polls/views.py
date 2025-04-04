@@ -1,5 +1,7 @@
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import redirect, render
+
+from polls.forms import ServerForm
 
 # Create your views here.
 
@@ -26,8 +28,16 @@ def informasi(request) :
 
 #forms
 
-def addServer(request) : 
-    return render(request, 'form-pages/form-server.html')
+def addServer(request):
+    if request.method == "POST":
+        form = ServerForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('server')  # Ganti dengan nama URL yang sesuai
+    else:
+        form = ServerForm()
+
+    return render(request, 'form-pages/form-server.html', {'form': form})
 
 def addProfile(request) : 
     return render(request, 'form-pages/form-profile.html')

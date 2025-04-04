@@ -12,7 +12,7 @@
       </div>
     </div>
 
-    <form action="" class="column">
+    <!-- <form action="" class="column">
       <div class="column">
         <label for="name">Name</label>
         <input
@@ -69,7 +69,43 @@
           Batal
         </button>
       </div>
-    </form>
+    </form> -->
+
+    <form method="post" class="column">
+      {% csrf_token %}
+      <div class="column">
+          <label for="{{ form.name.id_for_label }}">Name</label>
+          {{ form.name }}
+      </div>
+  
+      <div class="column">
+          <label for="{{ form.host.id_for_label }}">Host IP</label>
+          {{ form.host }}
+      </div>
+  
+      <div class="column">
+          <label for="{{ form.username.id_for_label }}">Username</label>
+          {{ form.username }}
+      </div>
+  
+      <div class="column">
+          <label for="{{ form.password.id_for_label }}">Password</label>
+          {{ form.password }}
+      </div>
+  
+      <div class="column">
+          <label for="{{ form.genieacs.id_for_label }}">GenieACS</label>
+          {{ form.genieacs }}
+      </div>
+  
+      <div class="row button-wrapper">
+          <button class="success-button" type="submit">Simpan</button>
+          <button class="warning-button" type="button" onclick="window.history.back();">Batal</button>
+      </div>
+  </form>
+
+    
+  
   </div>
 </div>
 
