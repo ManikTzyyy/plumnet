@@ -18,8 +18,10 @@ urlpatterns = [
 
     #edit
     path('server-list/edit/<int:pk>/', views.edit_server, name='edit-server'),
+    path('paket-list/edit/<int:pk>/', views.edit_paket, name='edit-paket'),
     #delete
     path('server-list/<int:pk>/delete/', views.delete_server, name='delete-server'),
+    path('paket-list/<int:pk>/delete/', views.delete_paket, name='delete-paket'),
 
     #detailPages
     path('server-list/detail/id=<int:server_id>/', views.detailServer, name='detail-server'),

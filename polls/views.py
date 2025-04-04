@@ -110,6 +110,19 @@ def edit_server(request, pk):
 
     return render(request, 'form-pages/form-server.html', {'form': form, 'is_edit': True})
 
+def edit_paket(request, pk):
+    paket = get_object_or_404(Paket, pk=pk)
+
+    if request.method == 'POST':
+        form = PaketForm(request.POST, instance=paket)
+        if form.is_valid():
+            form.save()
+            return redirect('paket')  
+    else:
+        form = PaketForm(instance=paket)
+
+    return render(request, 'form-pages/form-profile.html', {'form': form, 'is_edit': True})
+
 
 #delete data
 
@@ -123,6 +136,17 @@ def delete_server(request, pk):
     
     return redirect('detail-server', pk=pk)
 
+
+
+def delete_paket(request, pk):
+    paket = get_object_or_404(Paket, pk=pk)
+    
+    if request.method == "POST":
+        paket.delete()
+        messages.success(request, "Paket berhasil dihapus.")
+        return redirect('paket')  
+    
+    return redirect('paket', pk=pk)
 
 #detail
 
