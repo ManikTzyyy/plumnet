@@ -152,6 +152,11 @@ button:hover {
   gap: 10px;
 }
 
+.form-wrapper .title {
+  font-size: 1.5em;
+
+}
+
 .title-head-td .title {
   font-weight: bold;
   color: var(--clr-main);
@@ -659,6 +664,7 @@ gap: 20px;
   color: var(--clr-second);
   padding: 0;
   margin: 0;
+  font-size: 1em;
 }
 
 .form-wrapper .wrapper{

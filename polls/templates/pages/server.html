@@ -12,16 +12,11 @@
       </div>
       <a href="{% url 'add-server' %}" class="success-button"
       >Add Device +</a>
-      <form action="" class="form-search row">
-        <input
-          class="search-box"
-          type="search"
-          placeholder="Search"
-          id="gsearch"
-          name="search"
-        />
-        <input class="search-button" type="submit" />
-      </form>
+      <form method="GET" class="form-search row">
+        <input class="search-box" type="search" placeholder="Search" id="gsearch" name="search" value="{{ query }}" />
+        <input class="search-button" type="submit" value="Search" />
+    </form>
+    
     </div>
     
     <div class="table-container">
@@ -31,42 +26,49 @@
           <th>Nama Perangkat</th>
           <th>Host IP</th>
           <th>Username</th>
-          <th>Password</th>
+          
           <th>Server GenieACS</th>
           <th class="center-th">Action</th>
         </tr>
+        
+        {% for server in servers %}
         <tr class="t-d">
-          <td>1</td>
-          <td>Mikrotik 1</td>
-          <td>192.168.0.1</td>
-          <td>admin</td>
-          <td>admin</td>
-          <td>10.12.0.1</td>
+          <td>{{ server.id }}</td>
+          <td>{{ server.name }}</td>
+          <td>{{ server.host }}</td>
+          <td>{{ server.username }}</td>
+          
+          <td>{{ server.genieacs|default:"-" }}</td>
           <td>
             <div class="row button-wrapper">
-              <a href="#" class="main-button">View</a>
+              <a href="{% url 'detail-server' server.id %}" class="main-button">View</a>
               <a href="#" class="warning-button">Edit</a>
               <a href="#" class="danger-button">Delete</a>
             </div>
           </td>
         </tr>
-        <tr class="t-d">
-          <td>2</td>
-          <td>Mikrotik 2</td>
-          <td>192.168.0.2</td>
-          <td>admin</td>
-          <td>admin</td>
-          <td>10.12.0.2</td>
-          <td>
-            <div class="row button-wrapper">
-              <a href="#" class="main-button">View</a>
-              <a href="#" class="warning-button">Edit</a>
-              <a href="#" class="danger-button">Delete</a>
-            </div>
-          </td>
+        {% empty %}
+        <tr>
+          <td colspan="7" class="center">Tidak ada data yang ditemukan</td>
         </tr>
+        {% endfor %}
       </table>
     </div>
+
+    <div class="pagination row">
+      {% if servers.has_previous %}
+        <a href="?page=1{% if query %}&search={{ query }}{% endif %}" class="page-button">First</a>
+        <a href="?page={{ servers.previous_page_number }}{% if query %}&search={{ query }}{% endif %}" class="page-button"><i class="fa-solid fa-angle-left"></i></a>
+      {% endif %}
+    
+      <span class="current-page">Page {{ servers.number }} of {{ servers.paginator.num_pages }}</span>
+    
+      {% if servers.has_next %}
+        <a href="?page={{ servers.next_page_number }}{% if query %}&search={{ query }}{% endif %}" class="page-button"><i class="fa-solid fa-angle-right"></i></a>
+        <a href="?page={{ servers.paginator.num_pages }}{% if query %}&search={{ query }}{% endif %}" class="page-button">Last</a>
+      {% endif %}
+    </div>
+    
   </div>
 </div>
 
