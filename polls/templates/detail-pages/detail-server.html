@@ -3,7 +3,13 @@
 <div class="content-page">
   <div class="form-wrapper column">
     <div class="form-header column">
-      <button class="main-button" type="button" onclick="window.history.back();">Kembali</button>
+      <button
+        class="main-button"
+        type="button"
+        onclick="window.history.back();"
+      >
+        Kembali
+      </button>
       <div class="row title-head-td">
         <i
           class="fa-solid fa-server"
@@ -32,31 +38,47 @@
           <div class="text">{{ server.genieacs|default:"-" }}</div>
         </div>
         <div class="row button-wrapper">
-          <button onclick="testConnection('{{ server.id }}')" class="main-button">Test Connection</button>
+          <button
+            onclick="testConnection('{{ server.id }}')"
+            class="main-button"
+          >
+            Test Connection
+          </button>
           <a href="{% url 'edit-server' server.id %}" class="warning-button"
-                >Edit</a
-              >
-          <button onclick="openDeleteModal('{{ server.id }}')" class="danger-button">Delete</button>
+            >Edit</a
+          >
+          <button
+            onclick="openDeleteModal('{{ server.id }}')"
+            class="danger-button"
+          >
+            Delete
+          </button>
         </div>
         <br />
-        <form action="" class="column">
+        <form id="terminalForm" class="column">
           <div class="column">
             <label for="command">Terminal</label>
-            <textarea name="command" id="command" placeholder="masukan perintah"></textarea>
+            <textarea
+              name="command"
+              id="command"
+              placeholder="masukan perintah"
+            ></textarea>
           </div>
           <button class="main-button" type="submit">Kirim</button>
         </form>
         <div class="text-grey">Output Here</div>
-        <div class="output-command"></div>
+        
+        <div class="output-command" id="commandOutput"><span class="loader-form"></span></div>
       </div>
     </div>
   </div>
 </div>
 
-
 <div id="deleteModal" class="modal" style="display: none">
   <div class="modal-content">
-    <span class="close" style="color: white;" onclick="closeModalDelete()">&times;</span>
+    <span class="close" style="color: white" onclick="closeModalDelete()"
+      >&times;</span
+    >
     <h3>Konfirmasi Hapus</h3>
     <p>Apakah Anda yakin ingin menghapus server ini?</p>
     <form id="deleteForm" method="POST">
@@ -109,9 +131,11 @@
         const statusText = document.getElementById("connectionStatus");
 
         if (data.status === "Aktif") {
-          statusText.innerHTML = "<div class='column'><h2>Terkoneksi</h2><div class='modal-icon'><i class='fa-regular fa-circle-check' style='--clr:green'></i></div></div>";
+          statusText.innerHTML =
+            "<div class='column'><h2>Konek cuy 😋👍</h2><div class='modal-icon'><i class='fa-regular fa-circle-check' style='--clr:green'></i></div></div>";
         } else {
-          statusText.innerHTML = "<div class='column'><h2>Tidak Terkoneksi</h2><div class='modal-icon'><i class='fa-solid fa-xmark' style='--clr:red'></i></div></div>";
+          statusText.innerHTML =
+            "<div class='column'><h2>Ga konek 😱</h2><div class='modal-icon'><i class='fa-solid fa-xmark' style='--clr:red'></i></div></div>";
         }
 
         modal.style.display = "block";
@@ -120,7 +144,8 @@
         console.error("Error:", error);
         const modal = document.getElementById("connectionModal");
         const statusText = document.getElementById("connectionStatus");
-        statusText.innerHTML = '<span style="color: orange;">Terjadi kesalahan saat mencoba koneksi.</span>';
+        statusText.innerHTML =
+          '<span style="color: orange;">Terjadi kesalahan saat mencoba koneksi.</span>';
         modal.style.display = "block";
       })
       .finally(() => {
@@ -140,7 +165,50 @@
   };
 </script>
 
+<script>
+  function showLoader() {
+    document.querySelector(".loader-form").style.display = "block"; // Atur sesuai dengan CSS kamu
+  }
 
+  function hideLoader() {
+    document.querySelector(".loader-form").style.display = "none";
+  }
+
+  document
+    .getElementById("terminalForm")
+    .addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const command = document.getElementById("command").value;
+      const serverId = "{{ server.id }}"; // gunakan ID server
+
+      showLoader(); // Tampilkan loader saat proses fetch dimulai
+
+      fetch("{% url 'send-command' %}", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": "{{ csrf_token }}",
+        },
+        body: JSON.stringify({
+          command: command,
+          server_id: serverId,
+        }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          document.getElementById("commandOutput").innerText =
+            data.output || "No output";
+        })
+        .catch((error) => {
+          document.getElementById("commandOutput").innerText =
+            "Error: " + error;
+        })
+        .finally(() => {
+          hideLoader(); // Sembunyikan loader setelah fetch selesai
+        });
+    });
+</script>
 
 
 {% endblock %}

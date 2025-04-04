@@ -9,7 +9,7 @@ class Server(models.Model):
     name = models.CharField(max_length=255)
     host = models.GenericIPAddressField()
     username = models.CharField(max_length=255)
-    password = models.CharField(max_length=255)  # Simpan password terenkripsi jika diperlukan
+    password = models.CharField(max_length=255) 
     genieacs = models.GenericIPAddressField(blank=True, null=True)
 
     def __str__(self):

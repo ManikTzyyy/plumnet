@@ -30,4 +30,7 @@ urlpatterns = [
 
     #==========================
     path('server-list/test-connection/<int:pk>/', views.test_connection, name='test-connection'),
+
+    path('send-command/', views.send_command, name='send-command'),
+
 ]

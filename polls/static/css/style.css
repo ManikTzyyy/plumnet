@@ -680,12 +680,15 @@ button:hover {
 .form-wrapper .info-server textarea {
   border: 1px solid var(--clr-second);
   padding: 5px;
+  font-size: 1.2em;
 }
 
 .form-wrapper .info-server .output-command {
   min-height: 100px;
-  width: 100%;
   border: 1px solid var(--clr-second);
+  padding: 10px 20px;
+  font-size: 0.8em;
+  /* background-color: var(--clr-second); */
 }
 
 .form-wrapper .info-client {
@@ -770,7 +773,8 @@ button:hover {
   width: 100%;
   height: 100%;
   overflow: auto;
-  background-color: rgba(0, 0, 0, 0.5); /* Background hitam transparan */
+  background-color: rgba(0, 0, 0, 0.301);
+  backdrop-filter: blur(2px);
 }
 
 /* Modal Box */
@@ -838,12 +842,13 @@ button:hover {
   top: 0;
   left: 0;
   background-color: rgba(0, 0, 0, 0.301);
+  backdrop-filter: blur(2px);
   width: 100%;
   height: 100%;
   display: none;
   justify-content: center;
   align-items: center;
-  backdrop-filter: blur(2px);
+  
   flex-direction: column;
   color: white;
 }
@@ -914,5 +919,49 @@ button:hover {
   100% {
     box-shadow: 30px 0 0 var(--clr-third);
     margin-top: 0;
+  }
+}
+
+
+.loader-form {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: none;
+  margin:15px auto;
+  position: relative;
+  color: var(--clr-main);
+  left: -100px;
+  box-sizing: border-box;
+  animation: shadowRolling 2s linear infinite;
+}
+
+@keyframes shadowRolling {
+  0% {
+    box-shadow: 0px 0 rgba(255, 255, 255, 0), 0px 0 rgba(255, 255, 255, 0), 0px 0 rgba(255, 255, 255, 0), 0px 0 rgba(255, 255, 255, 0);
+  }
+  12% {
+    box-shadow: 100px 0 var(--clr-second), 0px 0 rgba(255, 255, 255, 0), 0px 0 rgba(255, 255, 255, 0), 0px 0 rgba(255, 255, 255, 0);
+  }
+  25% {
+    box-shadow: 110px 0 var(--clr-second), 100px 0 var(--clr-second), 0px 0 rgba(255, 255, 255, 0), 0px 0 rgba(255, 255, 255, 0);
+  }
+  36% {
+    box-shadow: 120px 0 var(--clr-second), 110px 0 var(--clr-second), 100px 0 var(--clr-second), 0px 0 rgba(255, 255, 255, 0);
+  }
+  50% {
+    box-shadow: 130px 0 var(--clr-second), 120px 0 var(--clr-second), 110px 0 var(--clr-second), 100px 0 var(--clr-second);
+  }
+  62% {
+    box-shadow: 200px 0 rgba(255, 255, 255, 0), 130px 0 var(--clr-second), 120px 0 var(--clr-second), 110px 0 var(--clr-second);
+  }
+  75% {
+    box-shadow: 200px 0 rgba(255, 255, 255, 0), 200px 0 rgba(255, 255, 255, 0), 130px 0 var(--clr-second), 120px 0 var(--clr-second);
+  }
+  87% {
+    box-shadow: 200px 0 rgba(255, 255, 255, 0), 200px 0 rgba(255, 255, 255, 0), 200px 0 rgba(255, 255, 255, 0), 130px 0 var(--clr-second);
+  }
+  100% {
+    box-shadow: 200px 0 rgba(255, 255, 255, 0), 200px 0 rgba(255, 255, 255, 0), 200px 0 rgba(255, 255, 255, 0), 200px 0 rgba(255, 255, 255, 0);
   }
 }
