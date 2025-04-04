@@ -14,8 +14,10 @@ from polls.forms import ServerForm, PaketForm
 
 def dashboard(request) : 
     total_servers = Server.objects.count() 
+    total_pakets = Paket.objects.count() 
     context = {
         'total_servers' : total_servers,
+        'total_pakets' : total_pakets,
     }
     return render(request, 'dashboard/dashboard.html', context)
 

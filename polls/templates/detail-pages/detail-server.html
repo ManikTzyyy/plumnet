@@ -56,13 +56,13 @@
 
 <div id="deleteModal" class="modal" style="display: none">
   <div class="modal-content">
-    <span class="close" onclick="closeModal()">&times;</span>
+    <span class="close" style="color: white;" onclick="closeModalDelete()">&times;</span>
     <h3>Konfirmasi Hapus</h3>
     <p>Apakah Anda yakin ingin menghapus server ini?</p>
     <form id="deleteForm" method="POST">
       {% csrf_token %}
       <button type="submit" class="danger-button">Ya, Hapus</button>
-      <button type="button" onclick="closeModal()" class="warning-button">
+      <button type="button" onclick="closeModalDelete()" class="warning-button">
         Batal
       </button>
     </form>
@@ -77,7 +77,7 @@
     modal.style.display = "block";
   }
 
-  function closeModal() {
+  function closeModalDelete() {
     document.getElementById("deleteModal").style.display = "none";
   }
 
@@ -109,11 +109,9 @@
         const statusText = document.getElementById("connectionStatus");
 
         if (data.status === "Aktif") {
-          statusText.innerHTML =
-            "<div class='column'><h2>Terkoneksi</h2><div class='modal-icon'><i class='fa-regular fa-circle-check' style='--clr:green'></i></div></div>";
+          statusText.innerHTML = "<div class='column'><h2>Terkoneksi</h2><div class='modal-icon'><i class='fa-regular fa-circle-check' style='--clr:green'></i></div></div>";
         } else {
-          statusText.innerHTML =
-            "<div class='column'><h2>Tidak Terkoneksi</h2><div class='modal-icon'><i class='fa-solid fa-xmark' style='--clr:red'></i></div></div>";
+          statusText.innerHTML = "<div class='column'><h2>Tidak Terkoneksi</h2><div class='modal-icon'><i class='fa-solid fa-xmark' style='--clr:red'></i></div></div>";
         }
 
         modal.style.display = "block";
@@ -122,8 +120,7 @@
         console.error("Error:", error);
         const modal = document.getElementById("connectionModal");
         const statusText = document.getElementById("connectionStatus");
-        statusText.innerHTML =
-          '<span style="color: orange;">Terjadi kesalahan saat mencoba koneksi.</span>';
+        statusText.innerHTML = '<span style="color: orange;">Terjadi kesalahan saat mencoba koneksi.</span>';
         modal.style.display = "block";
       })
       .finally(() => {
