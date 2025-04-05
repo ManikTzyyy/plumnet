@@ -6,22 +6,19 @@ const hideLoader = () => {
   document.querySelector(".loader-wrapper").style.display = "none";
 };
 
-
-
-// Intercept semua form submit
 document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll("form").forEach((form) => {
-    form.addEventListener("submit", () => {
+    form.addEventListener("submit", (e) => {
+      if (e.submitter && e.submitter.classList.contains("no-loader")) return;
       showLoader();
     });
   });
 
-  // Intercept semua link yang perlu waktu (opsional)
   document.querySelectorAll("a").forEach((link) => {
     link.addEventListener("click", function (e) {
-      const href = link.getAttribute("href");
+      if (link.classList.contains("no-loader")) return;
 
-      // Hindari link ke # atau javascript:void(0)
+      const href = link.getAttribute("href");
       if (href && !href.startsWith("#") && !href.startsWith("javascript")) {
         showLoader();
       }

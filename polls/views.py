@@ -1,4 +1,5 @@
 import json
+import logging
 import socket
 import subprocess
 from django.contrib import messages
@@ -193,28 +194,75 @@ def test_connection(request, pk):
     return JsonResponse({'status': status})
 
 
+
+
+
+
+logger = logging.getLogger(__name__)
+
+BAD_COMMANDS = ['reboot', 'shutdown', 'halt', 'poweroff', 'logout', 'exit']
+
 def execute_command(host, username, password, command):
+    output = ""
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    client.connect(host, username=username, password=password, look_for_keys=False)
-    stdin, stdout, stderr = client.exec_command(command)
-    output = stdout.read().decode()
-    client.close()
+
+    try:
+        # Connect with timeout and without looking for SSH keys
+        client.connect(
+            hostname=host,
+            username=username,
+            password=password,
+            look_for_keys=False,
+            timeout=10
+        )
+
+        stdin, stdout, stderr = client.exec_command(command, timeout=15)
+        output = stdout.read().decode() + stderr.read().decode()
+
+    except Exception as e:
+        logger.error(f"[SSH ERROR] {e}")
+        output = f"SSH Error: {str(e)}"
+
+    finally:
+        client.close()
+
     return output
 
 def send_command(request):
     if request.method == "POST":
-        data = json.loads(request.body)
-        command = data.get("command")
-        server_id = data.get("server_id")
-
         try:
-            server = Server.objects.get(id=server_id)
-            output = execute_command(server.host, server.username, server.password, command)
-            return JsonResponse({"output": output})
-        except Server.DoesNotExist:
-            return JsonResponse({"output": "Server not found."})
-        except Exception as e:
-            return JsonResponse({"output": f"Error: {str(e)}"})
+            data = json.loads(request.body)
+            command = data.get("command", "").strip()
+            server_id = data.get("server_id")
 
-    return JsonResponse({"output": "Invalid request."})
+            # Validasi perintah berbahaya
+            for bad_cmd in BAD_COMMANDS:
+                if bad_cmd in command.lower():
+                    return JsonResponse({
+                        "output": f"Perintah '{bad_cmd}' tidak diizinkan demi keamanan."
+                    }, status=400)
+
+            # Validasi input
+            if not command:
+                return JsonResponse({"output": "Perintah tidak boleh kosong."}, status=400)
+
+            server = Server.objects.get(id=server_id)
+
+            logger.info(f"[SEND_COMMAND] Eksekusi command ke server {server.host}: {command}")
+
+            output = execute_command(server.host, server.username, server.password, command)
+
+            return JsonResponse({"output": output or "Tidak ada output dari perintah."})
+
+        except Server.DoesNotExist:
+            return JsonResponse({"output": "Server tidak ditemukan."}, status=404)
+
+        except json.JSONDecodeError:
+            return JsonResponse({"output": "Format request tidak valid."}, status=400)
+
+        except Exception as e:
+            logger.exception("[ERROR] Gagal mengirim perintah")
+            return JsonResponse({"output": f"Exception: {str(e)}"}, status=500)
+
+    return JsonResponse({"output": "Hanya menerima metode POST."}, status=405)

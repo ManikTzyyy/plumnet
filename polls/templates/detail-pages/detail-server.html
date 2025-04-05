@@ -4,7 +4,7 @@
   <div class="form-wrapper column">
     <div class="form-header column">
       <button
-        class="main-button"
+        class="main-button no-loader"
         type="button"
         onclick="window.history.back();"
       >
@@ -132,10 +132,10 @@
 
         if (data.status === "Aktif") {
           statusText.innerHTML =
-            "<div class='column'><h2>Konek cuy 😋👍</h2><div class='modal-icon'><i class='fa-regular fa-circle-check' style='--clr:green'></i></div></div>";
+            "<div class='column'><div class='modal-icon'><i class='fa-regular fa-circle-check' style='--clr:green'></i></div><h2>Konek cuy 😋👍</h2></div>";
         } else {
           statusText.innerHTML =
-            "<div class='column'><h2>Ga konek 😱</h2><div class='modal-icon'><i class='fa-solid fa-xmark' style='--clr:red'></i></div></div>";
+            "<div class='column'><div class='modal-icon'><i class='fa-solid fa-xmark' style='--clr:red'></i></div><h2>Ga konek 😱</h2><p>Coba cek perangkatmu</p></div>";
         }
 
         modal.style.display = "block";
@@ -166,11 +166,11 @@
 </script>
 
 <script>
-  function showLoader() {
+  function showLoaderForm() {
     document.querySelector(".loader-form").style.display = "block"; // Atur sesuai dengan CSS kamu
   }
 
-  function hideLoader() {
+  function hideLoaderForm() {
     document.querySelector(".loader-form").style.display = "none";
   }
 
@@ -182,7 +182,7 @@
       const command = document.getElementById("command").value;
       const serverId = "{{ server.id }}"; // gunakan ID server
 
-      showLoader(); // Tampilkan loader saat proses fetch dimulai
+      showLoaderForm(); // Tampilkan loader saat proses fetch dimulai
 
       fetch("{% url 'send-command' %}", {
         method: "POST",
@@ -199,13 +199,14 @@
         .then((data) => {
           document.getElementById("commandOutput").innerText =
             data.output || "No output";
+          document.getElementById("command").value = "";
         })
         .catch((error) => {
           document.getElementById("commandOutput").innerText =
             "Error: " + error;
         })
         .finally(() => {
-          hideLoader(); // Sembunyikan loader setelah fetch selesai
+          hideLoaderForm(); // Sembunyikan loader setelah fetch selesai
         });
     });
 </script>

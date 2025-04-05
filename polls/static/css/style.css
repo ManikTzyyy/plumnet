@@ -681,6 +681,7 @@ button:hover {
   border: 1px solid var(--clr-second);
   padding: 5px;
   font-size: 1.2em;
+  min-width: 50vw;
 }
 
 .form-wrapper .info-server .output-command {
@@ -800,6 +801,15 @@ button:hover {
 
 .custom-modal-close:hover {
   color: #000;
+}
+
+#connectionStatus h2, #connectionStatus p{
+  margin: 0;
+  padding: 0;
+}
+
+#connectionStatus h2 {
+  padding-top: 20px;
 }
 
 .connectionStatus .column {

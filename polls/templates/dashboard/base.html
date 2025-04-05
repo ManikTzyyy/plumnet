@@ -98,5 +98,12 @@
 
     <script src="{% static 'js/app.js' %}"></script>
     <script src="{% static 'js/loader.js' %}"></script>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        hideLoader(); // Force hide loader setiap page load
+      });
+      </script>
+      
   </body>
 </html>
