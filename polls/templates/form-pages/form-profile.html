@@ -8,42 +8,28 @@
           class="fa-solid fa-coins"
           style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
         ></i>
-        <span class="title">Add Paket</span>
+        <span class="title">{{ form.instance.pk|yesno:"Edit Paket,Buat Paket Baru" }}</span>
       </div>
     </div>
 
-    <form action="" class="column">
+    <form method="post" class="column">
+      {% csrf_token %}
       <div class="column">
         <label for="name">Name</label>
-        <input
-          type="text"
-          id="name"
-          name="name"
-          placeholder="Masukan Nama Paket"
-        />
+        {{ form.name }}
       </div>
       <div class="column">
         <label for="price">Price</label>
-        <input
-          type="text"
-          id="price"
-          name="price"
-          placeholder="Masukan Harga"
-        />
+        {{ form.price }}
       </div>
       <div class="column">
         <label for="maxRate">Limit Upload/Download </label>
-        <input
-          type="text"
-          id="maxRate"
-          name="maxRate"
-          placeholder="Masukan Limit Speed Upload dan Download"
-        />
+        {{ form.limit }}
       </div>
       <div class="row button-wrapper">
         <button class="success-button" type="submit">Simpan</button>
         <button
-          class="warning-button"
+          class="warning-button no-loader"
           type="button"
           onclick="window.history.back();"
         >

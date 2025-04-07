@@ -1,9 +1,104 @@
-{% extends 'dashboard/base.html' %} {% block content %}
+{% extends 'dashboard/base.html' %} {% block content %} {% load static %}
 
 <div class="column dashboard content-page">
   <div class="main-container row">
+    <div class="column container1">
+      <div class="item card-monitoring column">
+        <div class="title row">
+          <div class="main-text" style="--clr: var(--clr-second)">Server</div>
+          <select name="server" id="server">
+            <option value="mikrotik1">Mikrotik1</option>
+            <option value="mikrotik2">Mikrotik2</option>
+          </select>
+        </div>
+        <div class="row monitor-wrapper">
+          <div class="card-donut column">
+            <div class="donut-name row">
+              <i class="fa-solid fa-microchip"></i>
+              <div class="">CPU usage</div>
+            </div>
+            <div class="donut-content">
+              <canvas id="cpuLoad"></canvas>
+              <div class="number">80%</div>
+            </div>
+            <div class="donut-desc">
+              <span class="text-main">80%</span> used
+            </div>
+          </div>
+          <div class="card-donut column">
+            <div class="donut-name row">
+              <i class="fa-solid fa-hard-drive"></i>
+              <div class="">Memory usage</div>
+            </div>
+            <div class="donut-content">
+              <canvas id="memoryUsage"></canvas>
+              <div class="number">20%</div>
+            </div>
+            <div class="donut-desc">
+              free<span class="text-main"> 500 MB</span>
+              <span class="text-grey"> from </span
+              ><span class="text-main">530 MB</span>
+            </div>
+          </div>
+          <div class="card-donut column">
+            <div class="donut-name row">
+              <i class="fa-solid fa-user-check"></i>
+              <div class="">PPPoE Active</div>
+            </div>
+            <div class="donut-content">
+              <canvas id="pppClient"></canvas>
+              <div class="number">90%</div>
+            </div>
+            <div class="donut-desc">
+              <span class="text-main"> 90 active</span>
+              <span class="text-grey"> from </span
+              ><span class="text-main">60 List</span>
+            </div>
+          </div>
+          <div class="card-donut column device">
+            <div class="donut-name row">
+              <i class="fa-solid fa-circle-info"></i>
+              <div class="">Device Information</div>
+            </div>
+            <div class="card-device-wrapper-main column">
+              <div class="device-text column">
+                <div class="">3.42 Ghz</div>
+                <div class="text-grey">1 CPU</div>
+              </div>
+              <div class="device-content">
+                <div class="circle"></div>
+                <div class="number">1h58m57s</div>
+              </div>
+              <div class="device-text-wrapper row">
+                <div class="device-text column">
+                  <div class="">Intel(R)</div>
+                  <div class="text-grey">6.45.6 (stable)</div>
+                </div>
+                <div class="device-text">x86</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="table-container">
+          <table class="table">
+            <tr class="t-head"> 
+              <th>#</th>
+              <th>Ethernet</th>
+              <th>Price</th>
+              <th>Internet</th>
+            </tr>
+            <tr class="t-d">
+              <td>01</td>
+              <td>ether1</td>
+              <td>5</td>
+              <td>3</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
     <div class="column">
-      <div class="item1 row">
+      <div class="item card-config column">
         <div class="item card-client column">
           <div class="title row">
             <div class="text">
@@ -23,7 +118,7 @@
           <div class="title row">
             <div class="text">
               <div class="main-text" style="--clr: var(--clr-g1)">
-                Client Active
+                Total Client Active
               </div>
               <div class="text-grey">Last 30 Days</div>
             </div>
@@ -50,142 +145,50 @@
           <div class="number" style="--clr: var(--clr-y1)">6</div>
         </div>
       </div>
-      <div class="item2 row">
-        <div class="item card-quick column">
-          <div class="title-sec-card">Quick Link</div>
-          <div class="quick-wrapper column">
-            <a href="{% url 'add-server' %}" class="row">
-              <i
-                class="fa-solid fa-plus"
-                style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
-              ></i>
-              Add Server
-            </a>
-            <a href="{% url 'add-paket' %}" class="row">
-              <i
-                class="fa-solid fa-plus"
-                style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
-              ></i>
-              Add Paket
-            </a>
-            <a href="{% url 'add-client' %}" class="row">
-              <i
-                class="fa-solid fa-plus"
-                style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
-              ></i>
-              Add Client
-            </a>
+      <div class="item card-config column">
+        <div class="title row">
+          <div class="main-text" style="--clr: var(--clr-second)">
+            Konfigurasi
           </div>
-        </div>
-        <div class="item card-genieacs column">
-          <div class="title-sec-card row">
-            <div class="">GenieACS Server</div>
-            <select name="server" id="server">
-              <option value="Mikrotik 1">Mikrotik 1</option>
-              <option value="Mikrotik 2">Mikrotik 2</option>
-            </select>
-          </div>
-          <div class="genieacs-wrapper row">
-            <div class="item1-genieacs column">
-              <div class="title">Terdaftar</div>
-              <div class="number">30%</div>
-              <div class="desc">
-                30
-                <span class="text-grey"
-                  >Perangkat <br />
-                  Terdaftar dari <br
-                /></span>
-                100 Clients
-              </div>
-            </div>
-            <div class="item2-genieacs column">
-              <div class="title">Redaman</div>
-              <div class="item-data column">
-                <div class="row">
-                  <div class="circle" style="--clr: var(--clr-g1)"></div>
-                  <span class="text-grey">Baik : 28</span>
-                </div>
-                <div class="row">
-                  <div class="circle" style="--clr: var(--clr-y1)"></div>
-                  <span class="text-grey">Sedang : 28</span>
-                </div>
-                <div class="row">
-                  <div class="circle" style="--clr: var(--clr-r1)"></div>
-                  <span class="text-grey">Buruk : 28</span>
-                </div>
-              </div>
-            </div>
-            <div class="item2-genieacs column">
-              <div class="title">Temperatur</div>
-              <div class="item-data column">
-                <div class="row">
-                  <div class="circle" style="--clr: var(--clr-g1)"></div>
-                  <span class="text-grey">Normal : 28</span>
-                </div>
-                <div class="row">
-                  <div class="circle" style="--clr: var(--clr-y1)"></div>
-                  <span class="text-grey">Sedang : 28</span>
-                </div>
-                <div class="row">
-                  <div class="circle" style="--clr: var(--clr-r1)"></div>
-                  <span class="text-grey">Panas : 28</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="item card-config column">
-      <div class="title row">
-        <div class="main-text" style="--clr: var(--clr-second)">
-          Konfigurasi
-        </div>
-        <i
-          class="fa-solid fa-gears"
-          style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
-        ></i>
-      </div>
-      <div class="config-wrapper column">
-        <div class="config-t row">
           <i
-            class="fa-solid fa-server"
+            class="fa-solid fa-gears"
             style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
           ></i>
-          <div class="config-text column">
+        </div>
+        <div class="config-wrapper row">
+          <div class="config-item column">
+            <i class="fa-solid fa-server"></i>
+            <div class="number">{{ total_servers }}</div>
             <div class="text-grey">Server</div>
-            <div class="config-r">3</div>
+          </div>
+          <div class="config-item column">
+            <i class="fa-solid fa-coins"></i>
+            <div class="number">{{ total_pakets }}</div>
+            <div class="text-grey">Paket</div>
           </div>
         </div>
-        <div class="config-t row">
-          <i
-            class="fa-solid fa-coins"
-            style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
-          ></i>
-          <div class="config-text column">
-            <div class="text-grey">Paket Tersedia</div>
-            <div class="config-r">3</div>
-          </div>
-        </div>
-        <div class="config-t row">
-          <i
-            class="fa-solid fa-user-lock"
-            style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
-          ></i>
-          <div class="config-text column">
-            <div class="text-grey">Profile Isollir</div>
-            <div class="enable-t">enabled</div>
-          </div>
-        </div>
-        <div class="config-t row">
-          <i
-            class="fa-solid fa-ethernet"
-            style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
-          ></i>
-          <div class="config-text column">
-            <div class="text-grey">GenieACS Server</div>
-            <div class="disable-t">disabled</div>
-          </div>
+        <div class="quick-link column">
+          <a href="{% url 'add-server' %}" class="row">
+            <i
+              class="fa-solid fa-plus"
+              style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
+            ></i>
+            <b>Add Server</b>
+          </a>
+          <a href="{% url 'add-paket' %}" class="row">
+            <i
+              class="fa-solid fa-plus"
+              style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
+            ></i>
+            <b>Add Paket</b>
+          </a>
+          <a href="{% url 'add-client' %}" class="row">
+            <i
+              class="fa-solid fa-plus"
+              style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
+            ></i>
+            <b>Add Client</b>
+          </a>
         </div>
       </div>
     </div>
@@ -219,7 +222,7 @@
           <th class="center-th">Status</th>
           <th>ID PPPoE</th>
           <th>Rx</th>
-          <th >Aktif</th>
+          <th>Aktif</th>
           <th>IP TR069</th>
           <th>Action</th>
         </tr>
@@ -249,5 +252,58 @@
     </div>
   </div>
 </div>
+
+<script src="{% static 'js/chart.umd.js' %}"></script>
+
+<script>
+  const cpuLoad = document.getElementById("cpuLoad");
+  const memoryUsage = document.getElementById("memoryUsage");
+  const pppClient = document.getElementById("pppClient");
+
+  new Chart(cpuLoad, {
+    type: "doughnut",
+    data: {
+      datasets: [
+        {
+          rotation: 180,
+          cutout: 60,
+          data: [80, 20],
+          backgroundColor: ["#211C84", "#E8E2F5"],
+          hoverOffset: 4,
+        },
+      ],
+    },
+  });
+
+  new Chart(memoryUsage, {
+    type: "doughnut",
+    data: {
+      datasets: [
+        {
+          rotation: 180,
+          cutout: 60,
+          data: [20, 80],
+          backgroundColor: ["#211C84", "#E8E2F5"],
+          hoverOffset: 4,
+        },
+      ],
+    },
+  });
+
+  new Chart(pppClient, {
+    type: "doughnut",
+    data: {
+      datasets: [
+        {
+          rotation: 180,
+          cutout: 60,
+          data: [90, 10],
+          backgroundColor: ["#211C84", "#E8E2F5"],
+          hoverOffset: 4,
+        },
+      ],
+    },
+  });
+</script>
 
 {% endblock %}

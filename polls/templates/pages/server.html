@@ -1,4 +1,4 @@
-{% extends 'dashboard/base.html' %} {% block content %}
+{% extends 'dashboard/base.html' %} {% block content %} {% load static %}
 
 <div class="content-page server">
   <div class="table-wrapper column">
@@ -10,20 +10,19 @@
         ></i>
         <span class="title">Server List</span>
       </div>
-      <a href="{% url 'add-server' %}" class="success-button"
-      >Add Device +</a>
-      <form action="" class="form-search row">
+      <a href="{% url 'add-server' %}" class="success-button">Add Device +</a>
+      <form method="GET" class="form-search row">
         <input
           class="search-box"
           type="search"
           placeholder="Search"
-          id="gsearch"
           name="search"
+          value="{{ query }}"
         />
-        <input class="search-button" type="submit" />
+        <input class="search-button" type="submit" value="Search" />
       </form>
     </div>
-    
+
     <div class="table-container">
       <table class="table">
         <tr class="t-head">
@@ -31,43 +30,176 @@
           <th>Nama Perangkat</th>
           <th>Host IP</th>
           <th>Username</th>
-          <th>Password</th>
           <th>Server GenieACS</th>
+
           <th class="center-th">Action</th>
         </tr>
+
+        {% for server in servers %}
         <tr class="t-d">
-          <td>1</td>
-          <td>Mikrotik 1</td>
-          <td>192.168.0.1</td>
-          <td>admin</td>
-          <td>admin</td>
-          <td>10.12.0.1</td>
+          <td>{{ server.id }}</td>
+          <td>{{ server.name }}</td>
+          <td>{{ server.host }}</td>
+          <td>{{ server.username }}</td>
+          <td>{{ server.genieacs|default:"-" }}</td>
+
           <td>
             <div class="row button-wrapper">
-              <a href="#" class="main-button">View</a>
-              <a href="#" class="warning-button">Edit</a>
-              <a href="#" class="danger-button">Delete</a>
+              <a href="{% url 'detail-server' server.id %}" class="main-button"
+                >View</a
+              >
+
+              <button
+                onclick="testConnection('{{ server.id }}')"
+                class="main-button"
+              >
+                Test Connection
+              </button>
             </div>
           </td>
         </tr>
-        <tr class="t-d">
-          <td>2</td>
-          <td>Mikrotik 2</td>
-          <td>192.168.0.2</td>
-          <td>admin</td>
-          <td>admin</td>
-          <td>10.12.0.2</td>
-          <td>
-            <div class="row button-wrapper">
-              <a href="#" class="main-button">View</a>
-              <a href="#" class="warning-button">Edit</a>
-              <a href="#" class="danger-button">Delete</a>
-            </div>
-          </td>
+        {% empty %}
+        <tr>
+          <td colspan="7" class="center">Tidak ada data yang ditemukan</td>
         </tr>
+        {% endfor %}
       </table>
+    </div>
+
+    <div class="pagination row">
+      {% if servers.has_previous %}
+      <a
+        href="?page=1{% if query %}&search={{ query }}{% endif %}"
+        class="page-button"
+        >First</a
+      >
+      <a
+        href="?page={{ servers.previous_page_number }}{% if query %}&search={{ query }}{% endif %}"
+        class="page-button"
+        ><i class="fa-solid fa-angle-left"></i
+      ></a>
+      {% endif %}
+
+      <span class="current-page"
+        >Page {{ servers.number }} of {{ servers.paginator.num_pages }}</span
+      >
+
+      {% if servers.has_next %}
+      <a
+        href="?page={{ servers.next_page_number }}{% if query %}&search={{ query }}{% endif %}"
+        class="page-button"
+        ><i class="fa-solid fa-angle-right"></i
+      ></a>
+      <a
+        href="?page={{ servers.paginator.num_pages }}{% if query %}&search={{ query }}{% endif %}"
+        class="page-button"
+        >Last</a
+      >
+      {% endif %}
     </div>
   </div>
 </div>
+
+<!-- Konfirmasi Modal -->
+<div id="deleteModal" class="modal" style="display: none">
+  <div class="modal-content">
+    <span class="close" onclick="closeModal()">&times;</span>
+    <h3>Konfirmasi Hapus</h3>
+    <p>Apakah Anda yakin ingin menghapus server ini?</p>
+    <form id="deleteForm" method="POST">
+      {% csrf_token %}
+      <button type="submit" class="danger-button">Ya, Hapus</button>
+      <button type="button" onclick="closeModal()" class="warning-button">
+        Batal
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- Custom Modal -->
+<div id="connectionModal" class="custom-modal">
+  <div class="custom-modal-content">
+    <span class="custom-modal-close" onclick="closeModal()">&times;</span>
+
+    <div id="connectionStatus"></div>
+  </div>
+</div>
+
+
+
+<script>
+  function openDeleteModal(serverId) {
+    const modal = document.getElementById("deleteModal");
+    const form = document.getElementById("deleteForm");
+    form.action = `/server-list/${serverId}/delete/`; // sesuaikan dengan URL kamu
+    modal.style.display = "block";
+  }
+
+  function closeModal() {
+    document.getElementById("deleteModal").style.display = "none";
+  }
+
+  // Menutup modal jika diklik di luar area modal
+  window.onclick = function (event) {
+    const modal = document.getElementById("deleteModal");
+    if (event.target === modal) {
+      closeModal();
+    }
+  };
+</script>
+
+
+
+
+
+<script>
+  function showLoader() {
+    document.querySelector(".loader-wrapper").style.display = "flex"; // atau "block" sesuai CSS-mu
+  }
+
+  function hideLoader() {
+    document.querySelector(".loader-wrapper").style.display = "none";
+  }
+
+  function testConnection(serverId) {
+    showLoader(); // Tampilkan loader
+
+    fetch(`/server-list/test-connection/${serverId}/`)
+      .then((response) => response.json())
+      .then((data) => {
+        const modal = document.getElementById("connectionModal");
+        const statusText = document.getElementById("connectionStatus");
+
+        if (data.status === "Aktif") {
+          statusText.innerHTML = "<div class='column'><div class='modal-icon'><i class='fa-regular fa-circle-check' style='--clr:green'></i></div><h2>Konek cuy 😋👍</h2></div>";
+        } else {
+          statusText.innerHTML = "<div class='column'><div class='modal-icon'><i class='fa-solid fa-xmark' style='--clr:red'></i></div><h2>Ga konek 😱</h2><p>Coba cek perangkatmu</p></div>";
+        }
+
+        modal.style.display = "block";
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        const modal = document.getElementById("connectionModal");
+        const statusText = document.getElementById("connectionStatus");
+        statusText.innerHTML = '<span style="color: orange;">Terjadi kesalahan saat mencoba koneksi.</span>';
+        modal.style.display = "block";
+      })
+      .finally(() => {
+        hideLoader(); // Sembunyikan loader setelah fetch selesai
+      });
+  }
+
+  function closeModal() {
+    document.getElementById("connectionModal").style.display = "none";
+  }
+
+  window.onclick = function (event) {
+    const modal = document.getElementById("connectionModal");
+    if (event.target == modal) {
+      modal.style.display = "none";
+    }
+  };
+</script>
 
 {% endblock %}

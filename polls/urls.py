@@ -4,8 +4,8 @@ from . import views
 urlpatterns = [
     #dashboard
     path('', views.dashboard, name='dashboard'),
-    path('server/', views.server, name='server'),
-    path('paket/', views.paket, name='paket'),
+    path('server-list/', views.server, name='server'),
+    path('paket-list/', views.paket, name='paket'),
     path('client/', views.client, name='client'),
     path('verifikasi/', views.verifikasi, name='verifikasi'),
     path('setting/', views.setting, name='setting'),
@@ -16,8 +16,21 @@ urlpatterns = [
     path('add-paket/', views.addProfile, name='add-paket'),
     path('add-client/', views.addClient, name='add-client'),
 
+    #edit
+    path('server-list/edit/<int:pk>/', views.edit_server, name='edit-server'),
+    path('paket-list/edit/<int:pk>/', views.edit_paket, name='edit-paket'),
+    #delete
+    path('server-list/<int:pk>/delete/', views.delete_server, name='delete-server'),
+    path('paket-list/<int:pk>/delete/', views.delete_paket, name='delete-paket'),
+
     #detailPages
-    path('server/detail-server/', views.detailServer, name='detail-server'),
+    path('server-list/detail/id=<int:server_id>/', views.detailServer, name='detail-server'),
+
     path('client/detail-client/', views.detailClient, name='detail-client'),
-   
+
+    #==========================
+    path('server-list/test-connection/<int:pk>/', views.test_connection, name='test-connection'),
+
+    path('send-command/', views.send_command, name='send-command'),
+
 ]

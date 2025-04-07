@@ -3,51 +3,213 @@
 <div class="content-page">
   <div class="form-wrapper column">
     <div class="form-header column">
+      <button
+        class="main-button no-loader"
+        type="button"
+        onclick="window.history.back();"
+      >
+        Kembali
+      </button>
       <div class="row title-head-td">
         <i
           class="fa-solid fa-server"
           style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
         ></i>
-        <span class="title">Server Name</span>
+        <span class="title">Server</span>
       </div>
     </div>
     <div class="info-server">
-      <h2>Mikrotik 1</h2>
+      <h2>{{ server.name }}</h2>
       <div class="wrapper column">
         <div class="column">
           <div class="">Host IP</div>
-          <div class="text">192.168.0.1</div>
+          <div class="text">{{ server.host }}</div>
         </div>
         <div class="column">
           <div class="">Username</div>
-          <div class="text">admin</div>
+          <div class="text">{{ server.username }}</div>
         </div>
         <div class="column">
           <div class="">Password</div>
-          <div class="text">admin</div>
+          <div class="text">{{ server.password }}</div>
         </div>
         <div class="column">
           <div class="">GeniACS</div>
-          <div class="text">-</div>
+          <div class="text">{{ server.genieacs|default:"-" }}</div>
         </div>
         <div class="row button-wrapper">
-          <button class="main-button">Test Connection</button>
-          <button class="warning-button">Edit</button>
-          <button class="danger-button">Delete</button>
+          <button
+            onclick="testConnection('{{ server.id }}')"
+            class="main-button"
+          >
+            Test Connection
+          </button>
+          <a href="{% url 'edit-server' server.id %}" class="warning-button"
+            >Edit</a
+          >
+          <button
+            onclick="openDeleteModal('{{ server.id }}')"
+            class="danger-button"
+          >
+            Delete
+          </button>
         </div>
         <br />
-        <form action="" class="column">
+        <form id="terminalForm" class="column">
           <div class="column">
             <label for="command">Terminal</label>
-            <textarea name="command" id="command" placeholder="masukan perintah"></textarea>
+            <textarea
+              name="command"
+              id="command"
+              placeholder="masukan perintah"
+            ></textarea>
           </div>
           <button class="main-button" type="submit">Kirim</button>
         </form>
         <div class="text-grey">Output Here</div>
-        <div class="output-command"></div>
+        
+        <div class="output-command" id="commandOutput"><span class="loader-form"></span></div>
       </div>
     </div>
   </div>
 </div>
+
+<div id="deleteModal" class="modal" style="display: none">
+  <div class="modal-content">
+    <span class="close" style="color: white" onclick="closeModalDelete()"
+      >&times;</span
+    >
+    <h3>Konfirmasi Hapus</h3>
+    <p>Apakah Anda yakin ingin menghapus server ini?</p>
+    <form id="deleteForm" method="POST">
+      {% csrf_token %}
+      <button type="submit" class="danger-button">Ya, Hapus</button>
+      <button type="button" onclick="closeModalDelete()" class="warning-button">
+        Batal
+      </button>
+    </form>
+  </div>
+</div>
+
+<script>
+  function openDeleteModal(serverId) {
+    const modal = document.getElementById("deleteModal");
+    const form = document.getElementById("deleteForm");
+    form.action = `/server-list/${serverId}/delete/`; // sesuaikan dengan URL kamu
+    modal.style.display = "block";
+  }
+
+  function closeModalDelete() {
+    document.getElementById("deleteModal").style.display = "none";
+  }
+
+  // Menutup modal jika diklik di luar area modal
+  window.onclick = function (event) {
+    const modal = document.getElementById("deleteModal");
+    if (event.target === modal) {
+      closeModal();
+    }
+  };
+</script>
+
+<script>
+  function showLoader() {
+    document.querySelector(".loader-wrapper").style.display = "flex"; // atau "block" sesuai CSS-mu
+  }
+
+  function hideLoader() {
+    document.querySelector(".loader-wrapper").style.display = "none";
+  }
+
+  function testConnection(serverId) {
+    showLoader(); // Tampilkan loader
+
+    fetch(`/server-list/test-connection/${serverId}/`)
+      .then((response) => response.json())
+      .then((data) => {
+        const modal = document.getElementById("connectionModal");
+        const statusText = document.getElementById("connectionStatus");
+
+        if (data.status === "Aktif") {
+          statusText.innerHTML =
+            "<div class='column'><div class='modal-icon'><i class='fa-regular fa-circle-check' style='--clr:green'></i></div><h2>Konek cuy 😋👍</h2></div>";
+        } else {
+          statusText.innerHTML =
+            "<div class='column'><div class='modal-icon'><i class='fa-solid fa-xmark' style='--clr:red'></i></div><h2>Ga konek 😱</h2><p>Coba cek perangkatmu</p></div>";
+        }
+
+        modal.style.display = "block";
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        const modal = document.getElementById("connectionModal");
+        const statusText = document.getElementById("connectionStatus");
+        statusText.innerHTML =
+          '<span style="color: orange;">Terjadi kesalahan saat mencoba koneksi.</span>';
+        modal.style.display = "block";
+      })
+      .finally(() => {
+        hideLoader(); // Sembunyikan loader setelah fetch selesai
+      });
+  }
+
+  function closeModal() {
+    document.getElementById("connectionModal").style.display = "none";
+  }
+
+  window.onclick = function (event) {
+    const modal = document.getElementById("connectionModal");
+    if (event.target == modal) {
+      modal.style.display = "none";
+    }
+  };
+</script>
+
+<script>
+  function showLoaderForm() {
+    document.querySelector(".loader-form").style.display = "block"; // Atur sesuai dengan CSS kamu
+  }
+
+  function hideLoaderForm() {
+    document.querySelector(".loader-form").style.display = "none";
+  }
+
+  document
+    .getElementById("terminalForm")
+    .addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const command = document.getElementById("command").value;
+      const serverId = "{{ server.id }}"; // gunakan ID server
+
+      showLoaderForm(); // Tampilkan loader saat proses fetch dimulai
+
+      fetch("{% url 'send-command' %}", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": "{{ csrf_token }}",
+        },
+        body: JSON.stringify({
+          command: command,
+          server_id: serverId,
+        }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          document.getElementById("commandOutput").innerText =
+            data.output || "No output";
+          document.getElementById("command").value = "";
+        })
+        .catch((error) => {
+          document.getElementById("commandOutput").innerText =
+            "Error: " + error;
+        })
+        .finally(() => {
+          hideLoaderForm(); // Sembunyikan loader setelah fetch selesai
+        });
+    });
+</script>
+
 
 {% endblock %}

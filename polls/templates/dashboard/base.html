@@ -6,7 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PlumNet | Network Automation</title>
     <link href="{% static 'css/style.css' %}" rel="stylesheet" />
-    <link rel="icon" type="image/x-icon" href="{% static 'assets/logo-circle.png' %}">
+    <link
+      rel="icon"
+      type="image/x-icon"
+      href="{% static 'assets/logo-circle.png' %}"
+    />
 
     <!-- font awesome -->
     <link
@@ -27,43 +31,71 @@
           </button>
         </div>
         <div class="menu column">
-          <a href="{% url 'dashboard' %}" class="menu-link" data-url="{% url 'dashboard' %}">
+          <a
+            href="{% url 'dashboard' %}"
+            class="menu-link"
+            data-url="{% url 'dashboard' %}"
+          >
             <div class="row menu-collapse">
               <i class="fa-solid fa-gauge"></i>
               <span class="menu-text">Dashboard</span>
             </div>
           </a>
-          <a href="{% url 'server' %}"  class="menu-link" data-url="{% url 'server' %}">
+          <a
+            href="{% url 'server' %}"
+            class="menu-link"
+            data-url="{% url 'server' %}"
+          >
             <div class="row menu-collapse">
               <i class="fa-solid fa-server"></i>
               <span class="menu-text">Server</span>
             </div>
           </a>
-          <a href="{% url 'paket' %}"  class="menu-link" data-url="{% url 'paket' %}">
+          <a
+            href="{% url 'paket' %}"
+            class="menu-link"
+            data-url="{% url 'paket' %}"
+          >
             <div class="row menu-collapse">
               <i class="fa-solid fa-coins"></i>
               <span class="menu-text">Paket</span>
             </div>
           </a>
-          <a href="{% url 'client' %}"  class="menu-link" data-url="{% url 'client' %}">
+          <a
+            href="{% url 'client' %}"
+            class="menu-link"
+            data-url="{% url 'client' %}"
+          >
             <div class="row menu-collapse">
               <i class="fa-solid fa-user-group"></i>
               <span class="menu-text">Client</span>
             </div>
           </a>
-          <a href="{% url 'verifikasi' %}"  class="menu-link" data-url="{% url 'verifikasi' %}">
+          <a
+            href="{% url 'verifikasi' %}"
+            class="menu-link"
+            data-url="{% url 'verifikasi' %}"
+          >
             <div class="row menu-collapse">
               <i class="fa-solid fa-check-to-slot"></i>
               <span class="menu-text">Verifikasi</span>
             </div>
           </a>
-          <a href="{% url 'setting' %}"  class="menu-link" data-url="{% url 'setting' %}">
+          <a
+            href="{% url 'setting' %}"
+            class="menu-link"
+            data-url="{% url 'setting' %}"
+          >
             <div class="row menu-collapse">
               <i class="fa-solid fa-gear"></i>
               <span class="menu-text">Setting</span>
             </div>
           </a>
-          <a href="{% url 'informasi' %}"  class="menu-link" data-url="{% url 'informasi' %}">
+          <a
+            href="{% url 'informasi' %}"
+            class="menu-link"
+            data-url="{% url 'informasi' %}"
+          >
             <div class="row menu-collapse">
               <i class="fa-solid fa-circle-info"></i>
               <span class="menu-text">Informasi</span>
@@ -72,8 +104,6 @@
         </div>
       </div>
 
-   
-
       <div class="content">
         <div class="header row">
           <div class="text-wrapper">
@@ -81,9 +111,32 @@
             <div class="text-grey">{% now "d F Y" %}</div>
           </div>
         </div>
-        {% block content %} {% endblock %}</div>
+        {% block content %} {% endblock %}
+      </div>
+    </div>
+
+    <div id="connectionModal" class="custom-modal">
+      <div class="custom-modal-content">
+        <span class="custom-modal-close" onclick="closeModal()">&times;</span>
+        <div id="connectionStatus"></div>
+      </div>
+    </div>
+
+    <div class="loader-wrapper">
+      <span class="loader"></span>
+      <p>Sabar ngab...</p>
     </div>
 
     <script src="{% static 'js/app.js' %}"></script>
+    <script src="{% static 'js/loader.js' %}"></script>
+
+    <script>
+      window.addEventListener("pageshow", function (event) {
+        if (event.persisted) {
+          // Halaman datang dari cache (back/forward)
+          window.location.reload();
+        }
+      });
+    </script>
   </body>
 </html>
