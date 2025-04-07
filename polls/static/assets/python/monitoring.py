@@ -6,7 +6,7 @@ import json
 
 def get_mikrotik_info():
     # Konfigurasi Mikrotik
-    host = '192.168.0.139'
+    host = '192.168.0.141'
     username = 'manik'
     password = 'manik'
     port = 8728  # default API port RouterOS (non-ssl)
@@ -29,9 +29,15 @@ def get_mikrotik_info():
         interfaces = api.get_resource('/interface')
         data = interfaces.get()
 
+        cpu_freq = int(system_info["cpu-frequency"])
+        if cpu_freq >= 1000:
+            readable_freq = cpu_freq / 1000
+        else:
+            readable_freq = cpu_freq
+
         interface_data = []
         
-        #convert bit to Mega Byte
+        
         
  
         free_memory = int(system_info['free-memory']) / 1_000_000 
@@ -58,17 +64,18 @@ def get_mikrotik_info():
 
         api_pool.disconnect()
 
-        # return {
-        #     'uptime': system_info['uptime'],
-        #     'cpu_load': system_info['cpu-load'],
-        #     'free_memory': round(free_memory, 2),
-        #     'total_memory': round(total_memory, 2),
-        #     'version': system_info['version'],
-        #     'board_name': system_info['board-name'],
-        #     'interface': interface_data,
-        # }
+        return {
+            'uptime': system_info['uptime'],
+            'cpu_load': system_info['cpu-load'],
+            'cpu_freq': round( readable_freq,2),
+            'free_memory': round(free_memory, 2),
+            'total_memory': round(total_memory, 2),
+            'version': system_info['version'],
+            'board_name': system_info['board-name'],
+            'interface': interface_data,
+        }
         
-        return system_info;
+        # return system_info;
 
     except (RouterOsApiCommunicationError, RouterOsApiConnectionError) as e:
         pprint(f"Error: {e}")

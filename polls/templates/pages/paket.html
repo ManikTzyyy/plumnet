@@ -1,5 +1,4 @@
-{% extends 'dashboard/base.html' %} {% block content %}
-{% load currency_filters %}
+{% extends 'dashboard/base.html' %} {% block content %} {% load custom_filters%}
 
 <div class="content-page server">
   <div class="table-wrapper column">
@@ -42,9 +41,14 @@
           <td>
             <div class="row button-wrapper">
               <a href="{% url 'edit-paket' paket.id %}" class="warning-button"
-              >Edit</a
-            >
-              <button onclick="openDeleteModal('{{ paket.id }}')" class="danger-button">Delete</button>
+                >Edit</a
+              >
+              <button
+                onclick="openDeleteModal('{{ paket.id }}')"
+                class="danger-button"
+              >
+                Delete
+              </button>
             </div>
           </td>
         </tr>
@@ -53,7 +57,6 @@
           <td colspan="7" class="center">Tidak ada data yang ditemukan</td>
         </tr>
         {% endfor %}
-        
       </table>
     </div>
 
@@ -93,7 +96,9 @@
 
 <div id="deleteModal" class="modal" style="display: none">
   <div class="modal-content">
-    <span class="close" style="color: white;" onclick="closeModalDelete()">&times;</span>
+    <span class="close" style="color: white" onclick="closeModalDelete()"
+      >&times;</span
+    >
     <h3>Konfirmasi Hapus</h3>
     <p>Apakah Anda yakin ingin menghapus Paket ini?</p>
     <form id="deleteForm" method="POST">
@@ -107,6 +112,8 @@
 </div>
 
 <script>
+
+
   function openDeleteModal(paketID) {
     const modal = document.getElementById("deleteModal");
     const form = document.getElementById("deleteForm");
