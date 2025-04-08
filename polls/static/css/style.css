@@ -397,7 +397,19 @@ button:hover {
 .dashboard .container2 {
   position: relative;
   gap: 5px;
+}
+
+.dashboard .card-monitoring .monitor-wrapper {
+  flex-wrap: wrap;
+}
+
+.dashboard .container1 {
   width: 100%;
+}
+
+.dashboard .container2 {
+
+  width: 500px;
 }
 
 .dashboard select {
@@ -569,6 +581,8 @@ button:hover {
 
 .dashboard .card-config {
   gap: 20px;
+  height: 100%;
+  justify-content: center;
 }
 
 .dashboard .card-config .title i {
@@ -1047,7 +1061,10 @@ button:hover {
   .dashboard .main-container {
     flex-wrap: wrap-reverse;
   }
-  .dashboard .card-monitoring .monitor-wrapper {
-    flex-wrap: wrap;
+ 
+
+  .dashboard .container2 {
+    max-width: none;
+    width: 100%;
   }
 }

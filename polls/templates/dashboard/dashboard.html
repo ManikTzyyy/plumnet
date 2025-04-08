@@ -3,6 +3,40 @@
 <div class="column dashboard content-page">
   <div class="main-container row">
     <div class="column container1">
+      <div class="item card-config column">
+        <div class="title row">
+          <div class="main-text" style="--clr: var(--clr-second)">
+            Quick Link
+          </div>
+          <i
+            class="fa-solid fa-gears"
+            style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
+          ></i>
+        </div>
+        <div class="quick-link row">
+          <a href="{% url 'add-server' %}" class="row">
+            <i
+              class="fa-solid fa-plus"
+              style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
+            ></i>
+            <b>Add Server</b>
+          </a>
+          <a href="{% url 'add-paket' %}" class="row">
+            <i
+              class="fa-solid fa-plus"
+              style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
+            ></i>
+            <b>Add Paket</b>
+          </a>
+          <a href="{% url 'add-client' %}" class="row">
+            <i
+              class="fa-solid fa-plus"
+              style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
+            ></i>
+            <b>Add Client</b>
+          </a>
+        </div>
+      </div>
       <div class="item card-monitoring column">
         <div class="title row">
           <div class="main-text" style="--clr: var(--clr-second)">Server</div>
@@ -81,7 +115,7 @@
         </div>
         <div class="table-container">
           <table class="table">
-            <tr class="t-head"> 
+            <tr class="t-head">
               <th>#</th>
               <th>Ethernet</th>
               <th>RX</th>
@@ -166,29 +200,6 @@
             <div class="number">{{ total_pakets }}</div>
             <div class="text-grey">Paket</div>
           </div>
-        </div>
-        <div class="quick-link column">
-          <a href="{% url 'add-server' %}" class="row">
-            <i
-              class="fa-solid fa-plus"
-              style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
-            ></i>
-            <b>Add Server</b>
-          </a>
-          <a href="{% url 'add-paket' %}" class="row">
-            <i
-              class="fa-solid fa-plus"
-              style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
-            ></i>
-            <b>Add Paket</b>
-          </a>
-          <a href="{% url 'add-client' %}" class="row">
-            <i
-              class="fa-solid fa-plus"
-              style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
-            ></i>
-            <b>Add Client</b>
-          </a>
         </div>
       </div>
     </div>
