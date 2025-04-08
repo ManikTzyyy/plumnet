@@ -393,7 +393,8 @@ button:hover {
   gap: 5px;
 }
 .dashboard .main-container,
-.dashboard .container1 {
+.dashboard .container1,
+.dashboard .container2 {
   position: relative;
   gap: 5px;
   width: 100%;
@@ -429,7 +430,6 @@ button:hover {
 
 .dashboard .item .main-text {
   color: var(--clr);
-  white-space: nowrap;
 }
 
 .dashboard .card-client .number {
@@ -443,7 +443,6 @@ button:hover {
   justify-content: space-between;
   font-weight: 700;
   font-size: 0.8em;
-  text-transform: uppercase;
 }
 
 .dashboard .card-client .text-grey {
@@ -485,12 +484,12 @@ button:hover {
   justify-content: center;
   align-items: center;
   font-weight: 600;
+  white-space: nowrap;
 }
 .dashboard .card-monitoring .card-donut {
   justify-content: start;
   align-items: center;
 }
-
 
 .dashboard .card-monitoring .card-donut.device .device-text {
   align-self: start;
@@ -498,11 +497,12 @@ button:hover {
   letter-spacing: 1;
 }
 
-.dashboard .card-device-wrapper-main{
+.dashboard .card-device-wrapper-main {
   justify-content: space-between;
   align-items: center;
   width: 100%;
   height: 100%;
+  gap: 50px;
 }
 
 .dashboard .card-monitoring .donut-content {
@@ -516,7 +516,6 @@ button:hover {
   padding-top: 20px;
   font-size: 0.8em;
   text-align: center;
- 
 }
 .dashboard .card-monitoring .donut-content .number {
   position: absolute;
@@ -530,18 +529,16 @@ button:hover {
   height: 100%;
 }
 
-
 .dashboard .card-monitoring .device-content {
-  
   position: relative;
 }
 
-.dashboard .card-monitoring .device-content .number{
+.dashboard .card-monitoring .device-content .number {
   background-color: white;
   position: relative;
   z-index: 2;
 }
-.dashboard .card-monitoring .device-content .circle{
+.dashboard .card-monitoring .device-content .circle {
   width: 70px;
   height: 70px;
   position: absolute;
@@ -551,19 +548,17 @@ button:hover {
   border: 5px solid var(--clr-main);
   border-radius: 100px;
   z-index: 1;
-  
 }
 
-.dashboard .card-monitoring .monitor-wrapper{
+.dashboard .card-monitoring .monitor-wrapper {
   justify-content: space-evenly;
-  width: 100%;
+  gap: 20px;
 }
 
 .dashboard .card-monitoring {
   background-color: white;
   box-shadow: 1px 1px 5px rgba(128, 128, 128, 0.096);
   padding: 15px;
-  min-width: 800px;
 }
 
 .dashboard .card-monitoring .device-text-wrapper {
@@ -573,7 +568,6 @@ button:hover {
 }
 
 .dashboard .card-config {
-  max-width: 350px;
   gap: 20px;
 }
 
@@ -586,12 +580,12 @@ button:hover {
   font-size: 1em;
   justify-content: space-between;
   align-items: center;
-  text-transform: uppercase;
 }
 
 .dashboard .card-config .config-wrapper {
   justify-content: space-evenly;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .dashboard .card-config .config-item {
@@ -746,7 +740,7 @@ button:hover {
   border: 1px solid var(--clr-second);
   padding: 5px;
   font-size: 1.2em;
-  min-width: 50vw;
+  min-width: 100%;
 }
 
 .form-wrapper .info-server .output-command {
@@ -1046,5 +1040,14 @@ button:hover {
   100% {
     box-shadow: 200px 0 rgba(255, 255, 255, 0), 200px 0 rgba(255, 255, 255, 0),
       200px 0 rgba(255, 255, 255, 0), 200px 0 rgba(255, 255, 255, 0);
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard .main-container {
+    flex-wrap: wrap-reverse;
+  }
+  .dashboard .card-monitoring .monitor-wrapper {
+    flex-wrap: wrap;
   }
 }
