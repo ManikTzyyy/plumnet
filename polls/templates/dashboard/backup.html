@@ -192,123 +192,23 @@
   </div>
 </div>
 
-
-
 <script>
-  let cpuChart, memoryChart, pppChart;
-
-  function initCharts(data) {
-    const usedMemory = data.total_memory - data.free_memory;
-    const usedPercent = ((usedMemory / data.total_memory) * 100).toFixed(2);
-
-    const cpuCtx = document.getElementById("cpuLoad");
-    const memoryCtx = document.getElementById("memoryUsage");
-    const pppCtx = document.getElementById("pppClient");
-
-    cpuChart = new Chart(cpuCtx, {
-      type: "doughnut",
-      data: {
-        datasets: [
-          {
-            rotation: 180,
-            cutout: 60,
-            data: [data.cpu_load, 100 - data.cpu_load],
-            backgroundColor: ["#211C84", "#E8E2F5"],
-            hoverOffset: 4,
-          },
-        ],
-      },
-    });
-
-    memoryChart = new Chart(memoryCtx, {
-      type: "doughnut",
-      data: {
-        datasets: [
-          {
-            rotation: 180,
-            cutout: 60,
-            data: [usedPercent, 100 - usedPercent],
-            backgroundColor: ["#211C84", "#E8E2F5"],
-            hoverOffset: 4,
-          },
-        ],
-      },
-    });
-
-    pppChart = new Chart(pppCtx, {
-      type: "doughnut",
-      data: {
-        datasets: [
-          {
-            rotation: 180,
-            cutout: 60,
-            data: [90, 10],
-            backgroundColor: ["#211C84", "#E8E2F5"],
-            hoverOffset: 4,
-          },
-        ],
-      },
-    });
-  }
-
-  function updateCharts(data) {
-    const usedMemory = data.total_memory - data.free_memory;
-    const usedPercent = ((usedMemory / data.total_memory) * 100).toFixed(2);
-
-    // Update data charts
-    cpuChart.data.datasets[0].data = [data.cpu_load, 100 - data.cpu_load];
-    cpuChart.update();
-
-    memoryChart.data.datasets[0].data = [usedPercent, 100 - usedPercent];
-    memoryChart.update();
-
-    // Update PPPoE chart (static in this case)
-    pppChart.data.datasets[0].data = [90, 10];
-    pppChart.update();
-
-    // Update text numbers
-    document.querySelector(".number.cpu").textContent = `${data.cpu_load}%`;
-    document.querySelector(".text-main.cpu").textContent = `${data.cpu_load}%`;
-
-    document.querySelector(".number.memory").textContent = `${usedPercent}%`;
-    document.querySelector(".desc-free").textContent = `${data.free_memory} MB`;
-    document.querySelector(
-      ".desc-total"
-    ).textContent = `${data.total_memory} MB`;
-
-    document.querySelector(".uptime").textContent = data.uptime;
-    document.querySelector(".cpu-freq").textContent = `${data.cpu_freq} GHz`;
-    document.querySelector(".cpu-count").textContent = `${data.cpu_count} CPU`;
-    document.querySelector(".cpu-name").textContent = data.cpu;
-    document.querySelector(".version").textContent = data.version;
-    document.querySelector(".board").textContent = data.board_name;
-
-    // Update table
-    const table = document.getElementById("interfaceTable");
-    while (table.rows.length > 1) {
-      table.deleteRow(1);
-    }
-
-    data.interface.forEach((iface, index) => {
-      const row = table.insertRow();
-      row.innerHTML = `
-        <td>${index + 1}</td>
-        <td>${iface.name}</td>
-        <td>${iface.rx_mbps}</td>
-        <td>${iface.tx_mbps}</td>
-      `;
-    });
-  }
-
   function loadServerInfo(serverId) {
     const infoDiv = document.getElementById("server-info");
-    infoDiv.innerHTML = '<div class="column" style="gap: 10px; justify-content: center; align-items: center" > <span class="loader-server-data"></span> <div class="text-main">Loading ngab ...</div> </div>';
+    infoDiv.innerHTML = "Loading...";
 
     fetch(`/get-server-info/${serverId}/`)
       .then((response) => response.json())
       .then((data) => {
-        // Render initial HTML content (with class hooks)
-        infoDiv.innerHTML = `
+        if (data.error) {
+          infoDiv.innerHTML = `<p style="color:red;">Error: ${data.error}</p>`;
+        } else {
+          const free = data.free_memory;
+          const total = data.total_memory;
+          const used = total - free;
+
+          const usedPercent = ((used / total) * 100).toFixed(2);
+          infoDiv.innerHTML = `
         <div class="row monitor-wrapper">
           <div class="card-donut column">
             <div class="donut-name row">
@@ -317,10 +217,10 @@
             </div>
             <div class="donut-content">
               <canvas id="cpuLoad"></canvas>
-              <div class="number cpu">${data.cpu_load}%</div>
+              <div class="number">${data.cpu_load}%</div>
             </div>
             <div class="donut-desc">
-              <span class="text-main cpu">${data.cpu_load}%</span> used
+              <span class="text-main">${data.cpu_load}%</span> used
             </div>
           </div>
           <div class="card-donut column">
@@ -330,12 +230,12 @@
             </div>
             <div class="donut-content">
               <canvas id="memoryUsage"></canvas>
-              <div class="number memory">--%</div>
+              <div class="number">${usedPercent}%</div>
             </div>
             <div class="donut-desc">
-              free <span class="text-main desc-free">${data.free_memory} MB</span>
-              <span class="text-grey"> from </span>
-              <span class="text-main desc-total">${data.total_memory} MB</span>
+              free<span class="text-main"> ${data.free_memory} MB</span>
+              <span class="text-grey"> from </span
+              ><span class="text-main">${data.total_memory} MB</span>
             </div>
           </div>
           <div class="card-donut column">
@@ -348,9 +248,9 @@
               <div class="number">90%</div>
             </div>
             <div class="donut-desc">
-              <span class="text-main">90 active</span>
-              <span class="text-grey"> from </span>
-              <span class="text-main">60 List</span>
+              <span class="text-main"> 90 active</span>
+              <span class="text-grey"> from </span
+              ><span class="text-main">60 List</span>
             </div>
           </div>
           <div class="card-donut column device">
@@ -360,45 +260,97 @@
             </div>
             <div class="card-device-wrapper-main column">
               <div class="device-text column">
-                <div class="cpu-freq">${data.cpu_freq} GHz</div>
-                <div class="text-grey cpu-count">${data.cpu_count} CPU</div>
+                <div class="">${data.cpu_freq} GHz</div>
+                <div class="text-grey">${data.cpu_count} CPU</div>
               </div>
               <div class="device-content">
                 <div class="circle"></div>
-                <div class="number uptime">${data.uptime}</div>
+                <div class="number">${data.uptime}</div>
               </div>
               <div class="device-text-wrapper row">
                 <div class="device-text column">
-                  <div class="cpu-name">${data.cpu}</div>
-                  <div class="text-grey version">${data.version}</div>
+                  <div class="">${data.cpu}</div>
+                  <div class="text-grey">${data.version}</div>
                 </div>
-                <div class="device-text board">${data.board_name}</div>
+                <div class="device-text">${data.board_name}</div>
               </div>
             </div>
           </div>
         </div>
-        <div class="table-container">
-          <table class="table" id="interfaceTable">
+         <div class="table-container">
+          <table class="table">
             <tr class="t-head">
               <th>#</th>
               <th>Ethernet</th>
               <th>RX (Mbps)</th>
               <th>TX (Mbps)</th>
             </tr>
-          </table>
-        </div>
-        `;
+        ${data.interface
+          .map(
+            (iface, index) => `
+            <tr class="t-d">
+              <td>${index + 1}</td>
+              <td>${iface.name}</td>
+              <td>${iface.rx_mbps}</td>
+              <td>${iface.tx_mbps}</td>
+            </tr>
+          `
+          )
+          .join("")}
+    </table>
+  </div>
+                  `;
+          const cpuLoad = document.getElementById("cpuLoad");
+          const memoryUsage = document.getElementById("memoryUsage");
+          const pppClient = document.getElementById("pppClient");
 
-        initCharts(data);
+          new Chart(cpuLoad, {
+            type: "doughnut",
+            data: {
+              datasets: [
+                {
+                  rotation: 180,
+                  cutout: 60,
+                  data: [data.cpu_load, 100 - data.cpu_load],
+                  backgroundColor: ["#211C84", "#E8E2F5"],
+                  hoverOffset: 4,
+                },
+              ],
+            },
+          });
 
-        // Mulai real-time update
-        if (window.updateInterval) clearInterval(window.updateInterval);
-        window.updateInterval = setInterval(() => {
-          fetch(`/get-server-info/${serverId}/`)
-            .then((res) => res.json())
-            .then(updateCharts)
-            .catch((err) => console.error("Update error:", err));
-        }, 1000);
+          
+
+          new Chart(memoryUsage, {
+            type: "doughnut",
+            data: {
+              datasets: [
+                {
+                  rotation: 180,
+                  cutout: 60,
+                  data: [usedPercent, 100 - usedPercent],
+                  backgroundColor: ["#211C84", "#E8E2F5"],
+                  hoverOffset: 4,
+                },
+              ],
+            },
+          });
+
+          new Chart(pppClient, {
+            type: "doughnut",
+            data: {
+              datasets: [
+                {
+                  rotation: 180,
+                  cutout: 60,
+                  data: [90, 10],
+                  backgroundColor: ["#211C84", "#E8E2F5"],
+                  hoverOffset: 4,
+                },
+              ],
+            },
+          });
+        }
       })
       .catch((err) => {
         infoDiv.innerHTML = `<p style="color:red;">Error: ${err}</p>`;
@@ -408,10 +360,12 @@
   document.addEventListener("DOMContentLoaded", function () {
     const selectEl = document.getElementById("server");
 
+    // Muat info server pertama saat halaman terbuka
     if (selectEl && selectEl.value) {
       loadServerInfo(selectEl.value);
     }
 
+    // Ganti info saat pilih server lain
     selectEl.addEventListener("change", function () {
       loadServerInfo(this.value);
     });

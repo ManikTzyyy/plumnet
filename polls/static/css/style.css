@@ -581,12 +581,13 @@ button:hover {
 
 .dashboard .card-config.quick{
   height: fit-content;
+  justify-content: center;
 }
 
 .dashboard .card-config {
   gap: 20px;
   height: 100%;
-  justify-content: center;
+
 }
 
 .dashboard .card-config .title i {
@@ -936,7 +937,7 @@ button:hover {
   display: none;
   justify-content: center;
   align-items: center;
-
+  z-index: 99;
   flex-direction: column;
   color: white;
 }
@@ -1014,6 +1015,18 @@ button:hover {
   height: 10px;
   border-radius: 50%;
   display: none;
+  margin: 15px auto;
+  position: relative;
+  color: var(--clr-main);
+  left: -100px;
+  box-sizing: border-box;
+  animation: shadowRolling 2s linear infinite;
+}
+.loader-server-data {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: flex;
   margin: 15px auto;
   position: relative;
   color: var(--clr-main);

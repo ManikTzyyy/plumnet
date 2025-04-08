@@ -4,6 +4,9 @@ from . import views
 urlpatterns = [
     #dashboard
     path('', views.dashboard, name='dashboard'),
+    path('get-server-info/<int:server_id>/', views.get_server_info, name='get_server_info'),
+
+
     path('server-list/', views.server, name='server'),
     path('paket-list/', views.paket, name='paket'),
     path('client/', views.client, name='client'),

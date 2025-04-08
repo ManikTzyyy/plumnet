@@ -6,7 +6,9 @@ from django.contrib import messages
 import paramiko
 
 from .models import Paket, Server
-from django.http import HttpResponse, JsonResponse
+from .mikrotik import get_mikrotik_info
+
+from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render, get_object_or_404
 from django.core.paginator import Paginator
 from django.db.models import Q
@@ -15,14 +17,28 @@ from polls.forms import ServerForm, PaketForm
 
 # Create your views here.
 
+def get_server_info(request, server_id):
+    try:
+        server = Server.objects.get(id=server_id)
+        info = get_mikrotik_info(server.host, server.username, server.password)
+        return JsonResponse(info)
+    except Server.DoesNotExist:
+        raise Http404("Server not found")
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
 def dashboard(request) : 
+    servers = Server.objects.all()
     total_servers = Server.objects.count() 
     total_pakets = Paket.objects.count() 
     context = {
         'total_servers' : total_servers,
         'total_pakets' : total_pakets,
+        'servers' : servers,
     }
     return render(request, 'dashboard/dashboard.html', context)
+
+
 
 def server(request):
     query = request.GET.get('search', '')  # Ambil query pencarian
