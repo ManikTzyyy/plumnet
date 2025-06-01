@@ -2,55 +2,58 @@
 
 <div class="content-page">
   <div class="form-wrapper column">
-    <div class="form-header column">
+    <div class="form-header row">
       <div class="row title-head-td">
         <i
-          class="fa-solid fa-server"
+          class="fa-solid fa-user"
           style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
         ></i>
-        <span class="title">Detail Client</span>
+        <span class="title">Pelanggan</span>
       </div>
+      <button
+        class="main-button no-loader"
+        type="button"
+        onclick="window.history.back();"
+      >
+        Kembali
+      </button>
     </div>
     <div class="info-client row">
       <div class="wrapper column">
-        <h2>Informasi Client</h2>
+        <h2>Informasi Pelanggan</h2>
         <div class="column">
-          <div class="title">Nama Lengkap</div>
+          <div class="title strong">Nama</div>
           <div class="text">John Kenedy</div>
         </div>
         <div class="column">
-          <div class="title">Alamat</div>
+          <div class="title strong">Alamat</div>
           <div class="text">Kampung cibubur, Jalan kecubung no 12 RT 3</div>
         </div>
         <div class="column">
-          <div class="title">No HP</div>
+          <div class="title strong">No HP</div>
           <div class="text">087273742</div>
         </div>
         <div class="column">
-          <div class="title">Tipe</div>
-          <div class="text">Rumah Pribadi</div>
-        </div>
-        <div class="column">
-          <div class="title">Paket</div>
-          <div class="text">Basic - Rp 200.000</div>
+          <div class="title strong">Status</div>
+          <div class="enable-t">Aktif</div>
         </div>
       </div>
       <div class="wrapper column">
         <h2>Informasi Server</h2>
         <div class="column">
-          <div class="title">ID PPPoE</div>
-          <div class="text">johnking</div>
+          <div class="title strong">Server</div>
+          <div class="text">Mikrotik 1</div>
         </div>
         <div class="column">
-          <div class="title">Password</div>
-          <div class="text">john</div>
+          <div class="title strong">Paket</div>
+          <div class="text">Basic - Rp 100.000 - 2M/2M</div>
         </div>
         <div class="column">
-          <div class="title">Local Address</div>
-          <div class="text">192.168.3.1</div>
+          <div class="title strong">Id PPPoE</div>
+          <div class="text">jogn@kendy</div>
         </div>
         <div class="column">
-          <div class="title">Remote Address</div>
+          <div class="title strong">IP addres</div>
           <div class="text row">
             192.168.3.12
             <a href="http://192.168.3.12"
@@ -58,25 +61,17 @@
             </a>
           </div>
         </div>
-        <div class="column">
-          <div class="title">Tanggal Pembayaran</div>
-          <div class="text">Tanggal 5</div>
-        </div>
-        <div class="column">
-          <div class="title">Status</div>
-          <div class="enable-t">Aktif</div>
-        </div>
       </div>
     </div>
     <div class="row button-wrapper no-loader">
-        <button
-          class="main-button"
-          type="button"
-          onclick="window.history.back();"
-        >
-          Kembali
-        </button>
-        
+      <button
+        class="main-button"
+        type="button"
+        onclick="window.history.back();"
+      >
+        Nonaktifkan
+      </button>
+
       <button class="warning-button">Edit</button>
       <button class="danger-button">Delete</button>
     </div>

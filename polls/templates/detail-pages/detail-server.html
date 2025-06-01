@@ -2,14 +2,8 @@
 
 <div class="content-page">
   <div class="form-wrapper column">
-    <div class="form-header column">
-      <button
-        class="main-button no-loader"
-        type="button"
-        onclick="window.history.back();"
-      >
-        Kembali
-      </button>
+    <div class="form-header row">
+      
       <div class="row title-head-td">
         <i
           class="fa-solid fa-server"
@@ -17,24 +11,32 @@
         ></i>
         <span class="title">Server</span>
       </div>
+      <button
+        class="main-button no-loader"
+        type="button"
+        onclick="window.history.back();"
+      >
+        Kembali
+      </button>
     </div>
     <div class="info-server">
       <h2>{{ server.name }}</h2>
+      <br/>
       <div class="wrapper column">
         <div class="column">
-          <div class="">Host IP</div>
+          <div class="strong">Host IP</div>
           <div class="text">{{ server.host }}</div>
         </div>
         <div class="column">
-          <div class="">Username</div>
+          <div class="strong">Username</div>
           <div class="text">{{ server.username }}</div>
         </div>
         <div class="column">
-          <div class="">Password</div>
+          <div class="strong">Password</div>
           <div class="text">{{ server.password }}</div>
         </div>
         <div class="column">
-          <div class="">GeniACS</div>
+          <div class="strong">GeniACS</div>
           <div class="text">{{ server.genieacs|default:"-" }}</div>
         </div>
         <div class="row button-wrapper">
@@ -42,7 +44,7 @@
             onclick="testConnection('{{ server.id }}')"
             class="main-button"
           >
-            Test Connection
+            Ping Host IP
           </button>
           <a href="{% url 'edit-server' server.id %}" class="warning-button"
             >Edit</a
@@ -167,7 +169,7 @@
 
 <script>
   function showLoaderForm() {
-    document.querySelector(".loader-form").style.display = "block"; // Atur sesuai dengan CSS kamu
+    document.querySelector(".loader-form").style.display = "block";
   }
 
   function hideLoaderForm() {

@@ -1,6 +1,8 @@
 from django.urls import path
 from . import views
 
+
+
 urlpatterns = [
     #dashboard
     path('', views.dashboard, name='dashboard'),
@@ -11,12 +13,11 @@ urlpatterns = [
     path('paket-list/', views.paket, name='paket'),
     path('client/', views.client, name='client'),
     path('verifikasi/', views.verifikasi, name='verifikasi'),
-    path('setting/', views.setting, name='setting'),
-    path('informasi/', views.informasi, name='informasi'),
 
     #forms
     path('add-server/', views.addServer, name='add-server'),
     path('add-paket/', views.addProfile, name='add-paket'),
+    path('add-ip-pool/', views.addIp, name='add-ip'),
     path('add-client/', views.addClient, name='add-client'),
 
     #edit
@@ -25,6 +26,7 @@ urlpatterns = [
     #delete
     path('server-list/<int:pk>/delete/', views.delete_server, name='delete-server'),
     path('paket-list/<int:pk>/delete/', views.delete_paket, name='delete-paket'),
+    path('ip-list/<int:pk>/delete/', views.delete_ip, name='delete-ip'),
 
     #detailPages
     path('server-list/detail/id=<int:server_id>/', views.detailServer, name='detail-server'),
@@ -37,3 +39,5 @@ urlpatterns = [
     path('send-command/', views.send_command, name='send-command'),
 
 ]
+
+

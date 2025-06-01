@@ -54,4 +54,17 @@ def get_mikrotik_info(host, username, password, port=8728):
             'interface': interface_data,
         }
     except Exception as e:
-        return {'error': str(e)}
+        return {
+            'uptime': '--',
+            'cpu': '--',
+            'cpu_count': 0,
+            'cpu_load': 0,
+            'cpu_freq': 0,
+            'free_memory': 0,
+            'total_memory': 0,
+            'version': '--',
+            'board_name': '--',
+            'interface': [],
+            'error': str(e)
+    }
+

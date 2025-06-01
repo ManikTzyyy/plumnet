@@ -1,11 +1,8 @@
-import json
-import logging
-import socket
-import subprocess
+import json, logging, socket, subprocess, paramiko
 from django.contrib import messages
-import paramiko
 
-from .models import Paket, Server
+
+from .models import Paket, Server, IPPool
 from .mikrotik import get_mikrotik_info
 
 from django.http import Http404, HttpResponse, JsonResponse
@@ -13,7 +10,15 @@ from django.shortcuts import redirect, render, get_object_or_404
 from django.core.paginator import Paginator
 from django.db.models import Q
 
-from polls.forms import ServerForm, PaketForm
+from polls.forms import ServerForm, PaketForm, ipPoolForm
+
+from django.conf.urls import handler404
+
+
+def custom_404(request, exception):
+    return render(request, '404.html', status=404)
+
+handler404 = custom_404
 
 # Create your views here.
 
@@ -61,6 +66,8 @@ def server(request):
 def paket(request) : 
     query = request.GET.get('search', '')  # Ambil query pencarian
     paket_list = Paket.objects.all()
+    ip_pools = IPPool.objects.all()
+
 
     if query:
         paket_list = paket_list.filter(
@@ -73,7 +80,7 @@ def paket(request) :
     page_number = request.GET.get('page')  # Ambil nomor halaman dari URL
     pakets = paginator.get_page(page_number)  # Ambil objek halaman
 
-    return render(request, 'pages/paket.html', {'pakets': pakets, 'query': query})
+    return render(request, 'pages/paket.html', {'pakets': pakets, 'ip_pools':ip_pools, 'query': query})
 
 def client(request) : 
     return render(request, 'pages/client.html')
@@ -81,11 +88,6 @@ def client(request) :
 def verifikasi(request) : 
     return render(request, 'pages/verifikasi.html')
 
-def setting(request) : 
-    return render(request, 'pages/setting.html')
-
-def informasi(request) : 
-    return render(request, 'pages/info.html')
 
 #forms
 
@@ -110,6 +112,17 @@ def addProfile(request) :
         form = PaketForm()
 
     return render(request, 'form-pages/form-profile.html', {'form': form})
+
+def addIp(request) : 
+    if request.method == "POST":
+        form = ipPoolForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('paket')  # Ganti dengan nama URL yang sesuai
+    else:
+        form = ipPoolForm()
+
+    return render(request, 'form-pages/form-ip.html', {'form': form})
 
 def addClient(request) : 
     return render(request, 'form-pages/form-client.html')
@@ -163,6 +176,16 @@ def delete_paket(request, pk):
     if request.method == "POST":
         paket.delete()
         messages.success(request, "Paket berhasil dihapus.")
+        return redirect('paket')  
+    
+    return redirect('paket', pk=pk)
+
+def delete_ip(request, pk):
+    ip_pool = get_object_or_404(IPPool, pk=pk)
+    
+    if request.method == "POST":
+        ip_pool.delete()
+        messages.success(request, "IP Pool berhasil dihapus.")
         return redirect('paket')  
     
     return redirect('paket', pk=pk)
