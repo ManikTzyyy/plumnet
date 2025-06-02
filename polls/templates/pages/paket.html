@@ -39,7 +39,7 @@
           <td>{{ paket.name }}</td>
           <td>{{ paket.price|rupiah }}</td>
           <td>{{ paket.limit }}</td>
-          <td>192.168.0.1-192.168.0.255</td>
+          <td>{{ paket.ip_pool.ip_range }}</td>
           <td>
             <div class="row button-wrapper">
               <a href="{% url 'edit-paket' paket.id %}" class="warning-button"
@@ -122,9 +122,9 @@
           <td>{{ ip.ip_range}}</td>
           <td>
             <div class="row button-wrapper">
-              {% comment %} <a href="{% url 'edit-paket' ip_pool.id %}" class="warning-button"
+              <a href="{% url 'edit-ip' ip.id %}" class="warning-button"
                 >Edit</a
-              > {% endcomment %}
+              >
               <button
                 onclick="openDeleteModalIP('{{ ip.id }}')"
                 class="danger-button"

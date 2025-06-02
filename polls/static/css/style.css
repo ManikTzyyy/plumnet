@@ -20,16 +20,13 @@
   font-style: normal;
 }
 
-
-
-
 body {
   margin: 0;
   padding: 0;
   font-family: "poppin";
 }
 
-*{
+* {
   font-family: "poppin";
 }
 
@@ -48,15 +45,20 @@ button {
   text-decoration: none;
   border: none;
   background-color: transparent;
-  padding: 5px 10px!important;
+  padding: 5px 10px !important;
 }
 
 button:hover {
   cursor: pointer;
 }
+/* utilty */
 
-.strong{
+.strong {
   font-weight: bold;
+}
+
+.w-sm{
+  width: 30px!important;
 }
 
 /* Scrollbar utama (track) */
@@ -82,7 +84,6 @@ button:hover {
 /* ::-webkit-scrollbar-thumb:hover {
   background-color: var(--clr-second)
 } */
-
 
 .text-main {
   color: var(--clr-main);
@@ -256,10 +257,16 @@ button:hover {
   border-bottom: 1px solid var(--clr-fourth);
 }
 
-.td-center{
+.table .t-d td button,
+.table .t-d td a {
+  font-size: 1em;
+}
+
+.td-center {
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 13px 0!important;
 }
 
 /* ================================================== */
@@ -453,7 +460,6 @@ button:hover {
 }
 
 .dashboard .container2 {
-
   width: 500px;
 }
 
@@ -625,7 +631,7 @@ button:hover {
   width: 100%;
 }
 
-.dashboard .card-config.quick{
+.dashboard .card-config.quick {
   height: fit-content;
   justify-content: center;
 }
@@ -633,7 +639,6 @@ button:hover {
 .dashboard .card-config {
   gap: 20px;
   height: 100%;
-
 }
 
 .dashboard .card-config .title i {
@@ -720,9 +725,9 @@ button:hover {
   color: var(--clr-main);
 }
 
-#server-info{
+#server-info {
   justify-content: center;
-  
+
   height: 100%;
 }
 /* r here the template */
@@ -863,8 +868,6 @@ button:hover {
   flex-wrap: wrap;
 }
 
-
-
 .modal {
   position: fixed;
   z-index: 1000;
@@ -976,7 +979,7 @@ button:hover {
 
 /* #loader */
 
-.text-center{
+.text-center {
   text-align: center;
 }
 
@@ -1132,7 +1135,6 @@ button:hover {
   .dashboard .main-container {
     flex-wrap: wrap-reverse;
   }
- 
 
   .dashboard .container2 {
     max-width: none;

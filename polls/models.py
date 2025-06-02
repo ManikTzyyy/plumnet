@@ -31,4 +31,18 @@ class Paket(models.Model):
     
     def __str__(self):
         return self.name
+    
+class Client(models.Model):
+    id_server = models.ForeignKey(Server, on_delete=models.CASCADE, related_name='server_list') 
+    id_paket = models.ForeignKey(Paket, on_delete=models.CASCADE, related_name='paket_list') 
+    name = models.CharField(max_length=255)
+    address = models.CharField(max_length=255)
+    phone = models.CharField(max_length=255)
+    pppoe = models.CharField(max_length=255) 
+    password = models.CharField(max_length=255)
+    isActive = models.BooleanField(default=True)
+    
+
+    def __str__(self):
+        return self.name
 

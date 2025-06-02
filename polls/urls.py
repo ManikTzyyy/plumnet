@@ -21,17 +21,20 @@ urlpatterns = [
     path('add-client/', views.addClient, name='add-client'),
 
     #edit
-    path('server-list/edit/<int:pk>/', views.edit_server, name='edit-server'),
-    path('paket-list/edit/<int:pk>/', views.edit_paket, name='edit-paket'),
+    path('server/edit/<int:pk>/', views.edit_server, name='edit-server'),
+    path('paket/edit/<int:pk>/', views.edit_paket, name='edit-paket'),
+    path('ip/edit/<int:pk>/', views.edit_ip, name='edit-ip'),
+    path('client/edit/<int:pk>/', views.edit_client, name='edit-client'),
     #delete
-    path('server-list/<int:pk>/delete/', views.delete_server, name='delete-server'),
-    path('paket-list/<int:pk>/delete/', views.delete_paket, name='delete-paket'),
-    path('ip-list/<int:pk>/delete/', views.delete_ip, name='delete-ip'),
+    path('server/<int:pk>/delete/', views.delete_server, name='delete-server'),
+    path('paket/<int:pk>/delete/', views.delete_paket, name='delete-paket'),
+    path('ip/<int:pk>/delete/', views.delete_ip, name='delete-ip'),
+    path('client/<int:pk>/delete/', views.delete_client, name='delete-client'),
 
     #detailPages
-    path('server-list/detail/id=<int:server_id>/', views.detailServer, name='detail-server'),
+    path('server/id=<int:server_id>/', views.detailServer, name='detail-server'),
 
-    path('client/detail-client/', views.detailClient, name='detail-client'),
+    path('client/id=<int:client_id>', views.detailClient, name='detail-client'),
 
     #==========================
     path('server-list/test-connection/<int:pk>/', views.test_connection, name='test-connection'),

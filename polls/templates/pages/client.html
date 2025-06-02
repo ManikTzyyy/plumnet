@@ -11,13 +11,13 @@
         <span class="title">Client List</span>
       </div>
       <a href="{% url 'add-client' %}" class="success-button">Add CLient +</a>
-      <form action="" class="form-search row">
+      <form method="GET" class="form-search row">
         <input
           class="search-box"
           type="search"
           placeholder="Search"
-          id="gsearch"
-          name="search"
+          name="s"
+          value="{{ query }}"
         />
         <input class="search-button" type="submit" />
       </form>
@@ -29,85 +29,110 @@
           <th>#</th>
           <th>Nama</th>
           <th>Alamat</th>
-          <th>Tipe</th>
-          <th>Paket</th>
-          <th>No HP</th>
-          <th>Status</th>
-          <th>Jatuh Tempo</th>
+          <th >No HP</th>
+          <th class="w-sm">Paket</th>
+          <th class="center-th">Status</th>
           <th class="center-th">Action</th>
         </tr>
+        {% for client in clients %}
         <tr class="t-d">
-          <td>1</td>
-          <td>John Doe</td>
-          <td>Palembang</td>
-          <td>Rumah Pribadi</td>
-          <td>Pro</td>
-          <td>0981231321</td>
-          <td><div class="enable-t">Aktif</div></td>
-          <td>12 Hari</td>
+          <td>{{ client.id }}</td>
+          <td>{{ client.name }}</td>
+          <td>{{ client.address }}</td>
+          <td>{{ client.phone }}</td>
+          <td>{{ client.id_paket }}</td>
+          <td class="td-center">
+            <div
+              class=" {% if client.isActive %}enable-t{% else %}disable-t{% endif %}"
+            >
+              {% if client.isActive %}Aktif{% else %}Nonaktif{% endif %}
+            </div>
+          </td>
           <td>
             <div class="row button-wrapper">
-              <a href="#" class="main-button">View</a>
-              <a href="#" class="warning-button">Edit</a>
-              <a href="#" class="danger-button">Delete</a>
+              <a href="{% url 'detail-client' client.id %}" class="main-button">View</a>
+              <a href="{% url 'edit-client' client.id %}" class="warning-button">Edit</a>
+              <button  onclick="openDeleteModal('{{ client.id }}')" class="danger-button">Delete</button>
             </div>
           </td>
         </tr>
-        <tr class="t-d">
-          <td>2</td>
-          <td>Cacacola</td>
-          <td>Bogor</td>
-          <td>Perusahaan</td>
-          <td>Company</td>
-          <td>12232941</td>
-          <td><div class="enable-t">Aktif</div></td>
-          <td>3 hari</td>
-          <td>
-            <div class="row button-wrapper">
-              <a href="#" class="main-button">View</a>
-              <a href="#" class="warning-button">Edit</a>
-              <a href="#" class="danger-button">Delete</a>
-            </div>
-          </td>
+        {% empty %}
+        <tr>
+          <td colspan="7" class="center">Tidak ada data yang ditemukan</td>
         </tr>
-        <tr class="t-d">
-            <td>3</td>
-            <td>Rumah Sakit</td>
-            <td>Jakarta</td>
-            <td>Layanan Public</td>
-            <td>Pro</td>
-            <td>9999999</td>
-            <td><div class="enable-t">Aktif</div></td>
-            <td>5 hari</td>
-            <td>
-              <div class="row button-wrapper">
-                <a href="#" class="main-button">View</a>
-                <a href="#" class="warning-button">Edit</a>
-                <a href="#" class="danger-button">Delete</a>
-              </div>
-            </td>
-          </tr>
-        <tr class="t-d">
-            <td>4</td>
-            <td>Eka Skibidi</td>
-            <td>Bali</td>
-            <td>Pribadi</td>
-            <td>basic</td>
-            <td>1234567</td>
-            <td><div class="disable-t">Non Aktif</div></td>
-            <td>Sudah Jatuh tempo</td>
-            <td>
-              <div class="row button-wrapper">
-                <a href="#" class="main-button">View</a>
-                <a href="#" class="warning-button">Edit</a>
-                <a href="#" class="danger-button">Delete</a>
-              </div>
-            </td>
-          </tr>
-        
+        {% endfor %}
       </table>
+    </div>
+    <div class="pagination row">
+      {% if clients.has_previous %}
+      <a
+        href="?page=1{% if query %}&search={{ query }}{% endif %}"
+        class="page-button"
+        >First</a
+      >
+      <a
+        href="?page={{ clients.previous_page_number }}{% if query %}&search={{ query }}{% endif %}"
+        class="page-button"
+        ><i class="fa-solid fa-angle-left"></i
+      ></a>
+      {% endif %}
+
+      <span class="current-page"
+        >Page {{ clients.number }} of {{ clients.paginator.num_pages }}</span
+      >
+
+      {% if clients.has_next %}
+      <a
+        href="?page={{ clients.next_page_number }}{% if query %}&search={{ query }}{% endif %}"
+        class="page-button"
+        ><i class="fa-solid fa-angle-right"></i
+      ></a>
+      <a
+        href="?page={{ clients.paginator.num_pages }}{% if query %}&search={{ query }}{% endif %}"
+        class="page-button"
+        >Last</a
+      >
+      {% endif %}
     </div>
   </div>
 </div>
+
+
+
+<div id="deleteModal" class="modal" style="display: none">
+  <div class="modal-content">
+    <span class="close" onclick="closeModal()">&times;</span>
+    <h3>Konfirmasi Hapus</h3>
+    <p>Apakah Anda yakin ingin menghapus Pelanggan ini?</p>
+    <form id="deleteForm" method="POST">
+      {% csrf_token %}
+      <button type="submit" class="danger-button">Ya, Hapus</button>
+      <button type="button" onclick="closeModalDelete()" class="warning-button">
+        Batal
+      </button>
+    </form>
+  </div>
+</div>
+
+<script>
+  function openDeleteModal(clientId) {
+    const modal = document.getElementById("deleteModal");
+    const form = document.getElementById("deleteForm");
+    form.action = `/client/${clientId}/delete/`; // sesuaikan dengan URL kamu
+    modal.style.display = "block";
+  }
+
+  function closeModalDelete() {
+    document.getElementById("deleteModal").style.display = "none";
+  }
+
+  // Menutup modal jika diklik di luar area modal
+  window.onclick = function (event) {
+    const modal = document.getElementById("deleteModal");
+    if (event.target === modal) {
+      closeModalDelete();
+    }
+  };
+</script>
 
 {% endblock %}

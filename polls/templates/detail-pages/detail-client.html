@@ -1,4 +1,4 @@
-{% extends 'dashboard/base.html' %} {% block content %}
+{% extends 'dashboard/base.html' %} {% block content %} {% load custom_filters%}
 
 <div class="content-page">
   <div class="form-wrapper column">
@@ -23,34 +23,38 @@
         <h2>Informasi Pelanggan</h2>
         <div class="column">
           <div class="title strong">Nama</div>
-          <div class="text">John Kenedy</div>
+          <div class="text">{{ client.name }}</div>
         </div>
         <div class="column">
           <div class="title strong">Alamat</div>
-          <div class="text">Kampung cibubur, Jalan kecubung no 12 RT 3</div>
+          <div class="text">{{ client.address }}</div>
         </div>
         <div class="column">
           <div class="title strong">No HP</div>
-          <div class="text">087273742</div>
+          <div class="text">{{ client.phone }}</div>
         </div>
         <div class="column">
           <div class="title strong">Status</div>
-          <div class="enable-t">Aktif</div>
+          <div
+              class=" {% if client.isActive %}enable-t{% else %}disable-t{% endif %}"
+            >
+              {% if client.isActive %}Aktif{% else %}Nonaktif{% endif %}
+            </div>
         </div>
       </div>
       <div class="wrapper column">
         <h2>Informasi Server</h2>
         <div class="column">
           <div class="title strong">Server</div>
-          <div class="text">Mikrotik 1</div>
+          <div class="text">{{ client.id_server.name }}</div>
         </div>
         <div class="column">
           <div class="title strong">Paket</div>
-          <div class="text">Basic - Rp 100.000 - 2M/2M</div>
+          <div class="text">{{ client.id_paket.name }} - {{ client.id_paket.price|rupiah }} - {{ client.id_paket.limit }}</div>
         </div>
         <div class="column">
           <div class="title strong">Id PPPoE</div>
-          <div class="text">jogn@kendy</div>
+          <div class="text">{{ client.pppoe }}</div>
         </div>
         <div class="column">
           <div class="title strong">IP addres</div>
@@ -72,10 +76,47 @@
         Nonaktifkan
       </button>
 
-      <button class="warning-button">Edit</button>
-      <button class="danger-button">Delete</button>
+       <a href="{% url 'edit-client' client.id %}" class="warning-button">Edit</a>
+      <button  onclick="openDeleteModal('{{ client.id }}')" class="danger-button">Delete</button>
     </div>
   </div>
 </div>
+
+
+<div id="deleteModal" class="modal" style="display: none">
+  <div class="modal-content">
+    <span class="close" onclick="closeModal()">&times;</span>
+    <h3>Konfirmasi Hapus</h3>
+    <p>Apakah Anda yakin ingin menghapus Pelanggan ini?</p>
+    <form id="deleteForm" method="POST">
+      {% csrf_token %}
+      <button type="submit" class="danger-button">Ya, Hapus</button>
+      <button type="button" onclick="closeModalDelete()" class="warning-button">
+        Batal
+      </button>
+    </form>
+  </div>
+</div>
+
+<script>
+  function openDeleteModal(clientId) {
+    const modal = document.getElementById("deleteModal");
+    const form = document.getElementById("deleteForm");
+    form.action = `/client/${clientId}/delete/`; // sesuaikan dengan URL kamu
+    modal.style.display = "block";
+  }
+
+  function closeModalDelete() {
+    document.getElementById("deleteModal").style.display = "none";
+  }
+
+  // Menutup modal jika diklik di luar area modal
+  window.onclick = function (event) {
+    const modal = document.getElementById("deleteModal");
+    if (event.target === modal) {
+      closeModalDelete();
+    }
+  };
+</script>
 
 {% endblock %}

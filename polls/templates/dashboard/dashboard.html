@@ -64,32 +64,19 @@
         <div class="item card-client column">
           <div class="title row">
             <div class="text">
-              <div class="main-text" style="--clr: var(--clr-second)">
-                Total Client
+              <div class="main-text" style="--clr: var(--clr-g1)">
+                Total Pelanggan
               </div>
-              <div class="text-grey">Last 30 Days</div>
+              <!-- <div class="text-grey">Last 30 Days</div> -->
             </div>
             <i
               class="fa-solid fa-user"
-              style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
-            ></i>
-          </div>
-          <div class="number" style="--clr: var(--clr-second)">100</div>
-        </div>
-        <div class="item card-client column">
-          <div class="title row">
-            <div class="text">
-              <div class="main-text" style="--clr: var(--clr-g1)">
-                Total Client Active
-              </div>
-              <div class="text-grey">Last 30 Days</div>
-            </div>
-            <i
-              class="fa-solid fa-user-check"
               style="--clr: var(--clr-g2); --icon-clr: var(--clr-g1)"
             ></i>
           </div>
-          <div class="number" style="--clr: var(--clr-g1)">94</div>
+          <div class="number" style="--clr: var(--clr-g1)">
+            {{ total_clients }}
+          </div>
         </div>
         <div class="item card-client column">
           <div class="title row">
@@ -97,14 +84,16 @@
               <div class="main-text" style="--clr: var(--clr-y1)">
                 Menunggu Konfirmasi
               </div>
-              <div class="text-grey">Last 30 Days</div>
+              <!-- <div class="text-grey">Last 30 Days</div> -->
             </div>
             <i
               class="fa-solid fa-user-clock"
               style="--clr: var(--clr-y2); --icon-clr: var(--clr-y1)"
             ></i>
           </div>
-          <div class="number" style="--clr: var(--clr-y1)">6</div>
+          <div class="number" style="--clr: var(--clr-y1)">
+            {{ inactive_clients }}
+          </div>
         </div>
       </div>
       <div class="item card-config column">
@@ -141,15 +130,15 @@
         ></i>
         <span class="title">Client List</span>
       </div>
-      <form action="" class="form-search row">
+      <form method="GET" class="form-search row">
         <input
           class="search-box"
           type="search"
           placeholder="Search"
-          id="gsearch"
-          name="search"
+          name="s"
+          value="{{ query }}"
         />
-        <input class="search-button" type="submit"/>
+        <input class="search-button" type="submit" />
       </form>
     </div>
     <div class="table-container">
@@ -157,40 +146,78 @@
         <tr class="t-head">
           <th>#</th>
           <th>Nama</th>
-          <th>Paket</th>
+          <th class="w-sm">Paket</th>
           <th class="center-th">Status</th>
-          <th>ID PPPoE</th>
-          <th>Rx</th>
-          <th>Aktif</th>
+          <th  >ID PPPoE</th>
+          <th >Rx</th>
+          <th >Aktif</th>
           <th>IP TR069</th>
           <th>Action</th>
         </tr>
+        {% for client in clients %}
         <tr class="t-d">
-          <td>1</td>
-          <td>John Doe</td>
-          <td>Paket A</td>
-          <td class="td-center"><div class="disable-t">Non Aktif</div></td>
-          <td>pppoe123</td>
+          <td>{{ client.id }}</td>
+          <td>{{ client.name }}</td>
+          <td>{{ client.id_paket }}</td>
+          <td class="td-center"> <div
+              class=" {% if client.isActive %}enable-t{% else %}disable-t{% endif %}"
+            >
+              {% if client.isActive %}Aktif{% else %}Nonaktif{% endif %}
+            </div></td>
+          <td>{{ client.pppoe }}</td>
           <td>-18 dbm</td>
           <td>5</td>
           <td>192.168.1.1</td>
-          <td><a href="#" class="main-button">View</a></td>
+          <td><a href="{% url 'detail-client' client.id %}" class="main-button">View</a></td>
         </tr>
-        
+
+        {% empty %}
+        <tr>
+          <td colspan="7" class="center">Tidak ada data yang ditemukan</td>
+        </tr>
+        {% endfor %}
       </table>
+    </div>
+    <div class="pagination row">
+      {% if clients.has_previous %}
+      <a
+        href="?page=1{% if query %}&search={{ query }}{% endif %}"
+        class="page-button"
+        >First</a
+      >
+      <a
+        href="?page={{ clients.previous_page_number }}{% if query %}&search={{ query }}{% endif %}"
+        class="page-button"
+        ><i class="fa-solid fa-angle-left"></i
+      ></a>
+      {% endif %}
+
+      <span class="current-page"
+        >Page {{ clients.number }} of {{ clients.paginator.num_pages }}</span
+      >
+
+      {% if clients.has_next %}
+      <a
+        href="?page={{ clients.next_page_number }}{% if query %}&search={{ query }}{% endif %}"
+        class="page-button"
+        ><i class="fa-solid fa-angle-right"></i
+      ></a>
+      <a
+        href="?page={{ clients.paginator.num_pages }}{% if query %}&search={{ query }}{% endif %}"
+        class="page-button"
+        >Last</a
+      >
+      {% endif %}
     </div>
   </div>
 </div>
 
-
 <script>
   function loadServerInfo(serverId) {
-    
     const infoDiv = document.getElementById("server-info");
     infoDiv.innerHTML = `
     <span class="loader-form" style="display: block;"></span>
-    <p class="text-center">Load Data....</p>`
-    ;
+    <p class="text-center">Load Data....</p>`;
 
     fetch(`/get-server-info/${serverId}/`)
       .then((response) => response.json())
