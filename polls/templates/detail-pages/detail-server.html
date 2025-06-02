@@ -3,7 +3,6 @@
 <div class="content-page">
   <div class="form-wrapper column">
     <div class="form-header row">
-      
       <div class="row title-head-td">
         <i
           class="fa-solid fa-server"
@@ -21,7 +20,7 @@
     </div>
     <div class="info-server">
       <h2>{{ server.name }}</h2>
-      <br/>
+      <br />
       <div class="wrapper column">
         <div class="column">
           <div class="strong">Host IP</div>
@@ -69,8 +68,10 @@
           <button class="main-button" type="submit">Kirim</button>
         </form>
         <div class="text-grey">Output Here</div>
-        
-        <div class="output-command" id="commandOutput"><span class="loader-form"></span></div>
+
+        <div class="output-command" id="commandOutput">
+          <span class="loader-form"></span>
+        </div>
       </div>
     </div>
   </div>
@@ -78,15 +79,21 @@
 
 <div id="deleteModal" class="modal" style="display: none">
   <div class="modal-content">
-    <span class="close" style="color: white" onclick="closeModalDelete()"
+    <div class="modal-header">
+      <h3>Konfirmasi Hapus</h3>
+    </div>
+    <span class="close" onclick="closeModalDelete()"
       >&times;</span
     >
-    <h3>Konfirmasi Hapus</h3>
-    <p>Apakah Anda yakin ingin menghapus server ini?</p>
+
+    <div class="modal-text column">
+      <i style="--clr-icon-modal:var(--clr-r1)" class="fa-solid fa-triangle-exclamation"></i>
+      <p>Apakah Anda yakin ingin menghapus server ini?</p>
+    </div>
     <form id="deleteForm" method="POST">
       {% csrf_token %}
       <button type="submit" class="danger-button">Ya, Hapus</button>
-      <button type="button" onclick="closeModalDelete()" class="warning-button">
+      <button type="button" onclick="closeModalDelete()" class="grey-button">
         Batal
       </button>
     </form>
@@ -97,7 +104,7 @@
   function openDeleteModal(serverId) {
     const modal = document.getElementById("deleteModal");
     const form = document.getElementById("deleteForm");
-    form.action = `/server-list/${serverId}/delete/`; // sesuaikan dengan URL kamu
+    form.action = `/server/${serverId}/delete/`; // sesuaikan dengan URL kamu
     modal.style.display = "block";
   }
 
@@ -212,6 +219,5 @@
         });
     });
 </script>
-
 
 {% endblock %}

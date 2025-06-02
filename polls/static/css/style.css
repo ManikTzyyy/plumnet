@@ -3,14 +3,19 @@
   --clr-second: #4d55cc;
   --clr-third: #7a73d1;
   --clr-fourth: #e8e2f5;
+  --clr-g: #13542d;
   --clr-g1: #1d7c43;
   --clr-g2: #e9ffe2;
+  --clr-r: #c71b1b;
   --clr-r1: #fb2222;
   --clr-r2: #ffe2e2;
+  --clr-y: #c49322;
   --clr-y1: #ffbc22;
   --clr-y2: #fff0ce;
   --clr-grey: #797979;
+  --clr-grey2: #4b4b4b;
   --clr-bg: #f8f8fb;
+  --clr-white: #fff;
 }
 
 @font-face {
@@ -57,8 +62,8 @@ button:hover {
   font-weight: bold;
 }
 
-.w-sm{
-  width: 30px!important;
+.w-sm {
+  width: 30px !important;
 }
 
 /* Scrollbar utama (track) */
@@ -266,7 +271,7 @@ button:hover {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 13px 0!important;
+  padding: 13px 0 !important;
 }
 
 /* ================================================== */
@@ -301,7 +306,7 @@ button:hover {
 .main-button,
 .success-button,
 .warning-button,
-.danger-button {
+.danger-button, .grey-button {
   border-radius: 5px;
   padding: 5px 10px;
   width: fit-content;
@@ -323,33 +328,39 @@ button:hover {
 }
 
 .success-button {
-  background-color: var(--clr-g2);
-  color: var(--clr-g1);
+  background-color: var(--clr-g1);
+  color: var(--clr-white);
 }
 
 .success-button:hover {
-  background-color: var(--clr-g1);
-  color: white;
+  background-color: var(--clr-g);
 }
 
 .warning-button {
-  background-color: var(--clr-y2);
-  color: var(--clr-y1);
+  background-color: var(--clr-y1);
+  color: var(--clr-white);
 }
 
 .warning-button:hover {
-  background-color: var(--clr-y1);
-  color: white;
+  background-color: var(--clr-y);
 }
 
 .danger-button {
-  background-color: var(--clr-r2);
-  color: var(--clr-r1);
+  background-color: var(--clr-r1);
+  color: var(--clr-white);
 }
 
 .danger-button:hover {
-  background-color: var(--clr-r1);
-  color: white;
+  background-color: var(--clr-r);
+}
+
+.grey-button {
+  background-color: var(--clr-grey);
+  color: var(--clr-white);
+}
+
+.grey-button:hover {
+  background-color: var(--clr-grey2);
 }
 
 /* ======================================================= */
@@ -881,18 +892,47 @@ button:hover {
 .modal-content {
   background-color: #fff;
   margin: 10% auto;
-  padding: 20px;
-  width: 30%;
+  width: 50%;
   border-radius: 8px;
   text-align: center;
+  position: relative;
+  overflow: hidden;
+  color: var(--clr-grey);
+}
+
+.modal-header{
+  background-color: var(--clr-r1);
+  width: 100%;
+  padding: 10px 0 0 0;
+  
+}
+
+.modal-text i {
+ font-size: 5em!important;
+ color: var(--clr-icon-modal);
+
+}
+
+.modal-header h3{
+ font-size: 1em;
+ text-align: start;
+ color: white;
+
+ padding: 0 0 10px 10px;
 }
 
 .close {
   position: absolute;
-  top: 10px;
-  right: 20px;
-  font-size: 24px;
+  top: -10px;
+  right: 9px;
+  font-size: 50px;
   cursor: pointer;
+  color: var(--clr-white)!important;
+  
+}
+
+#deleteForm, #deleteFormIP, #activasiForm{
+  padding-bottom: 20px;
 }
 
 /* Modal Container */
@@ -906,7 +946,7 @@ button:hover {
   height: 100%;
   overflow: auto;
   background-color: rgba(0, 0, 0, 0.301);
-  backdrop-filter: blur(2px);
+  /* backdrop-filter: blur(2px); */
 }
 
 /* Modal Box */
@@ -988,7 +1028,7 @@ button:hover {
   top: 0;
   left: 0;
   background-color: rgba(0, 0, 0, 0.301);
-  backdrop-filter: blur(2px);
+  /* backdrop-filter: blur(2px); */
   width: 100%;
   height: 100%;
   display: none;

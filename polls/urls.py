@@ -37,6 +37,11 @@ urlpatterns = [
     path('client/id=<int:client_id>', views.detailClient, name='detail-client'),
 
     #==========================
+    path('client/<int:client_id>/toggle/', views.toggle_activasi, name='toggle_activasi'),
+
+
+    path('client-detail/<int:client_id>/toggle/', views.toggle_activasi_client_detail, name='toggle_activasi_client_detail'),
+
     path('server-list/test-connection/<int:pk>/', views.test_connection, name='test-connection'),
 
     path('send-command/', views.send_command, name='send-command'),

@@ -314,6 +314,21 @@ def detailClient(request, client_id) :
     return render(request, 'detail-pages/detail-client.html',{'client': client})
 
 #=========================================================================
+
+def toggle_activasi(request, client_id):
+    client = get_object_or_404(Client, id=client_id)
+    client.isActive = not client.isActive
+    client.save()
+    return redirect('verifikasi')
+
+def toggle_activasi_client_detail(request, client_id):
+    client = get_object_or_404(Client, id=client_id)
+    client.isActive = not client.isActive
+    client.save()
+    return redirect('detail-client',client_id=client.id)
+
+
+
 def is_reachable(ip):
     try:
         subprocess.check_output(['ping', '-n', '1', '-w', '2000', ip])

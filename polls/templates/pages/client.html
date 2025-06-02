@@ -29,8 +29,9 @@
           <th>#</th>
           <th>Nama</th>
           <th>Alamat</th>
-          <th >No HP</th>
-          <th class="w-sm">Paket</th>
+          <th>No HP</th>
+          <th>Paket</th>
+          <th >Server</th>
           <th class="center-th">Status</th>
           <th class="center-th">Action</th>
         </tr>
@@ -41,6 +42,7 @@
           <td>{{ client.address }}</td>
           <td>{{ client.phone }}</td>
           <td>{{ client.id_paket }}</td>
+          <td>{{ client.id_server.name }}</td>
           <td class="td-center">
             <div
               class=" {% if client.isActive %}enable-t{% else %}disable-t{% endif %}"
@@ -52,7 +54,7 @@
             <div class="row button-wrapper">
               <a href="{% url 'detail-client' client.id %}" class="main-button">View</a>
               <a href="{% url 'edit-client' client.id %}" class="warning-button">Edit</a>
-              <button  onclick="openDeleteModal('{{ client.id }}')" class="danger-button">Delete</button>
+              <button  onclick="openDeleteModal('{{ client.id }}', '{{ client.name }}')" class="danger-button">Delete</button>
             </div>
           </td>
         </tr>
@@ -102,12 +104,19 @@
 <div id="deleteModal" class="modal" style="display: none">
   <div class="modal-content">
     <span class="close" onclick="closeModal()">&times;</span>
-    <h3>Konfirmasi Hapus</h3>
-    <p>Apakah Anda yakin ingin menghapus Pelanggan ini?</p>
+    <div class="modal-header">
+      <h3>Konfirmasi Hapus</h3>
+    </div>
+
+    <div class="modal-text column">
+      <i style="--clr-icon-modal:var(--clr-r1)" class="fa-solid fa-triangle-exclamation"></i>
+      <p>Apakah Anda yakin ingin menghapus <b id="clientName"></b>?</p>
+    </div>
+    
     <form id="deleteForm" method="POST">
       {% csrf_token %}
       <button type="submit" class="danger-button">Ya, Hapus</button>
-      <button type="button" onclick="closeModalDelete()" class="warning-button">
+      <button type="button" onclick="closeModalDelete()" class="grey-button">
         Batal
       </button>
     </form>
@@ -115,7 +124,8 @@
 </div>
 
 <script>
-  function openDeleteModal(clientId) {
+  function openDeleteModal(clientId,clientName) {
+    document.getElementById('clientName').textContent = clientName;
     const modal = document.getElementById("deleteModal");
     const form = document.getElementById("deleteForm");
     form.action = `/client/${clientId}/delete/`; // sesuaikan dengan URL kamu
