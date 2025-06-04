@@ -3,6 +3,7 @@
   --clr-second: #4d55cc;
   --clr-third: #7a73d1;
   --clr-fourth: #e8e2f5;
+
   --clr-g: #13542d;
   --clr-g1: #1d7c43;
   --clr-g2: #e9ffe2;
@@ -117,6 +118,26 @@ button:hover {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.no-data .img-wrapper img{
+  object-fit: contain;
+}
+
+.no-data h3, .no-data p{
+  padding: 0;
+  margin: 0;
+}
+
+.no-data {
+  justify-content: center;
+  align-items: center;
+  gap: 0;
+}
+
+.no-data .img-wrapper {
+  width: 150px;
+  height: 150px;
 }
 
 .header {
@@ -482,6 +503,12 @@ button:hover {
 .dashboard option {
   outline: none;
   border: none;
+}
+
+.error-msg{
+  font-size: 0.7em;
+
+  
 }
 
 .dashboard .item1 {

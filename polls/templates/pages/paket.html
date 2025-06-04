@@ -30,7 +30,7 @@
           <th>Nama Paket</th>
           <th>Price</th>
           <th>Speed</th>
-          <th>Ip Range</th>
+          <th>Ip Pool</th>
           <th class="center-th">Action</th>
         </tr>
         {% for paket in pakets %}
@@ -39,7 +39,7 @@
           <td>{{ paket.name }}</td>
           <td>{{ paket.price|rupiah }}</td>
           <td>{{ paket.limit }}</td>
-          <td>{{ paket.ip_pool.ip_range }}</td>
+          <td>{{ paket.id_ip_pool.name }}</td>
           <td>
             <div class="row button-wrapper">
               <a href="{% url 'edit-paket' paket.id %}" class="warning-button"
@@ -113,6 +113,7 @@
           <th>#</th>
           <th>Nama IP Pool</th>
           <th>IP Range</th>
+          <th class="w-sm">Server</th>
           <th class="center-th">Action</th>
         </tr>
         {% for ip in ip_pools %}
@@ -120,6 +121,7 @@
           <td>{{ ip.id }}</td>
           <td>{{ ip.name }}</td>
           <td>{{ ip.ip_range}}</td>
+          <td>{{ ip.id_server.name}}</td>
           <td>
             <div class="row button-wrapper">
               <a href="{% url 'edit-ip' ip.id %}" class="warning-button"

@@ -15,11 +15,15 @@
     <form method="post" class="column">
       {% csrf_token %}
       <div class="column">
+        <label for="name">Server</label>
+        {{ form.id_server }}
+      </div>
+      <div class="column">
         <label for="name">Name</label>
         {{ form.name }}
       </div>
       <div class="column">
-        <label for="price">Price</label>
+        <label for="price">Ip Range</label>
         {{ form.ip_range }}
       </div>
       <div class="row button-wrapper">

@@ -15,8 +15,8 @@
     <form method="post" class="column">
       {% csrf_token %}
       <div class="column">
-        <label for="server">Server</label>
-        {{ form.id_server }}
+        <label for="profile">Paket</label>
+        {{ form.id_paket }}
       </div>
       <div class="column">
         <label for="fullname">Name </label>
@@ -31,10 +31,7 @@
         {{ form.phone }}
       </div>
 
-      <div class="column">
-        <label for="profile">Paket</label>
-        {{ form.id_paket }}
-      </div>
+      
 
       <div class="column">
         <label for="pppoeID">ID PPPoE</label>

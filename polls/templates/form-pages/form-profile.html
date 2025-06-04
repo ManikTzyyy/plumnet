@@ -14,6 +14,12 @@
 
     <form method="post" class="column">
       {% csrf_token %}
+
+      <div class="column">
+        <label for="ip_pool">IP Pool </label>
+        {{ form.id_ip_pool }}
+      </div>
+
       <div class="column">
         <label for="name">Name</label>
         {{ form.name }}
@@ -22,10 +28,7 @@
         <label for="price">Price</label>
         {{ form.price }}
       </div>
-      <div class="column">
-        <label for="ip_pool">IP Range </label>
-        {{ form.ip_pool }}
-      </div>
+      
       <div class="column">
         <label for="maxRate">Limit Upload/Download </label>
         {{ form.limit }}

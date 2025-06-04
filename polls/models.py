@@ -17,23 +17,23 @@ class Server(models.Model):
     
 
 class IPPool(models.Model):
+    id_server = models.ForeignKey(Server, on_delete=models.CASCADE, related_name='server') 
     name = models.CharField(max_length=100)
     ip_range = models.CharField(max_length=100)
 
     def __str__(self):
-        return self.name
+        return f"{self.name} - {self.id_server.name}"
     
 class Paket(models.Model):
     name = models.CharField(max_length=255)
     price = models.IntegerField()
     limit = models.CharField(max_length=255)
-    ip_pool = models.ForeignKey(IPPool, on_delete=models.CASCADE, related_name='paket_list')
+    id_ip_pool = models.ForeignKey(IPPool, on_delete=models.CASCADE, related_name='paket_list')
     
     def __str__(self):
         return self.name
     
 class Client(models.Model):
-    id_server = models.ForeignKey(Server, on_delete=models.CASCADE, related_name='server_list') 
     id_paket = models.ForeignKey(Paket, on_delete=models.CASCADE, related_name='paket_list') 
     name = models.CharField(max_length=255)
     address = models.CharField(max_length=255)

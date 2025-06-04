@@ -117,7 +117,6 @@ def client(request) :
             Q(address__icontains=query)| 
             Q(phone__icontains=query)| 
             Q(pppoe__icontains=query)| 
-            Q(id_server__name__icontains=query)|
             Q(id_paket__name__icontains=query)
         )
 
@@ -138,7 +137,6 @@ def verifikasi(request) :
             Q(address__icontains=query)| 
             Q(phone__icontains=query)| 
             Q(pppoe__icontains=query)| 
-            Q(id_server__name__icontains=query)|
             Q(id_paket__name__icontains=query)
         ) 
 

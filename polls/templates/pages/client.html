@@ -42,7 +42,7 @@
           <td>{{ client.address }}</td>
           <td>{{ client.phone }}</td>
           <td>{{ client.id_paket }}</td>
-          <td>{{ client.id_server.name }}</td>
+          <td>{{ client.id_paket.id_ip_pool.id_server.name }}</td>
           <td class="td-center">
             <div
               class=" {% if client.isActive %}enable-t{% else %}disable-t{% endif %}"
@@ -103,7 +103,7 @@
 
 <div id="deleteModal" class="modal" style="display: none">
   <div class="modal-content">
-    <span class="close" onclick="closeModal()">&times;</span>
+    <span class="close" onclick="closeModalDelete()">&times;</span>
     <div class="modal-header">
       <h3>Konfirmasi Hapus</h3>
     </div>
