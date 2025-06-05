@@ -709,6 +709,7 @@ button:hover {
 
 .dashboard .quick-link {
   gap: 20px;
+  flex-wrap: wrap;
 }
 .dashboard .quick-link i {
   border-radius: 10px !important;
