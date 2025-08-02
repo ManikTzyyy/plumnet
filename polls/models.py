@@ -14,7 +14,7 @@ class Server(models.Model):
     
 
 class IPPool(models.Model):
-    id_server = models.ForeignKey(Server, on_delete=models.CASCADE, related_name='servers') 
+    id_server = models.ForeignKey(Server, on_delete=models.SET_NULL,null=True, blank=True, related_name='servers') 
     name = models.CharField(max_length=100)
     ip_range = models.CharField(max_length=100)
 
@@ -25,20 +25,29 @@ class Paket(models.Model):
     name = models.CharField(max_length=255)
     price = models.IntegerField()
     limit = models.CharField(max_length=255)
-    id_ip_pool = models.ForeignKey(IPPool, on_delete=models.CASCADE, related_name='ip_pools')
+    id_ip_pool = models.ForeignKey(IPPool, on_delete=models.SET_NULL,null=True, blank=True, related_name='ip_pools')
     
     def __str__(self):
         return f"{format_rupiah(self.price)} - {self.name} - {self.limit} - {self.id_ip_pool.id_server.name}"
-    
+
+
 class Client(models.Model):
-    id_paket = models.ForeignKey(Paket, on_delete=models.CASCADE, related_name='pakets') 
+    id_paket = models.ForeignKey(Paket, on_delete=models.SET_NULL, null=True, blank=True, related_name='pakets') 
     name = models.CharField(max_length=255)
     address = models.CharField(max_length=255)
     phone = models.CharField(max_length=255)
     pppoe = models.CharField(max_length=255) 
     password = models.CharField(max_length=255)
-    isActive = models.BooleanField(default=True)
+    isActive = models.BooleanField(default=False)
+    isApproved = models.BooleanField(default=True)
+    temp_paket = models.ForeignKey(Paket, on_delete=models.SET_NULL, related_name='temp_paket', null=True, blank=True)
+    temp_name = models.CharField(max_length=255, null=True, blank=True)
+    temp_address = models.CharField(max_length=255, null=True, blank=True)
+    temp_phone = models.CharField(max_length=255, null=True, blank=True)
+    temp_pppoe = models.CharField(max_length=255, null=True, blank=True)
+    temp_password = models.CharField(max_length=255, null=True, blank=True)
     
     def __str__(self):
         return self.name
+
 

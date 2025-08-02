@@ -1,12 +1,15 @@
 from django.urls import path
 from . import views
-
+from django.contrib.auth import views as auth_views
 
 
 urlpatterns = [
     #dashboard
     path('', views.dashboard, name='dashboard'),
     path('get-server-info/<int:server_id>/', views.get_server_info, name='get_server_info'),
+
+    path('login/', auth_views.LoginView.as_view(template_name='auth/login.html'), name='login'),
+    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
 
 
     path('server-list/', views.server, name='server'),
@@ -39,9 +42,10 @@ urlpatterns = [
     #==========================
     path('client/<int:client_id>/toggle/', views.toggle_activasi, name='toggle_activasi'),
 
-
     path('client-detail/<int:client_id>/toggle/', views.toggle_activasi_client_detail, name='toggle_activasi_client_detail'),
 
+    path('client/<int:client_id>/verification/', views.toggle_verif, name='toggle_verif'),
+    #/client-detail/${clientId}/verification/
     path('server-list/test-connection/<int:pk>/', views.test_connection, name='test-connection'),
 
     path('send-command/', views.send_command, name='send-command'),

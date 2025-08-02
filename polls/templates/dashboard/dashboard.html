@@ -157,7 +157,7 @@
           <th class="center-th">Status</th>
           <th>ID PPPoE</th>
           <th>Rx</th>
-          <th>Device Aktif</th>
+          <th class="center-th">Device Aktif</th>
           <th>IP TR069</th>
           <th>Action</th>
         </tr>
@@ -170,12 +170,12 @@
             <div
               class="{% if client.isActive %}enable-t{% else %}disable-t{% endif %}"
             >
-              {% if client.isActive %}Aktif{% else %}Nonaktif{% endif %}
+              {% if client.isActive %}Online{% else %}Offline{% endif %}
             </div>
           </td>
           <td>{{ client.pppoe }}</td>
           <td>-18 dbm</td>
-          <td class="center-th">5</td>
+          <td class="td-center">5</td>
           <td>192.168.1.1</td>
           <td>
             <a href="{% url 'detail-client' client.id %}" class="main-button"

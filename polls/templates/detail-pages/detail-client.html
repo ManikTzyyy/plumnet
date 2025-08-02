@@ -32,7 +32,7 @@
           <div
               class=" {% if client.isActive %}enable-t{% else %}disable-t{% endif %}"
             >
-              {% if client.isActive %}Aktif{% else %}Nonaktif{% endif %}
+              {% if client.isActive %}Online{% else %}Offline{% endif %}
             </div>
         </div>
       </div>
@@ -51,6 +51,10 @@
           <div class="text">{{ client.pppoe }}</div>
         </div>
         <div class="column">
+          <div class="title strong">Password PPPoE</div>
+          <div class="text">{{ client.password }}</div>
+        </div>
+        <div class="column">
           <div class="title strong">IP addres</div>
           <div class="text row">
             192.168.3.12
@@ -62,12 +66,58 @@
       </div>
     </div>
     <div class="row button-wrapper no-loader">
-       
-       <button  onclick="openActivasiModal('{{ client.id }}')" class="main-button">{% if client.isActive %}Nonaktifkan{% else %}Activasi{% endif %}</button>
-
+       <button onclick="openActivasiModal('{{ client.id }}')" class="{% if user.is_authenticated %}main-button{% else %}disbale-button{% endif %}" {% if not user.is_authenticated %}disabled{% endif %} >{% if client.isActive %}Nonaktifkan{% else %}Activasi{% endif %}</button>
+      <button  class="info-button">Reboot Perangkat</button>
        <a href="{% url 'edit-client' client.id %}" class="warning-button">Edit</a>
       <button  onclick="openDeleteModal('{{ client.id }}')" class="danger-button">Delete</button>
     </div>
+
+{% if not client.isApproved %}
+<br><br>
+<div class="form-header row" style="border-top: 1px solid var(--clr-grey);">
+      <div class="title-head-td">
+        <br>
+        <span class="title">Menunggu Verifikasi Admin</span>
+      </div>
+    </div>
+    <div class="info-client row">
+      <div class="wrapper column">
+        <h2>Informasi Pelanggan</h2>
+        <div class="column">
+          <div class="title strong">Nama</div>
+          <div class="text">{{ client.temp_name }}</div>
+        </div>
+        <div class="column">
+          <div class="title strong">Alamat</div>
+          <div class="text">{{ client.temp_address }}</div>
+        </div>
+        <div class="column">
+          <div class="title strong">No HP</div>
+          <div class="text">{{ client.temp_phone }}</div>
+        </div>
+      </div>
+      <div class="wrapper column">
+        <h2>Informasi Server</h2>
+        <div class="column">
+          <div class="title strong">Server</div>
+          <div class="text">{{ client.temp_paket.id_ip_pool.id_server.name }}</div>
+        </div>
+        <div class="column">
+          <div class="title strong">Paket</div>
+          <div class="text">{{ client.temp_paket.name }} - {{ client.temp_paket.price|rupiah }} - {{ client.temp_paket.limit }}</div>
+        </div>
+        <div class="column">
+          <div class="title strong">Id PPPoE</div>
+          <div class="text">{{ client.temp_pppoe }}</div>
+        </div>
+        <div class="column">
+          <div class="title strong">Password PPPoE</div>
+          <div class="text">{{ client.temp_password }}</div>
+        </div>
+      </div>
+    </div>
+    <button onclick="openVerifModal('{{ client.id }}')" class="{% if user.is_authenticated %}main-button{% else %}disbale-button{% endif %}" {% if not user.is_authenticated %}disabled{% endif %} >Verifikasi Perubahan</button>
+{% endif %}
   </div>
 </div>
 
@@ -113,6 +163,58 @@
   </div>
 </div>
 
+<div id="verifModal" class="modal" style="display: none">
+  <div class="modal-content">
+    <span class="close" onclick="closeVerifModal()">&times;</span>
+    <div
+      class="modal-header"
+      style="background-color: var(--clr-y1) !important"
+    >
+      <h3>Verification</h3>
+    </div>
+    <div class="modal-text column">
+      <i
+        style="--clr-icon-modal: var(--clr-y1)"
+        class="fa-solid fa-circle-exclamation"
+      ></i>
+      <p>
+        Apakah anda yakin ingin verifikasi perubahan data <b>{{ client.name }}</b>?
+      </p>
+    </div>
+
+    <form id="verifForm" method="POST">
+      {% csrf_token %}
+      <button type="submit" class="success-button">Ya</button>
+      <button type="button" onclick="closeVerifModal()" class="grey-button">
+        Batal
+      </button>
+    </form>
+  </div>
+</div>
+
+<script>
+  function openVerifModal(clientId, clientName) {
+    const modal = document.getElementById("verifModal");
+    const form = document.getElementById("verifForm");
+    form.action = `/client/${clientId}/verification/`;
+    modal.style.display = "block";
+  }
+
+  function closeVerifModal() {
+    document.getElementById("verifModal").style.display = "none";
+  }
+
+  // Menutup modal jika diklik di luar area modal
+  window.onclick = function (event) {
+    const modal = document.getElementById("verifModal");
+    if (event.target === modal) {
+      closeVerifModal();
+    }
+  };
+</script>
+
+
+
 <script>
   function openDeleteModal(clientId) {
     const modal = document.getElementById("deleteModal");
@@ -154,5 +256,9 @@
     }
   };
 </script>
+
+
+
+
 
 {% endblock %}

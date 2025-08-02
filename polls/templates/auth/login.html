@@ -1,0 +1,38 @@
+{% extends 'dashboard/base.html' %} {% block content %}
+
+<div class="login-wrapper column align-center justify-center">
+  <div class="login-container">
+    <form method="post">
+      <h2>Login</h2>
+      {% if form.errors %}
+      <p style="color: red; text-align:center">Username atau password salah.</p>
+      {% endif %} {% csrf_token %}
+
+      <div class="column form-login">
+        <div class="column">
+          <label>Username</label>
+          <input
+            type="text"
+            name="username"
+            placeholder="Input Username"
+            required
+          />
+        </div>
+
+        <div class="column">
+          <label>Password</label>
+          <input
+            type="password"
+            name="password"
+            placeholder="Input Password"
+            required
+          />
+        </div>
+
+        <button class="info-button" type="submit">Login</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

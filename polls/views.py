@@ -1,6 +1,11 @@
 import json, logging, socket, subprocess, paramiko
 from django.contrib import messages
 
+from django.contrib.auth.decorators import login_required
+
+from mysite import settings
+
+
 
 from .models import Paket, Server, IPPool, Client
 from .mikrotik import get_mikrotik_info
@@ -42,14 +47,23 @@ def dashboard(request) :
     total_clients = Client.objects.count() 
     inactive_count = Client.objects.filter(isActive=0).count()
 
+    query_lower = query.strip().lower()
+
+    status_filter = Q()
+    if query_lower == "online":
+        status_filter = Q(isActive=True)
+    elif query_lower == "offline":
+        status_filter = Q(isActive=False)
+
     if query:
         clients = clients.filter(
             Q(name__icontains=query)| 
             Q(address__icontains=query)| 
             Q(phone__icontains=query)| 
             Q(pppoe__icontains=query)| 
-            Q(id_server__name__icontains=query)|
-            Q(id_paket__name__icontains=query)
+            Q(id_paket__name__icontains=query)|
+            Q(id_paket__id_ip_pool__id_server__name__icontains=query)|
+            status_filter
         )
 
     paginator = Paginator(clients, 10) 
@@ -111,13 +125,23 @@ def client(request) :
     query = request.GET.get('s', '')
     client_list = Client.objects.all()
 
+    query_lower = query.strip().lower()
+
+    status_filter = Q()
+    if query_lower == "online":
+        status_filter = Q(isActive=True)
+    elif query_lower == "offline":
+        status_filter = Q(isActive=False)
+
     if query:
         client_list = client_list.filter(
             Q(name__icontains=query)| 
             Q(address__icontains=query)| 
             Q(phone__icontains=query)| 
             Q(pppoe__icontains=query)| 
-            Q(id_paket__name__icontains=query)
+            Q(id_paket__name__icontains=query) | 
+            Q(id_paket__id_ip_pool__id_server__name__icontains=query) |
+            status_filter
         )
 
     paginator = Paginator(client_list, 10) 
@@ -126,6 +150,8 @@ def client(request) :
 
 
     return render(request, 'pages/client.html', {'clients': clients, 'query': query})
+
+
 
 def verifikasi(request) : 
     inactiveClient = Client.objects.filter(isActive=0)
@@ -191,7 +217,26 @@ def addClient(request) :
     if request.method == "POST":
         form = ClientForm(request.POST)
         if form.is_valid():
-            form.save()
+            cd = form.cleaned_data
+            client = Client(
+                id_paket=cd['id_paket'],
+                name=cd['name'],
+                address=cd['address'],
+                phone=cd['phone'],
+                pppoe=cd['pppoe'],
+                password=cd['password'],
+                
+                # temp_* ikut diisi juga
+                temp_paket=cd['id_paket'],
+                temp_name=cd['name'],
+                temp_address=cd['address'],
+                temp_phone=cd['phone'],
+                temp_pppoe=cd['pppoe'],
+                temp_password=cd['password'],
+
+            )
+
+            client.save()
             return redirect('client')
     else:
         form = ClientForm()
@@ -245,12 +290,28 @@ def edit_client(request, pk):
     client = get_object_or_404(Client, pk=pk)
 
     if request.method == 'POST':
-        form = ClientForm(request.POST, instance=client)
+        form = ClientForm(request.POST)
         if form.is_valid():
-            form.save()
+            cd = form.cleaned_data
+            client.temp_paket = cd['id_paket']
+            client.temp_name = cd['name']
+            client.temp_address = cd['address']
+            client.temp_phone = cd['phone']
+            client.temp_pppoe = cd['pppoe']
+            client.temp_password = cd['password']
+            client.isApproved = False  # Menunggu approval admin
+            client.save()
             return redirect('client')  
     else:
-        form = ClientForm(instance=client)
+        initial_data = {
+            'name': client.temp_name or client.name,
+            'address': client.temp_address or client.address,
+            'phone': client.temp_phone or client.phone,
+            'pppoe': client.temp_pppoe or client.pppoe,
+            'password': client.temp_password or client.password,
+            'id_paket': client.id_paket
+        }
+        form = ClientForm(initial=initial_data)
 
     return render(request, 'form-pages/form-client.html', {'form': form, 'is_edit': True})
 
@@ -312,19 +373,32 @@ def detailClient(request, client_id) :
     return render(request, 'detail-pages/detail-client.html',{'client': client})
 
 #=========================================================================
-
+@login_required(login_url='/login/')
 def toggle_activasi(request, client_id):
     client = get_object_or_404(Client, id=client_id)
     client.isActive = not client.isActive
     client.save()
     return redirect('verifikasi')
 
+@login_required(login_url='/login/')
 def toggle_activasi_client_detail(request, client_id):
     client = get_object_or_404(Client, id=client_id)
     client.isActive = not client.isActive
     client.save()
     return redirect('detail-client',client_id=client.id)
 
+@login_required(login_url='/login/')
+def toggle_verif(request, client_id):
+    client = get_object_or_404(Client, id=client_id)
+    client.id_paket = client.temp_paket
+    client.name = client.temp_name
+    client.address = client.temp_address
+    client.phone = client.temp_phone
+    client.pppoe = client.temp_pppoe
+    client.password = client.temp_password
+    client.isApproved = not client.isApproved
+    client.save()
+    return redirect('client')
 
 
 def is_reachable(ip):
@@ -430,3 +504,8 @@ def send_command(request):
             return JsonResponse({"output": f"Exception: {str(e)}"}, status=500)
 
     return JsonResponse({"output": "Hanya menerima metode POST."}, status=405)
+
+
+def get_theme_settings():
+    with open(settings.BASE_DIR / 'static' / 'setting.json') as f:
+        return json.load(f)
