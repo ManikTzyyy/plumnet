@@ -6,11 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>-</title>
     <link href="{% static 'css/style.css' %}" rel="stylesheet" />
+    <link href="{% static 'css/leaflet.css' %}" rel="stylesheet" />
     <link
       rel="icon"
       type="image/x-icon"
       href="{% static 'assets/logo-circle.png' %}"
     />
+
+     <script src="{% static 'js/library/leaflet.js' %}"></script>
 
     <!-- font awesome -->
     <link
@@ -123,6 +126,7 @@
     <script src="{% static 'js/app.js' %}"></script>
     <script src="{% static 'js/loader.js' %}"></script>
     <script src="{% static 'js/apply-theme.js' %}"></script>
+   
 
     <script>
       window.addEventListener("pageshow", function (event) {

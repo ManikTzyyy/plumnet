@@ -12,7 +12,7 @@
       </div>
       <a href="{% url 'client' %}" class="main-button">Kembali</a>
     </div>
-    <div class="info-client row">
+    <div class="info-client relative row">
       <div class="wrapper column">
         <h2>Informasi Pelanggan</h2>
         <div class="column">
@@ -64,6 +64,9 @@
           </div>
         </div>
       </div>
+      <div class="container-map relative" style="width: 600px; height: 300px;" >
+        <div id="map-client" style="height: 100%; width: 100%;"></div>
+      </div>
     </div>
     <div class="row button-wrapper no-loader wrap">
        <button onclick="openActivasiModal('{{ client.id }}')" class="{% if user.is_authenticated %}main-button{% else %}disbale-button{% endif %}" {% if not user.is_authenticated %}disabled{% endif %} >{% if client.isActive %}Nonaktifkan{% else %}Activasi{% endif %}</button>
@@ -73,7 +76,7 @@
     </div>
 
 {% if not client.isApproved %}
-<br><br>
+    <br><br>
 <div class="form-header row" style="border-top: 1px solid var(--clr-grey);">
       <div class="title-head-td">
         <br>
@@ -255,6 +258,25 @@
       closeModal();
     }
   };
+</script>
+
+<script>
+  var latitude = -8.118556
+  var longitude = 115.103444
+
+   var map = L.map('map-client').setView(
+            [latitude, longitude],
+            15
+        );
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        L.marker([latitude, longitude])
+            .addTo(map)
+            .bindPopup("Sumedang")
+            .openPopup();
 </script>
 
 
