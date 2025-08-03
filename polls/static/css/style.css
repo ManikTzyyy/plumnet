@@ -158,6 +158,10 @@ button:hover {
   flex-direction: column;
 }
 
+.wrap{
+  flex-wrap: wrap;
+}
+
 .img-wrapper {
   position: relative;
   height: 50px;
@@ -328,6 +332,10 @@ button:hover {
   text-align: left;
 }
 
+tr:hover{
+  background-color: rgb(245, 245, 245);
+}
+
 .table .t-d td {
   white-space: nowrap;
   font-size: 0.8em;
@@ -375,6 +383,8 @@ button:hover {
   justify-content: center;
   align-items: center;
 }
+
+
 
 .main-button,
 .success-button,
