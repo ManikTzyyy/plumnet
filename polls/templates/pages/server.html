@@ -19,7 +19,7 @@
           name="search"
           value="{{ query }}"
         />
-        <input class="search-button" type="submit" value="Search" />
+        <input class="search-button" type="submit" />
       </form>
     </div>
 
@@ -51,9 +51,9 @@
 
               <button
                 onclick="testConnection('{{ server.id }}')"
-                class="main-button"
+                class="success-button"
               >
-                Test Connection
+                Ping Host IP
               </button>
             </div>
           </td>
@@ -100,21 +100,6 @@
   </div>
 </div>
 
-<!-- Konfirmasi Modal -->
-<div id="deleteModal" class="modal" style="display: none">
-  <div class="modal-content">
-    <span class="close" onclick="closeModal()">&times;</span>
-    <h3>Konfirmasi Hapus</h3>
-    <p>Apakah Anda yakin ingin menghapus server ini?</p>
-    <form id="deleteForm" method="POST">
-      {% csrf_token %}
-      <button type="submit" class="danger-button">Ya, Hapus</button>
-      <button type="button" onclick="closeModal()" class="warning-button">
-        Batal
-      </button>
-    </form>
-  </div>
-</div>
 
 <!-- Custom Modal -->
 <div id="connectionModal" class="custom-modal">
@@ -124,31 +109,6 @@
     <div id="connectionStatus"></div>
   </div>
 </div>
-
-
-
-<script>
-  function openDeleteModal(serverId) {
-    const modal = document.getElementById("deleteModal");
-    const form = document.getElementById("deleteForm");
-    form.action = `/server-list/${serverId}/delete/`; // sesuaikan dengan URL kamu
-    modal.style.display = "block";
-  }
-
-  function closeModal() {
-    document.getElementById("deleteModal").style.display = "none";
-  }
-
-  // Menutup modal jika diklik di luar area modal
-  window.onclick = function (event) {
-    const modal = document.getElementById("deleteModal");
-    if (event.target === modal) {
-      closeModal();
-    }
-  };
-</script>
-
-
 
 
 

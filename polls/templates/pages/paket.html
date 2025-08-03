@@ -19,7 +19,7 @@
           name="search"
           value="{{ query }}"
         />
-        <input class="search-button" type="submit" value="Search" />
+        <input class="search-button" type="submit" />
       </form>
     </div>
 
@@ -29,7 +29,8 @@
           <th>#</th>
           <th>Nama Paket</th>
           <th>Price</th>
-          <th>Internet</th>
+          <th>Speed</th>
+          <th>Ip Pool</th>
           <th class="center-th">Action</th>
         </tr>
         {% for paket in pakets %}
@@ -38,13 +39,14 @@
           <td>{{ paket.name }}</td>
           <td>{{ paket.price|rupiah }}</td>
           <td>{{ paket.limit }}</td>
+          <td>{{ paket.id_ip_pool.name }}</td>
           <td>
             <div class="row button-wrapper">
               <a href="{% url 'edit-paket' paket.id %}" class="warning-button"
                 >Edit</a
               >
               <button
-                onclick="openDeleteModal('{{ paket.id }}')"
+                onclick="openDeleteModal('{{ paket.id }}','{{ paket.name }}')"
                 class="danger-button"
               >
                 Delete
@@ -91,20 +93,104 @@
       >
       {% endif %}
     </div>
+
+    <br />
+
+    <div class="header-table row">
+      <div class="row title-head-td">
+        <i
+          class="fa-solid fa-clipboard-list"
+          style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
+        ></i>
+        <span class="title">IP Pool</span>
+      </div>
+      <a href="{% url 'add-ip' %}" class="success-button">Add IP Pool +</a>
+    </div>
+
+    <div class="table-container">
+      <table class="table">
+        <tr class="t-head">
+          <th>#</th>
+          <th>Nama IP Pool</th>
+          <th>IP Range</th>
+          <th class="w-sm">Server</th>
+          <th class="center-th">Action</th>
+        </tr>
+        {% for ip in ip_pools %}
+        <tr class="t-d">
+          <td>{{ ip.id }}</td>
+          <td>{{ ip.name }}</td>
+          <td>{{ ip.ip_range}}</td>
+          <td>{{ ip.id_server.name}}</td>
+          <td>
+            <div class="row button-wrapper">
+              <a href="{% url 'edit-ip' ip.id %}" class="warning-button"
+                >Edit</a
+              >
+              <button
+                onclick="openDeleteModalIP('{{ ip.id }}', '{{ip.name}}')"
+                class="danger-button"
+              >
+                Delete
+              </button>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7" class="center">Tidak ada data yang ditemukan</td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
   </div>
 </div>
 
 <div id="deleteModal" class="modal" style="display: none">
   <div class="modal-content">
-    <span class="close" style="color: white" onclick="closeModalDelete()"
-      >&times;</span
-    >
-    <h3>Konfirmasi Hapus</h3>
-    <p>Apakah Anda yakin ingin menghapus Paket ini?</p>
+    <div class="modal-header">
+      <h3>Konfirmasi Hapus</h3>
+    </div>
+    <span class="close" onclick="closeModalDelete()">&times;</span>
+
+    <div class="modal-text column">
+      <i style="--clr-icon-modal:var(--clr-r1)" class="fa-solid fa-triangle-exclamation"></i>
+      <p>Apakah Anda yakin ingin menghapus paket <b id="paketName"></b>?</p>
+    </div>
+
     <form id="deleteForm" method="POST">
       {% csrf_token %}
       <button type="submit" class="danger-button">Ya, Hapus</button>
-      <button type="button" onclick="closeModalDelete()" class="warning-button">
+      <button type="button" onclick="closeModalDelete()" class="grey-button">
+        Batal
+      </button>
+    </form>
+  </div>
+</div>
+
+<div id="deleteModalIP" class="modal" style="display: none">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Konfirmasi Hapus</h3>
+    </div>
+    <span class="close" onclick="closeModalDeleteIP()"
+      >&times;</span
+    >
+
+     <div class="modal-text column">
+      <i style="--clr-icon-modal:var(--clr-r1)" class="fa-solid fa-triangle-exclamation"></i>
+      <p>Apakah Anda yakin ingin menghapus IP Pool <b id="ipName"></b>?</p>
+    </div>
+
+    
+    <form id="deleteFormIP" method="POST">
+      {% csrf_token %}
+      <button type="submit" class="danger-button">Ya, Hapus</button>
+      <button
+        type="button"
+        onclick="closeModalDeleteIP()"
+        class="grey-button"
+      >
         Batal
       </button>
     </form>
@@ -112,12 +198,23 @@
 </div>
 
 <script>
+  function openDeleteModalIP(ipID, name) {
+    document.getElementById("ipName").textContent = name;
+    const modal = document.getElementById("deleteModalIP");
+    const form = document.getElementById("deleteFormIP");
+    form.action = `/ip/${ipID}/delete/`; // sesuaikan dengan URL kamu
+    modal.style.display = "block";
+  }
 
+  function closeModalDeleteIP() {
+    document.getElementById("deleteModalIP").style.display = "none";
+  }
 
-  function openDeleteModal(paketID) {
+  function openDeleteModal(paketID, paketName) {
+    document.getElementById("paketName").textContent = paketName;
     const modal = document.getElementById("deleteModal");
     const form = document.getElementById("deleteForm");
-    form.action = `/paket-list/${paketID}/delete/`; // sesuaikan dengan URL kamu
+    form.action = `/paket/${paketID}/delete/`; // sesuaikan dengan URL kamu
     modal.style.display = "block";
   }
 

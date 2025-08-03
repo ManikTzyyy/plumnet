@@ -1,28 +1,88 @@
-import json
-import logging
-import socket
-import subprocess
+import json, logging, socket, subprocess, paramiko
 from django.contrib import messages
-import paramiko
 
-from .models import Paket, Server
-from django.http import HttpResponse, JsonResponse
+from django.contrib.auth.decorators import login_required
+
+from mysite import settings
+
+
+
+from .models import Paket, Server, IPPool, Client
+from .mikrotik import get_mikrotik_info
+
+from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render, get_object_or_404
 from django.core.paginator import Paginator
 from django.db.models import Q
 
-from polls.forms import ServerForm, PaketForm
+from polls.forms import ServerForm, PaketForm, ipPoolForm, ClientForm
+
+from django.conf.urls import handler404
+
+
+def custom_404(request, exception):
+    return render(request, '404.html', status=404)
+
+handler404 = custom_404
 
 # Create your views here.
 
+def get_server_info(request, server_id):
+    try:
+        server = Server.objects.get(id=server_id)
+        info = get_mikrotik_info(server.host, server.username, server.password)
+        return JsonResponse(info)
+    except Server.DoesNotExist:
+        raise Http404("Server not found")
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
 def dashboard(request) : 
+    servers = Server.objects.all()
+    clients = Client.objects.all()
+    query = request.GET.get('s', '')
+
     total_servers = Server.objects.count() 
     total_pakets = Paket.objects.count() 
+    total_clients = Client.objects.count() 
+    inactive_count = Client.objects.filter(isActive=0).count()
+
+    query_lower = query.strip().lower()
+
+    status_filter = Q()
+    if query_lower == "online":
+        status_filter = Q(isActive=True)
+    elif query_lower == "offline":
+        status_filter = Q(isActive=False)
+
+    if query:
+        clients = clients.filter(
+            Q(name__icontains=query)| 
+            Q(address__icontains=query)| 
+            Q(phone__icontains=query)| 
+            Q(pppoe__icontains=query)| 
+            Q(id_paket__name__icontains=query)|
+            Q(id_paket__id_ip_pool__id_server__name__icontains=query)|
+            status_filter
+        )
+
+    paginator = Paginator(clients, 10) 
+    page_number = request.GET.get('page') 
+    clients = paginator.get_page(page_number)
+
+
     context = {
         'total_servers' : total_servers,
         'total_pakets' : total_pakets,
+        'total_clients' : total_clients,
+        'inactive_clients' : inactive_count,
+        'servers' : servers,
+        'query' : query,
+        'clients' : clients
     }
     return render(request, 'dashboard/dashboard.html', context)
+
+
 
 def server(request):
     query = request.GET.get('search', '')  # Ambil query pencarian
@@ -45,6 +105,8 @@ def server(request):
 def paket(request) : 
     query = request.GET.get('search', '')  # Ambil query pencarian
     paket_list = Paket.objects.all()
+    ip_pools = IPPool.objects.all()
+
 
     if query:
         paket_list = paket_list.filter(
@@ -53,23 +115,68 @@ def paket(request) :
             Q(limit__icontains=query)
         ) # Jika tidak ada pencarian, tampilkan semua data
 
-    paginator = Paginator(paket_list, 10)  # Menampilkan 5 data per halaman
-    page_number = request.GET.get('page')  # Ambil nomor halaman dari URL
-    pakets = paginator.get_page(page_number)  # Ambil objek halaman
+    paginator = Paginator(paket_list, 10) 
+    page_number = request.GET.get('page') 
+    pakets = paginator.get_page(page_number) 
 
-    return render(request, 'pages/paket.html', {'pakets': pakets, 'query': query})
+    return render(request, 'pages/paket.html', {'pakets': pakets, 'ip_pools':ip_pools, 'query': query})
 
 def client(request) : 
-    return render(request, 'pages/client.html')
+    query = request.GET.get('s', '')
+    client_list = Client.objects.all()
+
+    query_lower = query.strip().lower()
+
+    status_filter = Q()
+    if query_lower == "online":
+        status_filter = Q(isActive=True)
+    elif query_lower == "offline":
+        status_filter = Q(isActive=False)
+
+    if query:
+        client_list = client_list.filter(
+            Q(name__icontains=query)| 
+            Q(address__icontains=query)| 
+            Q(phone__icontains=query)| 
+            Q(pppoe__icontains=query)| 
+            Q(id_paket__name__icontains=query) | 
+            Q(id_paket__id_ip_pool__id_server__name__icontains=query) |
+            status_filter
+        )
+
+    paginator = Paginator(client_list, 10) 
+    page_number = request.GET.get('page') 
+    clients = paginator.get_page(page_number)
+
+
+    return render(request, 'pages/client.html', {'clients': clients, 'query': query})
+
+
 
 def verifikasi(request) : 
-    return render(request, 'pages/verifikasi.html')
+    inactiveClient = Client.objects.filter(isActive=0)
+    query = request.GET.get('s', '')
 
-def setting(request) : 
-    return render(request, 'pages/setting.html')
+    if query:
+        inactiveClient = inactiveClient.filter(
+            Q(name__icontains=query)| 
+            Q(address__icontains=query)| 
+            Q(phone__icontains=query)| 
+            Q(pppoe__icontains=query)| 
+            Q(id_paket__name__icontains=query)
+        ) 
 
-def informasi(request) : 
-    return render(request, 'pages/info.html')
+    paginator = Paginator(inactiveClient, 10) 
+    page_number = request.GET.get('page') 
+    inactiveClient = paginator.get_page(page_number)
+
+    context = {
+        'query' : query,
+        'clients' : inactiveClient
+    }
+
+    return render(request, 'pages/verifikasi.html',context)
+
 
 #forms
 
@@ -78,7 +185,7 @@ def addServer(request):
         form = ServerForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('server')  # Ganti dengan nama URL yang sesuai
+            return redirect('server') 
     else:
         form = ServerForm()
 
@@ -89,14 +196,52 @@ def addProfile(request) :
         form = PaketForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('paket')  # Ganti dengan nama URL yang sesuai
+            return redirect('paket') 
     else:
         form = PaketForm()
 
     return render(request, 'form-pages/form-profile.html', {'form': form})
 
+def addIp(request) : 
+    if request.method == "POST":
+        form = ipPoolForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('paket')
+    else:
+        form = ipPoolForm()
+
+    return render(request, 'form-pages/form-ip.html', {'form': form})
+
 def addClient(request) : 
-    return render(request, 'form-pages/form-client.html')
+    if request.method == "POST":
+        form = ClientForm(request.POST)
+        if form.is_valid():
+            cd = form.cleaned_data
+            client = Client(
+                id_paket=cd['id_paket'],
+                name=cd['name'],
+                address=cd['address'],
+                phone=cd['phone'],
+                pppoe=cd['pppoe'],
+                password=cd['password'],
+                
+                # temp_* ikut diisi juga
+                temp_paket=cd['id_paket'],
+                temp_name=cd['name'],
+                temp_address=cd['address'],
+                temp_phone=cd['phone'],
+                temp_pppoe=cd['pppoe'],
+                temp_password=cd['password'],
+
+            )
+
+            client.save()
+            return redirect('client')
+    else:
+        form = ClientForm()
+
+    return render(request, 'form-pages/form-client.html', {'form': form})
 
 
 #edit data
@@ -127,6 +272,50 @@ def edit_paket(request, pk):
     return render(request, 'form-pages/form-profile.html', {'form': form, 'is_edit': True})
 
 
+def edit_ip(request, pk):
+    ip_pool = get_object_or_404(IPPool, pk=pk)
+
+    if request.method == 'POST':
+        form = ipPoolForm(request.POST, instance=ip_pool)
+        if form.is_valid():
+            form.save()
+            return redirect('paket')  
+    else:
+        form = ipPoolForm(instance=ip_pool)
+
+    return render(request, 'form-pages/form-ip.html', {'form': form, 'is_edit': True})
+
+
+def edit_client(request, pk):
+    client = get_object_or_404(Client, pk=pk)
+
+    if request.method == 'POST':
+        form = ClientForm(request.POST)
+        if form.is_valid():
+            cd = form.cleaned_data
+            client.temp_paket = cd['id_paket']
+            client.temp_name = cd['name']
+            client.temp_address = cd['address']
+            client.temp_phone = cd['phone']
+            client.temp_pppoe = cd['pppoe']
+            client.temp_password = cd['password']
+            client.isApproved = False  # Menunggu approval admin
+            client.save()
+            return redirect('client')  
+    else:
+        initial_data = {
+            'name': client.temp_name or client.name,
+            'address': client.temp_address or client.address,
+            'phone': client.temp_phone or client.phone,
+            'pppoe': client.temp_pppoe or client.pppoe,
+            'password': client.temp_password or client.password,
+            'id_paket': client.id_paket
+        }
+        form = ClientForm(initial=initial_data)
+
+    return render(request, 'form-pages/form-client.html', {'form': form, 'is_edit': True})
+
+
 #delete data
 
 def delete_server(request, pk):
@@ -151,6 +340,26 @@ def delete_paket(request, pk):
     
     return redirect('paket', pk=pk)
 
+def delete_ip(request, pk):
+    ip_pool = get_object_or_404(IPPool, pk=pk)
+    
+    if request.method == "POST":
+        ip_pool.delete()
+        messages.success(request, "IP Pool berhasil dihapus.")
+        return redirect('paket')  
+    
+    return redirect('paket', pk=pk)
+
+def delete_client(request, pk):
+    client = get_object_or_404(Client, pk=pk)
+    
+    if request.method == "POST":
+        client.delete()
+        messages.success(request, "IP Pool berhasil dihapus.")
+        return redirect('client')  
+    
+    return redirect('client', pk=pk)
+
 #detail
 
 def detailServer(request, server_id) : 
@@ -159,10 +368,39 @@ def detailServer(request, server_id) :
 
 
 
-def detailClient(request) : 
-    return render(request, 'detail-pages/detail-client.html')
+def detailClient(request, client_id) : 
+    client = get_object_or_404(Client, id=client_id)
+    return render(request, 'detail-pages/detail-client.html',{'client': client})
 
 #=========================================================================
+@login_required(login_url='/login/')
+def toggle_activasi(request, client_id):
+    client = get_object_or_404(Client, id=client_id)
+    client.isActive = not client.isActive
+    client.save()
+    return redirect('verifikasi')
+
+@login_required(login_url='/login/')
+def toggle_activasi_client_detail(request, client_id):
+    client = get_object_or_404(Client, id=client_id)
+    client.isActive = not client.isActive
+    client.save()
+    return redirect('detail-client',client_id=client.id)
+
+@login_required(login_url='/login/')
+def toggle_verif(request, client_id):
+    client = get_object_or_404(Client, id=client_id)
+    client.id_paket = client.temp_paket
+    client.name = client.temp_name
+    client.address = client.temp_address
+    client.phone = client.temp_phone
+    client.pppoe = client.temp_pppoe
+    client.password = client.temp_password
+    client.isApproved = not client.isApproved
+    client.save()
+    return redirect('client')
+
+
 def is_reachable(ip):
     try:
         subprocess.check_output(['ping', '-n', '1', '-w', '2000', ip])
@@ -266,3 +504,8 @@ def send_command(request):
             return JsonResponse({"output": f"Exception: {str(e)}"}, status=500)
 
     return JsonResponse({"output": "Hanya menerima metode POST."}, status=405)
+
+
+def get_theme_settings():
+    with open(settings.BASE_DIR / 'static' / 'setting.json') as f:
+        return json.load(f)

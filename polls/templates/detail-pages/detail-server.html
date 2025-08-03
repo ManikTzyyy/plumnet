@@ -2,14 +2,7 @@
 
 <div class="content-page">
   <div class="form-wrapper column">
-    <div class="form-header column">
-      <button
-        class="main-button no-loader"
-        type="button"
-        onclick="window.history.back();"
-      >
-        Kembali
-      </button>
+    <div class="form-header row">
       <div class="row title-head-td">
         <i
           class="fa-solid fa-server"
@@ -17,24 +10,32 @@
         ></i>
         <span class="title">Server</span>
       </div>
+      <button
+        class="main-button no-loader"
+        type="button"
+        onclick="window.history.back();"
+      >
+        Kembali
+      </button>
     </div>
     <div class="info-server">
       <h2>{{ server.name }}</h2>
+      <br />
       <div class="wrapper column">
         <div class="column">
-          <div class="">Host IP</div>
+          <div class="strong">Host IP</div>
           <div class="text">{{ server.host }}</div>
         </div>
         <div class="column">
-          <div class="">Username</div>
+          <div class="strong">Username</div>
           <div class="text">{{ server.username }}</div>
         </div>
         <div class="column">
-          <div class="">Password</div>
+          <div class="strong">Password</div>
           <div class="text">{{ server.password }}</div>
         </div>
         <div class="column">
-          <div class="">GeniACS</div>
+          <div class="strong">GeniACS</div>
           <div class="text">{{ server.genieacs|default:"-" }}</div>
         </div>
         <div class="row button-wrapper">
@@ -42,7 +43,7 @@
             onclick="testConnection('{{ server.id }}')"
             class="main-button"
           >
-            Test Connection
+            Ping Host IP
           </button>
           <a href="{% url 'edit-server' server.id %}" class="warning-button"
             >Edit</a
@@ -67,8 +68,10 @@
           <button class="main-button" type="submit">Kirim</button>
         </form>
         <div class="text-grey">Output Here</div>
-        
-        <div class="output-command" id="commandOutput"><span class="loader-form"></span></div>
+
+        <div class="output-command" id="commandOutput">
+          <span class="loader-form"></span>
+        </div>
       </div>
     </div>
   </div>
@@ -76,15 +79,21 @@
 
 <div id="deleteModal" class="modal" style="display: none">
   <div class="modal-content">
-    <span class="close" style="color: white" onclick="closeModalDelete()"
+    <div class="modal-header">
+      <h3>Konfirmasi Hapus</h3>
+    </div>
+    <span class="close" onclick="closeModalDelete()"
       >&times;</span
     >
-    <h3>Konfirmasi Hapus</h3>
-    <p>Apakah Anda yakin ingin menghapus server ini?</p>
+
+    <div class="modal-text column">
+      <i style="--clr-icon-modal:var(--clr-r1)" class="fa-solid fa-triangle-exclamation"></i>
+      <p>Apakah Anda yakin ingin menghapus server ini?</p>
+    </div>
     <form id="deleteForm" method="POST">
       {% csrf_token %}
       <button type="submit" class="danger-button">Ya, Hapus</button>
-      <button type="button" onclick="closeModalDelete()" class="warning-button">
+      <button type="button" onclick="closeModalDelete()" class="grey-button">
         Batal
       </button>
     </form>
@@ -95,7 +104,7 @@
   function openDeleteModal(serverId) {
     const modal = document.getElementById("deleteModal");
     const form = document.getElementById("deleteForm");
-    form.action = `/server-list/${serverId}/delete/`; // sesuaikan dengan URL kamu
+    form.action = `/server/${serverId}/delete/`; // sesuaikan dengan URL kamu
     modal.style.display = "block";
   }
 
@@ -167,7 +176,7 @@
 
 <script>
   function showLoaderForm() {
-    document.querySelector(".loader-form").style.display = "block"; // Atur sesuai dengan CSS kamu
+    document.querySelector(".loader-form").style.display = "block";
   }
 
   function hideLoaderForm() {
@@ -210,6 +219,5 @@
         });
     });
 </script>
-
 
 {% endblock %}

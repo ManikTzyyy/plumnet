@@ -3,131 +3,87 @@
 <div class="column dashboard content-page">
   <div class="main-container row">
     <div class="column container1">
+      <div class="item card-config quick column">
+        <div class="title row">
+          <div class="main-text" style="--clr: var(--clr-second)">
+            Quick Link
+          </div>
+          <i
+            class="fa-solid fa-gears"
+            style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
+          ></i>
+        </div>
+        <div class="quick-link row">
+          <a href="{% url 'add-server' %}" class="row">
+            <i
+              class="fa-solid fa-plus"
+              style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
+            ></i>
+            <b>Add Server</b>
+          </a>
+          <a href="{% url 'add-paket' %}" class="row">
+            <i
+              class="fa-solid fa-plus"
+              style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
+            ></i>
+            <b>Add Paket</b>
+          </a>
+          <a href="{% url 'add-ip' %}" class="row">
+            <i
+              class="fa-solid fa-plus"
+              style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
+            ></i>
+            <b>Add IP Pool</b>
+          </a>
+          <a href="{% url 'add-client' %}" class="row">
+            <i
+              class="fa-solid fa-plus"
+              style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
+            ></i>
+            <b>Add Client</b>
+          </a>
+        </div>
+      </div>
       <div class="item card-monitoring column">
         <div class="title row">
           <div class="main-text" style="--clr: var(--clr-second)">Server</div>
           <select name="server" id="server">
-            <option value="mikrotik1">Mikrotik1</option>
-            <option value="mikrotik2">Mikrotik2</option>
+            {% for server in servers %}
+            <option
+              value="{{ server.id }}"
+              {%
+              if
+              forloop.first
+              %}selected{%
+              endif
+              %}
+            >
+              {{ server.name }}
+            </option>
+            {% endfor %}
           </select>
         </div>
-        <div class="row monitor-wrapper">
-          <div class="card-donut column">
-            <div class="donut-name row">
-              <i class="fa-solid fa-microchip"></i>
-              <div class="">CPU usage</div>
-            </div>
-            <div class="donut-content">
-              <canvas id="cpuLoad"></canvas>
-              <div class="number">80%</div>
-            </div>
-            <div class="donut-desc">
-              <span class="text-main">80%</span> used
-            </div>
-          </div>
-          <div class="card-donut column">
-            <div class="donut-name row">
-              <i class="fa-solid fa-hard-drive"></i>
-              <div class="">Memory usage</div>
-            </div>
-            <div class="donut-content">
-              <canvas id="memoryUsage"></canvas>
-              <div class="number">20%</div>
-            </div>
-            <div class="donut-desc">
-              free<span class="text-main"> 500 MB</span>
-              <span class="text-grey"> from </span
-              ><span class="text-main">530 MB</span>
-            </div>
-          </div>
-          <div class="card-donut column">
-            <div class="donut-name row">
-              <i class="fa-solid fa-user-check"></i>
-              <div class="">PPPoE Active</div>
-            </div>
-            <div class="donut-content">
-              <canvas id="pppClient"></canvas>
-              <div class="number">90%</div>
-            </div>
-            <div class="donut-desc">
-              <span class="text-main"> 90 active</span>
-              <span class="text-grey"> from </span
-              ><span class="text-main">60 List</span>
-            </div>
-          </div>
-          <div class="card-donut column device">
-            <div class="donut-name row">
-              <i class="fa-solid fa-circle-info"></i>
-              <div class="">Device Information</div>
-            </div>
-            <div class="card-device-wrapper-main column">
-              <div class="device-text column">
-                <div class="">3.42 Ghz</div>
-                <div class="text-grey">1 CPU</div>
-              </div>
-              <div class="device-content">
-                <div class="circle"></div>
-                <div class="number">1h58m57s</div>
-              </div>
-              <div class="device-text-wrapper row">
-                <div class="device-text column">
-                  <div class="">Intel(R)</div>
-                  <div class="text-grey">6.45.6 (stable)</div>
-                </div>
-                <div class="device-text">x86</div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="table-container">
-          <table class="table">
-            <tr class="t-head"> 
-              <th>#</th>
-              <th>Ethernet</th>
-              <th>Price</th>
-              <th>Internet</th>
-            </tr>
-            <tr class="t-d">
-              <td>01</td>
-              <td>ether1</td>
-              <td>5</td>
-              <td>3</td>
-            </tr>
-          </table>
-        </div>
+        <div id="server-info" class="column" style="gap: 10px"></div>
       </div>
     </div>
-    <div class="column">
+    <div class="column container2">
       <div class="item card-config column">
         <div class="item card-client column">
           <div class="title row">
             <div class="text">
-              <div class="main-text" style="--clr: var(--clr-second)">
-                Total Client
+              <div class="main-text" style="--clr: var(--clr-g1)">
+                Total Pelanggan
               </div>
-              <div class="text-grey">Last 30 Days</div>
+              <!-- <div class="text-grey">Last 30 Days</div> -->
             </div>
             <i
               class="fa-solid fa-user"
-              style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
-            ></i>
-          </div>
-          <div class="number" style="--clr: var(--clr-second)">100</div>
-        </div>
-        <div class="item card-client column">
-          <div class="title row">
-            <div class="text">
-              <div class="main-text" style="--clr: var(--clr-g1)">
-                Total Client Active
-              </div>
-              <div class="text-grey">Last 30 Days</div>
-            </div>
-            <i
-              class="fa-solid fa-user-check"
               style="--clr: var(--clr-g2); --icon-clr: var(--clr-g1)"
             ></i>
           </div>
-          <div class="number" style="--clr: var(--clr-g1)">94</div>
+          <div class="number" style="--clr: var(--clr-g1)">
+            {{ total_clients }}
+          </div>
         </div>
         <div class="item card-client column">
           <div class="title row">
@@ -135,14 +91,16 @@
               <div class="main-text" style="--clr: var(--clr-y1)">
                 Menunggu Konfirmasi
               </div>
-              <div class="text-grey">Last 30 Days</div>
+              <!-- <div class="text-grey">Last 30 Days</div> -->
             </div>
             <i
               class="fa-solid fa-user-clock"
               style="--clr: var(--clr-y2); --icon-clr: var(--clr-y1)"
             ></i>
           </div>
-          <div class="number" style="--clr: var(--clr-y1)">6</div>
+          <div class="number" style="--clr: var(--clr-y1)">
+            {{ inactive_clients }}
+          </div>
         </div>
       </div>
       <div class="item card-config column">
@@ -167,29 +125,6 @@
             <div class="text-grey">Paket</div>
           </div>
         </div>
-        <div class="quick-link column">
-          <a href="{% url 'add-server' %}" class="row">
-            <i
-              class="fa-solid fa-plus"
-              style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
-            ></i>
-            <b>Add Server</b>
-          </a>
-          <a href="{% url 'add-paket' %}" class="row">
-            <i
-              class="fa-solid fa-plus"
-              style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
-            ></i>
-            <b>Add Paket</b>
-          </a>
-          <a href="{% url 'add-client' %}" class="row">
-            <i
-              class="fa-solid fa-plus"
-              style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
-            ></i>
-            <b>Add Client</b>
-          </a>
-        </div>
       </div>
     </div>
   </div>
@@ -200,15 +135,15 @@
           class="fa-solid fa-user"
           style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
         ></i>
-        <span class="title">Client List</span>
+        <span class="title">Daftar Pelanggan</span>
       </div>
-      <form action="" class="form-search row">
+      <form method="GET" class="form-search row">
         <input
           class="search-box"
           type="search"
           placeholder="Search"
-          id="gsearch"
-          name="search"
+          name="s"
+          value="{{ query }}"
         />
         <input class="search-button" type="submit" />
       </form>
@@ -218,92 +153,174 @@
         <tr class="t-head">
           <th>#</th>
           <th>Nama</th>
-          <th>Paket</th>
+          <th class="w-sm">Paket</th>
           <th class="center-th">Status</th>
           <th>ID PPPoE</th>
           <th>Rx</th>
-          <th>Aktif</th>
+          <th class="center-th">Device Aktif</th>
           <th>IP TR069</th>
           <th>Action</th>
         </tr>
+        {% for client in clients %}
         <tr class="t-d">
-          <td>1</td>
-          <td>John Doe</td>
-          <td>Paket A</td>
-          <td><div class="disable-t">Non Aktif</div></td>
-          <td>pppoe123</td>
+          <td>{{ client.id }}</td>
+          <td>{{ client.name }}</td>
+          <td>{{ client.id_paket }}</td>
+          <td class="td-center">
+            <div
+              class="{% if client.isActive %}enable-t{% else %}disable-t{% endif %}"
+            >
+              {% if client.isActive %}Online{% else %}Offline{% endif %}
+            </div>
+          </td>
+          <td>{{ client.pppoe }}</td>
           <td>-18 dbm</td>
-          <td>5</td>
+          <td class="td-center">5</td>
           <td>192.168.1.1</td>
-          <td><a href="#" class="main-button">View</a></td>
+          <td>
+            <a href="{% url 'detail-client' client.id %}" class="main-button"
+              >View</a
+            >
+          </td>
         </tr>
-        <tr class="t-d">
-          <td>2</td>
-          <td>Kumar De Jahe</td>
-          <td>Paket B</td>
-          <td><div class="enable-t">Aktif</div></td>
-          <td>yoi123</td>
-          <td>-23 dbm</td>
-          <td>5</td>
-          <td>192.168.1.2</td>
-          <td><a href="#" class="main-button">View</a></td>
+
+        {% empty %}
+        <tr>
+          <td colspan="7" class="center">Tidak ada data yang ditemukan</td>
         </tr>
+        {% endfor %}
       </table>
+    </div>
+    <div class="pagination row">
+      {% if clients.has_previous %}
+      <a
+        href="?page=1{% if query %}&search={{ query }}{% endif %}"
+        class="page-button"
+        >First</a
+      >
+      <a
+        href="?page={{ clients.previous_page_number }}{% if query %}&search={{ query }}{% endif %}"
+        class="page-button"
+        ><i class="fa-solid fa-angle-left"></i
+      ></a>
+      {% endif %}
+
+      <span class="current-page"
+        >Page {{ clients.number }} of {{ clients.paginator.num_pages }}</span
+      >
+
+      {% if clients.has_next %}
+      <a
+        href="?page={{ clients.next_page_number }}{% if query %}&search={{ query }}{% endif %}"
+        class="page-button"
+        ><i class="fa-solid fa-angle-right"></i
+      ></a>
+      <a
+        href="?page={{ clients.paginator.num_pages }}{% if query %}&search={{ query }}{% endif %}"
+        class="page-button"
+        >Last</a
+      >
+      {% endif %}
     </div>
   </div>
 </div>
 
-<script src="{% static 'js/chart.umd.js' %}"></script>
+<script src="{% static 'js/component/chartDashboard.js' %}"></script>
 
 <script>
-  const cpuLoad = document.getElementById("cpuLoad");
-  const memoryUsage = document.getElementById("memoryUsage");
-  const pppClient = document.getElementById("pppClient");
+  function loadServerInfo(serverId) {
+    const infoDiv = document.getElementById("server-info");
+    infoDiv.innerHTML = loadingComponent();
 
-  new Chart(cpuLoad, {
-    type: "doughnut",
-    data: {
-      datasets: [
-        {
-          rotation: 180,
-          cutout: 60,
-          data: [80, 20],
-          backgroundColor: ["#211C84", "#E8E2F5"],
-          hoverOffset: 4,
-        },
-      ],
-    },
-  });
+    fetch(`/get-server-info/${serverId}/`)
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.error) {
+          infoDiv.innerHTML = errorComponent(data.error);
+          initChartsWithDummy();
+        } else {
+          infoDiv.innerHTML = serverInfoComponent(data);
 
-  new Chart(memoryUsage, {
-    type: "doughnut",
-    data: {
-      datasets: [
-        {
-          rotation: 180,
-          cutout: 60,
-          data: [20, 80],
-          backgroundColor: ["#211C84", "#E8E2F5"],
-          hoverOffset: 4,
-        },
-      ],
-    },
-  });
+          // Inisialisasi Chart-nya
+          new Chart(document.getElementById("cpuLoad"), {
+            type: "doughnut",
+            data: {
+              datasets: [
+                {
+                  rotation: 180,
+                  cutout: 60,
+                  data: [data.cpu_load, 100 - data.cpu_load],
+                  backgroundColor: ["#211C84", "#E8E2F5"],
+                },
+              ],
+            },
+          });
 
-  new Chart(pppClient, {
-    type: "doughnut",
-    data: {
-      datasets: [
-        {
-          rotation: 180,
-          cutout: 60,
-          data: [90, 10],
-          backgroundColor: ["#211C84", "#E8E2F5"],
-          hoverOffset: 4,
-        },
-      ],
-    },
+          const used = data.total_memory - data.free_memory;
+          const usedPercent = ((used / data.total_memory) * 100).toFixed(2);
+
+          new Chart(document.getElementById("memoryUsage"), {
+            type: "doughnut",
+            data: {
+              datasets: [
+                {
+                  rotation: 180,
+                  cutout: 60,
+                  data: [usedPercent, 100 - usedPercent],
+                  backgroundColor: ["#211C84", "#E8E2F5"],
+                },
+              ],
+            },
+          });
+
+          new Chart(document.getElementById("pppClient"), {
+            type: "doughnut",
+            data: {
+              datasets: [
+                {
+                  rotation: 180,
+                  cutout: 60,
+                  data: [90, 10],
+                  backgroundColor: ["#211C84", "#E8E2F5"],
+                },
+              ],
+            },
+          });
+        }
+      })
+      .catch((err) => {
+        infoDiv.innerHTML = errorComponent(err.message || err);
+      });
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    const selectEl = document.getElementById("server");
+    const infoDiv = document.getElementById("server-info");
+
+    // Muat info server pertama saat halaman terbuka
+    if (selectEl && selectEl.value) {
+      loadServerInfo(selectEl.value);
+    } else {
+      infoDiv.innerHTML = `
+      <div class="no-data column">
+        <div class="img-wrapper">
+          <img src="{% static 'assets/nodata.webp' %}" alt="" />
+        </div>
+        <h3>Belum ada data yang ditambahkan</h3>
+        <p>Silakan tambahkan data <a href="{% url 'server' %}">disini</a> </p>
+      </div>
+      
+      
+      `;
+    }
+
+    // Ganti info saat pilih server lain
+    selectEl.addEventListener("change", function () {
+      loadServerInfo(this.value);
+    });
   });
 </script>
+
+<script src="{% static 'js/chart.umd.js' %}"></script>
 
 {% endblock %}

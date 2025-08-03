@@ -1,5 +1,5 @@
 from django import forms
-from .models import Server, Paket
+from .models import Server, Paket, IPPool, Client
 
 
 #server
@@ -18,14 +18,43 @@ class ServerForm(forms.ModelForm):
 class PaketForm(forms.ModelForm):
     class Meta : 
         model = Paket
-        fields = ['name', 'price', 'limit']
+        fields = ['name', 'price', 'limit', 'id_ip_pool']
         widgets = {
         'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Masukan Nama Paket'}),
         'price': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Contoh 200000'}),
         'limit': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Contoh 2M/2M'}),
+        'id_ip_pool': forms.Select(attrs={'class': 'form-control'}),
     }
     def clean_limit(self):
         limit = self.cleaned_data.get('limit')
         if limit:
             return limit.upper()
         return limit
+    
+class ipPoolForm(forms.ModelForm):
+    class Meta : 
+        model = IPPool
+        fields = ['name', 'ip_range', 'id_server']
+        widgets = {
+        'id_server': forms.Select(attrs={'class': 'form-control'}),
+        'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Masukan Nama Ip pool'}),
+        'ip_range': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Contoh 192.168.0.1 - 192.168.0.255'}),
+    }
+        
+   
+        
+
+class ClientForm(forms.ModelForm):
+    class Meta:
+        model = Client
+        fields = ['id_paket', 'name', 'address', 'phone', 'pppoe', 'password']
+        widgets = {
+            'id_paket': forms.Select(attrs={'class': 'form-control'}),
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Masukan Nama Pelanggan'}),
+            'address': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Masukan Alamat Pelanggan'}),
+            'phone': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Masukan No Hp Pelanggan'}),
+            'pppoe': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Masukan id pppoe Pelanggan'}),
+            'password': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Masukan password id pppoe Pelanggan'}),
+            
+        }
+

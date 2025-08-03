@@ -4,7 +4,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PlumNet | Network Automation</title>
+    <title>-</title>
     <link href="{% static 'css/style.css' %}" rel="stylesheet" />
     <link
       rel="icon"
@@ -78,27 +78,7 @@
           >
             <div class="row menu-collapse">
               <i class="fa-solid fa-check-to-slot"></i>
-              <span class="menu-text">Verifikasi</span>
-            </div>
-          </a>
-          <a
-            href="{% url 'setting' %}"
-            class="menu-link"
-            data-url="{% url 'setting' %}"
-          >
-            <div class="row menu-collapse">
-              <i class="fa-solid fa-gear"></i>
-              <span class="menu-text">Setting</span>
-            </div>
-          </a>
-          <a
-            href="{% url 'informasi' %}"
-            class="menu-link"
-            data-url="{% url 'informasi' %}"
-          >
-            <div class="row menu-collapse">
-              <i class="fa-solid fa-circle-info"></i>
-              <span class="menu-text">Informasi</span>
+              <span class="menu-text">Activasi</span>
             </div>
           </a>
         </div>
@@ -107,8 +87,21 @@
       <div class="content">
         <div class="header row">
           <div class="text-wrapper">
-            <div class="main-text">Halo Admin!</div>
-            <div class="text-grey">{% now "d F Y" %}</div>
+            {% if user.is_authenticated %}
+            <div class="row gap-20">
+              <div class="column">
+                <div class="main-text">Halo Admin!</div>
+                <div class="text-grey">{% now "d F Y" %}</div>
+              </div>
+              <a class="main-button" href="{% url 'logout' %}?next={{ request.path }}">Logout</a>
+            </div>
+            {% else %}
+            <div class="column gap-10 align-end ">
+              <a class="main-button" href="{% url 'login' %}">Login</a>
+              <div class="text-grey">{% now "d F Y" %}</div>
+
+            </div>
+            {% endif %}
           </div>
         </div>
         {% block content %} {% endblock %}
@@ -129,6 +122,7 @@
 
     <script src="{% static 'js/app.js' %}"></script>
     <script src="{% static 'js/loader.js' %}"></script>
+    <script src="{% static 'js/apply-theme.js' %}"></script>
 
     <script>
       window.addEventListener("pageshow", function (event) {

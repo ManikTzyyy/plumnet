@@ -11,13 +11,13 @@
         <span class="title">Client List</span>
       </div>
       <a href="{% url 'add-client' %}" class="success-button">Add CLient +</a>
-      <form action="" class="form-search row">
+      <form method="GET" class="form-search row">
         <input
           class="search-box"
           type="search"
           placeholder="Search"
-          id="gsearch"
-          name="search"
+          name="s"
+          value="{{ query }}"
         />
         <input class="search-button" type="submit" />
       </form>
@@ -29,85 +29,198 @@
           <th>#</th>
           <th>Nama</th>
           <th>Alamat</th>
-          <th>Tipe</th>
+          <th>No Hp</th>
           <th>Paket</th>
-          <th>No HP</th>
-          <th>Status</th>
-          <th>Jatuh Tempo</th>
+          <th>Server</th>
+          <th class="center-th">Status</th>
           <th class="center-th">Action</th>
+          {% if user.is_authenticated %}<th></th>{% else %}{% endif %}
+          
         </tr>
+        {% for client in clients %}
         <tr class="t-d">
-          <td>1</td>
-          <td>John Doe</td>
-          <td>Palembang</td>
-          <td>Rumah Pribadi</td>
-          <td>Pro</td>
-          <td>0981231321</td>
-          <td><div class="enable-t">Aktif</div></td>
-          <td>12 Hari</td>
-          <td>
-            <div class="row button-wrapper">
-              <a href="#" class="main-button">View</a>
-              <a href="#" class="warning-button">Edit</a>
-              <a href="#" class="danger-button">Delete</a>
+          <td>{{ client.id }}</td>
+          <td>{{ client.name }}</td>
+          <td>{{ client.address }}</td>
+          <td>{{ client.phone }}</td>
+          <td>{{ client.id_paket.name }} - {{ client.id_paket.limit }}</td>
+          <td>{{ client.id_paket.id_ip_pool.id_server.name }}</td>
+
+          <td class="td-center">
+            <div
+              class="{% if client.isActive %}enable-t{% else %}disable-t{% endif %}"
+            >
+              {% if client.isActive %}Online{% else %}Offline{% endif %}
             </div>
           </td>
-        </tr>
-        <tr class="t-d">
-          <td>2</td>
-          <td>Cacacola</td>
-          <td>Bogor</td>
-          <td>Perusahaan</td>
-          <td>Company</td>
-          <td>12232941</td>
-          <td><div class="enable-t">Aktif</div></td>
-          <td>3 hari</td>
           <td>
             <div class="row button-wrapper">
-              <a href="#" class="main-button">View</a>
-              <a href="#" class="warning-button">Edit</a>
-              <a href="#" class="danger-button">Delete</a>
+              <a href="{% url 'detail-client' client.id %}" class="main-button"
+                >view</a
+              >
+               <a href="{% url 'edit-client' client.id %}" class="warning-button"
+                >edit</a
+              >
+              <button
+                onclick="openDeleteModal('{{ client.id }}', '{{ client.name }}')"
+                class="danger-button"
+              >
+                delete</i>
+              </button>              
             </div>
-          </td>
+          </td >
+          {% if user.is_authenticated %}<td class="td-center">
+            <button
+              onclick="openVerifModal('{{ client.id }}', '{{ client.name }}')"
+              class="icon-button {% if client.isApproved %}disbale-button{% else %}main-button {% endif %}"
+              {% if client.isApproved %}disbale{% else %}{% endif %}
+            >
+              <i class="fa-solid fa-check"></i>
+            </button>
+          </td>{% else %}{% endif %}
+          
+          
+
         </tr>
-        <tr class="t-d">
-            <td>3</td>
-            <td>Rumah Sakit</td>
-            <td>Jakarta</td>
-            <td>Layanan Public</td>
-            <td>Pro</td>
-            <td>9999999</td>
-            <td><div class="enable-t">Aktif</div></td>
-            <td>5 hari</td>
-            <td>
-              <div class="row button-wrapper">
-                <a href="#" class="main-button">View</a>
-                <a href="#" class="warning-button">Edit</a>
-                <a href="#" class="danger-button">Delete</a>
-              </div>
-            </td>
-          </tr>
-        <tr class="t-d">
-            <td>4</td>
-            <td>Eka Skibidi</td>
-            <td>Bali</td>
-            <td>Pribadi</td>
-            <td>basic</td>
-            <td>1234567</td>
-            <td><div class="disable-t">Non Aktif</div></td>
-            <td>Sudah Jatuh tempo</td>
-            <td>
-              <div class="row button-wrapper">
-                <a href="#" class="main-button">View</a>
-                <a href="#" class="warning-button">Edit</a>
-                <a href="#" class="danger-button">Delete</a>
-              </div>
-            </td>
-          </tr>
-        
+        {% empty %}
+        <tr>
+          <td colspan="7" class="center">Tidak ada data yang ditemukan</td>
+        </tr>
+        {% endfor %}
       </table>
+    </div>
+    <div class="pagination row">
+      {% if clients.has_previous %}
+      <a
+        href="?page=1{% if query %}&search={{ query }}{% endif %}"
+        class="page-button"
+        >First</a
+      >
+      <a
+        href="?page={{ clients.previous_page_number }}{% if query %}&search={{ query }}{% endif %}"
+        class="page-button"
+        ><i class="fa-solid fa-angle-left"></i
+      ></a>
+      {% endif %}
+
+      <span class="current-page"
+        >Page {{ clients.number }} of {{ clients.paginator.num_pages }}</span
+      >
+
+      {% if clients.has_next %}
+      <a
+        href="?page={{ clients.next_page_number }}{% if query %}&search={{ query }}{% endif %}"
+        class="page-button"
+        ><i class="fa-solid fa-angle-right"></i
+      ></a>
+      <a
+        href="?page={{ clients.paginator.num_pages }}{% if query %}&search={{ query }}{% endif %}"
+        class="page-button"
+        >Last</a
+      >
+      {% endif %}
     </div>
   </div>
 </div>
+
+<div id="deleteModal" class="modal" style="display: none">
+  <div class="modal-content">
+    <span class="close" onclick="closeModalDelete()">&times;</span>
+    <div class="modal-header">
+      <h3>Konfirmasi Hapus</h3>
+    </div>
+
+    <div class="modal-text column">
+      <i
+        style="--clr-icon-modal: var(--clr-r1)"
+        class="fa-solid fa-triangle-exclamation"
+      ></i>
+      <p>Apakah Anda yakin ingin menghapus <b id="clientName"></b>?</p>
+    </div>
+
+    <form id="deleteForm" method="POST">
+      {% csrf_token %}
+      <button type="submit" class="danger-button">Ya, Hapus</button>
+      <button type="button" onclick="closeModalDelete()" class="grey-button">
+        Batal
+      </button>
+    </form>
+  </div>
+</div>
+
+<div id="verifModal" class="modal" style="display: none">
+  <div class="modal-content">
+    <span class="close" onclick="closeVerifModal()">&times;</span>
+    <div
+      class="modal-header"
+      style="background-color: var(--clr-y1) !important"
+    >
+      <h3>Verification</h3>
+    </div>
+    <div class="modal-text column">
+      <i
+        style="--clr-icon-modal: var(--clr-y1)"
+        class="fa-solid fa-circle-exclamation"
+      ></i>
+      <p>
+        Apakah anda yakin ingin {% if client.isApproved%}unverifikasi{%else%}verifikasi{% endif %}
+        <b id="clientNameVerif"></b>?
+      </p>
+    </div>
+
+    <form id="verifForm" method="POST">
+      {% csrf_token %}
+      <button type="submit" class="success-button">Ya</button>
+      <button type="button" onclick="closeVerifModal()" class="grey-button">
+        Batal
+      </button>
+    </form>
+  </div>
+</div>
+
+<script>
+  function openVerifModal(clientId, clientName) {
+    // console.log(clientId, clientName)
+    document.getElementById("clientNameVerif").textContent = clientName;
+    const modal = document.getElementById("verifModal");
+    const form = document.getElementById("verifForm");
+    form.action = `/client/${clientId}/verification/`;
+    modal.style.display = "block";
+  }
+
+  function closeVerifModal() {
+    document.getElementById("verifModal").style.display = "none";
+  }
+
+  // Menutup modal jika diklik di luar area modal
+  window.onclick = function (event) {
+    const modal = document.getElementById("verifModal");
+    if (event.target === modal) {
+      closeVerifModal();
+    }
+  };
+</script>
+
+<script>
+  function openDeleteModal(clientId, clientName) {
+    document.getElementById("clientName").textContent = clientName;
+    const modal = document.getElementById("deleteModal");
+    const form = document.getElementById("deleteForm");
+    form.action = `/client/${clientId}/delete/`; // sesuaikan dengan URL kamu
+    modal.style.display = "block";
+  }
+
+  function closeModalDelete() {
+    document.getElementById("deleteModal").style.display = "none";
+  }
+
+  // Menutup modal jika diklik di luar area modal
+  window.onclick = function (event) {
+    const modal = document.getElementById("deleteModal");
+    if (event.target === modal) {
+      closeModalDelete();
+    }
+  };
+</script>
 
 {% endblock %}

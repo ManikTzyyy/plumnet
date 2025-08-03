@@ -1,4 +1,4 @@
-{% extends 'dashboard/base.html' %} {% block content %}
+{% extends 'dashboard/base.html' %} {% block content %} {% load custom_filters%}
 
 <div class="content-page client">
   <div class="table-wrapper column">
@@ -11,13 +11,13 @@
         <span class="title">Client List</span>
       </div>
       <a href="{% url 'client' %}" class="main-button">View All Client</a>
-      <form action="" class="form-search row">
+      <form method="GET" class="form-search row">
         <input
           class="search-box"
           type="search"
           placeholder="Search"
-          id="gsearch"
-          name="search"
+          name="s"
+          value="{{ query }}"
         />
         <input class="search-button" type="submit" />
       </form>
@@ -29,30 +29,125 @@
           <th>#</th>
           <th>Nama</th>
           <th>Alamat</th>
-          <th>Tipe</th>
           <th>No HP</th>
-          <th>Bill</th>
+          <th>Paket</th>
 
           <th class="center-th">Action</th>
         </tr>
 
+        {% for client in clients %}
+
         <tr class="t-d">
-          <td>4</td>
-          <td>Eka Skibidi</td>
-          <td>Bali</td>
-          <td>Pribadi</td>
-          <td>1234567</td>
-          <td>Rp 200.000</td>
+          <td>{{ client.id }}</td>
+          <td>{{ client.name }}</td>
+          <td>{{ client.address }}</td>
+          <td>{{ client.phone }}</td>
+          <td>
+            {{ client.id_paket.name }} - {{ client.id_paket.price|rupiah }}
+          </td>
 
           <td>
             <div class="row button-wrapper">
-              <a href="#" class="main-button">Konfirmasi</a>
+              <a href="{% url 'detail-client' client.id %}" class="main-button"
+                >view</a
+              >
+              <button
+                onclick="openActivasiModal('{{ client.id }}', '{{ client.name }}')"
+                class="success-button"
+              >
+                Activasi
+              </button>
             </div>
           </td>
         </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7" class="center">Tidak ada data yang ditemukan</td>
+        </tr>
+        {% endfor %}
       </table>
+    </div>
+    <div class="pagination row">
+      {% if clients.has_previous %}
+      <a
+        href="?page=1{% if query %}&search={{ query }}{% endif %}"
+        class="page-button"
+        >First</a
+      >
+      <a
+        href="?page={{ clients.previous_page_number }}{% if query %}&search={{ query }}{% endif %}"
+        class="page-button"
+        ><i class="fa-solid fa-angle-left"></i
+      ></a>
+      {% endif %}
+
+      <span class="current-page"
+        >Page {{ clients.number }} of {{ clients.paginator.num_pages }}</span
+      >
+
+      {% if clients.has_next %}
+      <a
+        href="?page={{ clients.next_page_number }}{% if query %}&search={{ query }}{% endif %}"
+        class="page-button"
+        ><i class="fa-solid fa-angle-right"></i
+      ></a>
+      <a
+        href="?page={{ clients.paginator.num_pages }}{% if query %}&search={{ query }}{% endif %}"
+        class="page-button"
+        >Last</a
+      >
+      {% endif %}
     </div>
   </div>
 </div>
+
+<div id="activasiModal" class="modal" style="display: none">
+  <div class="modal-content">
+    <span class="close" onclick="closeModal()">&times;</span>
+    <div
+      class="modal-header"
+      style="background-color: var(--clr-y1) !important"
+    >
+      <h3>Activasi Pelanggan</h3>
+    </div>
+    <div class="modal-text column">
+      <i
+        style="--clr-icon-modal: var(--clr-y1)"
+        class="fa-solid fa-circle-exclamation"
+      ></i>
+      <p>Apakah Anda yakin ingin activasi <b id="clientName"></b>?</p>
+    </div>
+
+    <form id="activasiForm" method="POST">
+      {% csrf_token %}
+      <button type="submit" class="success-button">Ya</button>
+      <button type="button" onclick="closeModal()" class="grey-button">
+        Batal
+      </button>
+    </form>
+  </div>
+</div>
+
+<script>
+  function openActivasiModal(clientId, clientName) {
+    document.getElementById("clientName").textContent = clientName;
+    const modal = document.getElementById("activasiModal");
+    const form = document.getElementById("activasiForm");
+    form.action = `/client/${clientId}/toggle/`; // sesuaikan dengan URL kamu
+    modal.style.display = "block";
+  }
+
+  function closeModal() {
+    document.getElementById("activasiModal").style.display = "none";
+  }
+
+  // Menutup modal jika diklik di luar area modal
+  window.onclick = function (event) {
+    const modal = document.getElementById("activasiModal");
+    if (event.target === modal) {
+      closeModal();
+    }
+  };
+</script>
 
 {% endblock %}

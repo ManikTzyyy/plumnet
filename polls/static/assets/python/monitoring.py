@@ -6,9 +6,9 @@ import json
 
 def get_mikrotik_info():
     # Konfigurasi Mikrotik
-    host = '192.168.0.141'
-    username = 'manik'
-    password = 'manik'
+    host = '192.168.0.200'
+    username = 'admin'
+    password = ''
     port = 8728  # default API port RouterOS (non-ssl)
 
     try:
@@ -25,6 +25,7 @@ def get_mikrotik_info():
         # Contoh ambil resource
         resource = api.get_resource('/system/resource')
         system_info = resource.get()[0]
+
         
         interfaces = api.get_resource('/interface')
         data = interfaces.get()
@@ -51,13 +52,12 @@ def get_mikrotik_info():
             rx_byte = int(iface.get('rx-byte', 0))
             tx_byte = int(iface.get('tx-byte', 0))
             
-            rx_mbps = round((rx_byte * 8) / 1_000_000, 2),
-            tx_mbps = round((tx_byte * 8) / 1_000_000, 2),
+            rx_mbps = round((rx_byte * 8) / 1_000_000, 2)
+            tx_mbps = round((tx_byte * 8) / 1_000_000, 2)
+
             
             interface_data.append({
                 'name': iface['name'],
-                # 'rx_byte': iface.get('rx-byte', 0),
-                # 'tx_byte': iface.get('tx-byte', 0),
                 'rx_mbps': rx_mbps,
                 'tx_mbps': tx_mbps
         })
@@ -73,9 +73,10 @@ def get_mikrotik_info():
             'version': system_info['version'],
             'board_name': system_info['board-name'],
             'interface': interface_data,
+            # 'full' : system_info 
+        
         }
         
-        # return system_info;
 
     except (RouterOsApiCommunicationError, RouterOsApiConnectionError) as e:
         pprint(f"Error: {e}")

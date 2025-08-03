@@ -1,0 +1,43 @@
+{% extends 'dashboard/base.html' %} {% block content %}
+
+<div class="content-page">
+  <div class="form-wrapper column">
+    <div class="form-header column">
+      <div class="row title-head-td">
+        <i
+          class="fa-solid fa-clipboard-list"
+          style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
+        ></i>
+        <span class="title">{{ form.instance.pk|yesno:"Edit IP Pool,Buat IP Pool Baru" }}</span>
+      </div>
+    </div>
+
+    <form method="post" class="column">
+      {% csrf_token %}
+      <div class="column">
+        <label for="name">Server</label>
+        {{ form.id_server }}
+      </div>
+      <div class="column">
+        <label for="name">Name</label>
+        {{ form.name }}
+      </div>
+      <div class="column">
+        <label for="price">Ip Range</label>
+        {{ form.ip_range }}
+      </div>
+      <div class="row button-wrapper">
+        <button class="success-button" type="submit">Simpan</button>
+        <button
+          class="warning-button no-loader"
+          type="button"
+          onclick="window.history.back();"
+        >
+          Batal
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}
