@@ -42,8 +42,6 @@ urlpatterns = [
     #==========================
     path('client/<int:client_id>/toggle/', views.toggle_activasi, name='toggle_activasi'),
 
-    path('client-detail/<int:client_id>/toggle/', views.toggle_activasi_client_detail, name='toggle_activasi_client_detail'),
-
     path('client/<int:client_id>/verification/', views.toggle_verif, name='toggle_verif'),
     #/client-detail/${clientId}/verification/
     path('server-list/test-connection/<int:pk>/', views.test_connection, name='test-connection'),

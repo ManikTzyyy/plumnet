@@ -47,4 +47,29 @@
   </div>
 </div>
 
+{% if success %}
+<script>
+Swal.fire({
+  icon: 'success',
+  title: 'Data berhasil disimpan!',
+  text: 'Anda akan dialihkan ke halaman Paket.',
+  timer: 2000,
+  showConfirmButton: false
+}).then(() => {
+  window.location.href = "{% url 'paket' %}";
+});
+</script>
+{% endif %}
+
+{% if error_message %}
+<script>
+Swal.fire({
+  icon: 'error',
+  title: 'Gagal menyimpan!',
+  text: '{{ error_message|escapejs }}',
+  confirmButtonText: 'OK'
+});
+</script>
+{% endif %}
+
 {% endblock %}

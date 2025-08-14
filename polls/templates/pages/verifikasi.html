@@ -52,7 +52,7 @@
                 >view</a
               >
               <button
-                onclick="openActivasiModal('{{ client.id }}', '{{ client.name }}')"
+                onclick="toggleActivasiClient('{{ client.id }}', '{{ client.name }}', `{{ client.isActive|yesno:'true,false' }}`,'activation')"
                 class="success-button"
               >
                 Activasi
@@ -101,53 +101,6 @@
   </div>
 </div>
 
-<div id="activasiModal" class="modal" style="display: none">
-  <div class="modal-content">
-    <span class="close" onclick="closeModal()">&times;</span>
-    <div
-      class="modal-header"
-      style="background-color: var(--clr-y1) !important"
-    >
-      <h3>Activasi Pelanggan</h3>
-    </div>
-    <div class="modal-text column">
-      <i
-        style="--clr-icon-modal: var(--clr-y1)"
-        class="fa-solid fa-circle-exclamation"
-      ></i>
-      <p>Apakah Anda yakin ingin activasi <b id="clientName"></b>?</p>
-    </div>
 
-    <form id="activasiForm" method="POST">
-      {% csrf_token %}
-      <button type="submit" class="success-button">Ya</button>
-      <button type="button" onclick="closeModal()" class="grey-button">
-        Batal
-      </button>
-    </form>
-  </div>
-</div>
-
-<script>
-  function openActivasiModal(clientId, clientName) {
-    document.getElementById("clientName").textContent = clientName;
-    const modal = document.getElementById("activasiModal");
-    const form = document.getElementById("activasiForm");
-    form.action = `/client/${clientId}/toggle/`; // sesuaikan dengan URL kamu
-    modal.style.display = "block";
-  }
-
-  function closeModal() {
-    document.getElementById("activasiModal").style.display = "none";
-  }
-
-  // Menutup modal jika diklik di luar area modal
-  window.onclick = function (event) {
-    const modal = document.getElementById("activasiModal");
-    if (event.target === modal) {
-      closeModal();
-    }
-  };
-</script>
 
 {% endblock %}

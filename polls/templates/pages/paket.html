@@ -46,7 +46,7 @@
                 >Edit</a
               >
               <button
-                onclick="openDeleteModal('{{ paket.id }}','{{ paket.name }}')"
+                onclick="deleteData('{{ paket.id }}', 'paket', 'paket-list')"
                 class="danger-button"
               >
                 Delete
@@ -128,7 +128,7 @@
                 >Edit</a
               >
               <button
-                onclick="openDeleteModalIP('{{ ip.id }}', '{{ip.name}}')"
+                onclick="deleteData('{{ ip.id }}', 'ip', 'paket-list')"
                 class="danger-button"
               >
                 Delete
