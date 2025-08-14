@@ -2,8 +2,8 @@
 
 <div class="content-page">
   <div class="form-wrapper column">
-    <div class="form-header row">
-      <div class="row title-head-td">
+    <div class="form-header row wrap">
+      <div class="row title-head-td ">
         <i
           class="fa-solid fa-user"
           style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
@@ -11,8 +11,11 @@
         <span class="title">Pelanggan</span>
       </div>
       <a href="{% url 'client' %}" class="main-button">Kembali</a>
+      {% if not client.isApproved %}
+      <button  class="info-button" id="data-baru-btn" onclick="cekModifyClientData('{{ client.id }}','{{client.temp_name}}','{{client.temp_address}}','{{client.temp_phone}}', '{{client.temp_paket.id_ip_pool.id_server.name}}', '{{ client.temp_paket.name }} - {{ client.temp_paket.price|rupiah }} - {{ client.temp_paket.limit }}', '{{client.temp_pppoe}}')">Pembaruan</button>
+      {% endif %}
     </div>
-    <div class="info-client row">
+    <div class="info-client relative row">
       <div class="wrapper column">
         <h2>Informasi Pelanggan</h2>
         <div class="column">
@@ -64,62 +67,21 @@
           </div>
         </div>
       </div>
+      <div class="container-map relative" style="width: 600px; height: 300px;" >
+        <div id="map-client" style="height: 100%; width: 100%;"></div>
+      </div>
     </div>
-    <div class="row button-wrapper no-loader">
-       <button onclick="openActivasiModal('{{ client.id }}')" class="{% if user.is_authenticated %}main-button{% else %}disbale-button{% endif %}" {% if not user.is_authenticated %}disabled{% endif %} >{% if client.isActive %}Nonaktifkan{% else %}Activasi{% endif %}</button>
+    <div class="row button-wrapper no-loader wrap">
+      <form id="delete-form" method="POST" style="display: none;">
+        {% csrf_token %}
+      </form>
+
+       <button onclick="toggleActivasiClient('{{ client.id }}', '{{ client.name }}',`{{ client.isActive|yesno:'true,false' }}`, 'detail-client')" class="{% if user.is_authenticated %}main-button{% else %}disbale-button{% endif %}" {% if not user.is_authenticated %}disabled{% endif %} >{% if client.isActive %}Nonaktifkan{% else %}Activasi{% endif %}</button>
+       <button  onclick="deleteData('{{ client.id }}', 'client', 'client')" class="danger-button">Delete</button>
       <button  class="info-button">Reboot Perangkat</button>
        <a href="{% url 'edit-client' client.id %}" class="warning-button">Edit</a>
-      <button  onclick="openDeleteModal('{{ client.id }}')" class="danger-button">Delete</button>
     </div>
 
-{% if not client.isApproved %}
-<br><br>
-<div class="form-header row" style="border-top: 1px solid var(--clr-grey);">
-      <div class="title-head-td">
-        <br>
-        <span class="title">Menunggu Verifikasi Admin</span>
-      </div>
-    </div>
-    <div class="info-client row">
-      <div class="wrapper column">
-        <h2>Informasi Pelanggan</h2>
-        <div class="column">
-          <div class="title strong">Nama</div>
-          <div class="text">{{ client.temp_name }}</div>
-        </div>
-        <div class="column">
-          <div class="title strong">Alamat</div>
-          <div class="text">{{ client.temp_address }}</div>
-        </div>
-        <div class="column">
-          <div class="title strong">No HP</div>
-          <div class="text">{{ client.temp_phone }}</div>
-        </div>
-      </div>
-      <div class="wrapper column">
-        <h2>Informasi Server</h2>
-        <div class="column">
-          <div class="title strong">Server</div>
-          <div class="text">{{ client.temp_paket.id_ip_pool.id_server.name }}</div>
-        </div>
-        <div class="column">
-          <div class="title strong">Paket</div>
-          <div class="text">{{ client.temp_paket.name }} - {{ client.temp_paket.price|rupiah }} - {{ client.temp_paket.limit }}</div>
-        </div>
-        <div class="column">
-          <div class="title strong">Id PPPoE</div>
-          <div class="text">{{ client.temp_pppoe }}</div>
-        </div>
-        <div class="column">
-          <div class="title strong">Password PPPoE</div>
-          <div class="text">{{ client.temp_password }}</div>
-        </div>
-      </div>
-    </div>
-    <button onclick="openVerifModal('{{ client.id }}')" class="{% if user.is_authenticated %}main-button{% else %}disbale-button{% endif %}" {% if not user.is_authenticated %}disabled{% endif %} >Verifikasi Perubahan</button>
-{% endif %}
-  </div>
-</div>
 
 
 <div id="deleteModal" class="modal" style="display: none">
@@ -216,27 +178,6 @@
 
 
 <script>
-  function openDeleteModal(clientId) {
-    const modal = document.getElementById("deleteModal");
-    const form = document.getElementById("deleteForm");
-    form.action = `/client/${clientId}/delete/`; // sesuaikan dengan URL kamu
-    modal.style.display = "block";
-  }
-
-  function closeModalDelete() {
-    document.getElementById("deleteModal").style.display = "none";
-  }
-
-  // Menutup modal jika diklik di luar area modal
-  window.onclick = function (event) {
-    const modal = document.getElementById("deleteModal");
-    if (event.target === modal) {
-      closeModalDelete();
-    }
-  };
-</script>
-
-<script>
   function openActivasiModal(clientId) {
     const modal = document.getElementById("activasiModal");
     const form = document.getElementById("activasiForm");
@@ -256,6 +197,33 @@
     }
   };
 </script>
+
+<script>
+  const deleteForm = document.getElementById("delete-form");
+</script>
+
+
+<script>
+  var latitude = -8.118556
+  var longitude = 115.103444
+
+   var map = L.map('map-client').setView(
+            [latitude, longitude],
+            15
+        );
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        L.marker([latitude, longitude])
+            .addTo(map)
+            .bindPopup("Sumedang")
+            .openPopup();
+</script>
+
+
+
 
 
 

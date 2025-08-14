@@ -57,4 +57,19 @@ class ClientForm(forms.ModelForm):
             'password': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Masukan password id pppoe Pelanggan'}),
             
         }
+    def clean_pppoe(self):
+        pppoe = self.cleaned_data.get('pppoe')
+
+        # 1. Tidak boleh ada spasi
+        if ' ' in pppoe:
+            raise forms.ValidationError("ID PPPoE tidak boleh mengandung spasi.")
+
+        # 2. Harus unik, kecuali untuk data yang sedang diedit
+        qs = Client.objects.filter(pppoe=pppoe)
+        if self.instance.pk:  # Jika sedang edit, jangan cek dirinya sendiri
+            qs = qs.exclude(pk=self.instance.pk)
+        if qs.exists():
+            raise forms.ValidationError("ID PPPoE ini sudah digunakan, silakan pilih yang lain.")
+
+        return pppoe
 

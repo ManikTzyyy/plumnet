@@ -175,7 +175,7 @@
           </td>
           <td>{{ client.pppoe }}</td>
           <td>-18 dbm</td>
-          <td class="td-center">5</td>
+          <td class="td-center" style="padding: 18px 0;">5</td>
           <td>192.168.1.1</td>
           <td>
             <a href="{% url 'detail-client' client.id %}" class="main-button"
@@ -321,6 +321,6 @@
   });
 </script>
 
-<script src="{% static 'js/chart.umd.js' %}"></script>
+<script src="{% static 'js/library/chart.umd.js' %}"></script>
 
 {% endblock %}

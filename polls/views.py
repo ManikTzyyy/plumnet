@@ -181,39 +181,69 @@ def verifikasi(request) :
 #forms
 
 def addServer(request):
+    success = False
+    error_message = None
     if request.method == "POST":
         form = ServerForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('server') 
+            success = True
+            # return redirect('server') 
+        else:
+            error_message = ''
+            for field, errors in form.errors.items():
+                error_message += f"{field}: {', '.join(errors)}\n"
     else:
         form = ServerForm()
 
-    return render(request, 'form-pages/form-server.html', {'form': form})
+    return render(request, 'form-pages/form-server.html', {'form': form, 'success': success, 'error_message':error_message})
 
-def addProfile(request) : 
+def addProfile(request) :
+    success = False
+    error_message = None 
     if request.method == "POST":
         form = PaketForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('paket') 
+            success = True
+
+        else:
+            error_message = ''
+            for field, errors in form.errors.items():
+                error_message += f"{field}: {', '.join(errors)}\n"
     else:
         form = PaketForm()
 
-    return render(request, 'form-pages/form-profile.html', {'form': form})
+    return render(request, 'form-pages/form-profile.html', {
+        'form': form,
+        'success': success, 
+        'error_message':error_message
+        })
 
 def addIp(request) : 
+    success = False
+    error_message = None 
     if request.method == "POST":
         form = ipPoolForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('paket')
+            success = True
+        else:
+            error_message = ''
+            for field, errors in form.errors.items():
+                error_message += f"{field}: {', '.join(errors)}\n"
     else:
         form = ipPoolForm()
 
-    return render(request, 'form-pages/form-ip.html', {'form': form})
+    return render(request, 'form-pages/form-ip.html', {
+        'form': form,
+        'success': success, 
+        'error_message':error_message
+        })
 
 def addClient(request) : 
+    success = False
+    error_message = None
     if request.method == "POST":
         form = ClientForm(request.POST)
         if form.is_valid():
@@ -233,64 +263,110 @@ def addClient(request) :
                 temp_phone=cd['phone'],
                 temp_pppoe=cd['pppoe'],
                 temp_password=cd['password'],
-
             )
-
             client.save()
-            return redirect('client')
+            success = True
+            # return redirect('client')
+        else:
+            error_message = ''
+            for field, errors in form.errors.items():
+                error_message += f"{field}: {', '.join(errors)}\n"
     else:
         form = ClientForm()
 
-    return render(request, 'form-pages/form-client.html', {'form': form})
+    return render(request, 'form-pages/form-client.html', {'form': form, 'success': success, 'error_message':error_message})
 
 
 #edit data
 def edit_server(request, pk):
+    success = False
+    error_message = None
     server = get_object_or_404(Server, pk=pk)
 
     if request.method == 'POST':
         form = ServerForm(request.POST, instance=server)
         if form.is_valid():
             form.save()
-            return redirect('server')  # Ubah ke URL yang sesuai dengan list server kamu
+            success = True
+        else:
+            error_message = ''
+            for field, errors in form.errors.items():
+                error_message += f"{field}: {', '.join(errors)}\n"
     else:
         form = ServerForm(instance=server)
 
-    return render(request, 'form-pages/form-server.html', {'form': form, 'is_edit': True})
+    return render(request, 'form-pages/form-server.html', {
+        'form': form,
+        'is_edit': True,
+        'success': success,
+        'error_message': error_message
+        })
 
 def edit_paket(request, pk):
+    success = False
+    error_message = None
     paket = get_object_or_404(Paket, pk=pk)
 
     if request.method == 'POST':
         form = PaketForm(request.POST, instance=paket)
         if form.is_valid():
             form.save()
-            return redirect('paket')  
+            success = True 
+        else:
+            error_message = ''
+            for field, errors in form.errors.items():
+                error_message += f"{field}: {', '.join(errors)}\n"
     else:
         form = PaketForm(instance=paket)
 
-    return render(request, 'form-pages/form-profile.html', {'form': form, 'is_edit': True})
+    return render(request, 'form-pages/form-profile.html', {
+        'form': form, 
+        'is_edit': True,
+        'success': success,
+        'error_message': error_message
+        })
 
 
 def edit_ip(request, pk):
+    success = False
+    error_message = None
     ip_pool = get_object_or_404(IPPool, pk=pk)
 
     if request.method == 'POST':
         form = ipPoolForm(request.POST, instance=ip_pool)
         if form.is_valid():
             form.save()
-            return redirect('paket')  
+            success = True 
+        else:
+            error_message = ''
+            for field, errors in form.errors.items():
+                error_message += f"{field}: {', '.join(errors)}\n"
     else:
         form = ipPoolForm(instance=ip_pool)
 
-    return render(request, 'form-pages/form-ip.html', {'form': form, 'is_edit': True})
+    return render(request, 'form-pages/form-ip.html', {
+        'form': form, 
+        'is_edit': True,
+        'success': success,
+        'error_message': error_message
+        })
 
 
 def edit_client(request, pk):
     client = get_object_or_404(Client, pk=pk)
+    success = False
+    error_message = None
 
     if request.method == 'POST':
-        form = ClientForm(request.POST)
+        # Simpan nilai asli biar gak ketimpa
+        old_name = client.name
+        old_address = client.address
+        old_phone = client.phone
+        old_pppoe = client.pppoe
+        old_password = client.password
+        old_id_paket = client.id_paket
+
+        form = ClientForm(request.POST, instance=client)
         if form.is_valid():
             cd = form.cleaned_data
             client.temp_paket = cd['id_paket']
@@ -299,9 +375,22 @@ def edit_client(request, pk):
             client.temp_phone = cd['phone']
             client.temp_pppoe = cd['pppoe']
             client.temp_password = cd['password']
-            client.isApproved = False  # Menunggu approval admin
+            client.isApproved = False
+
+            # Balikin field asli
+            client.name = old_name
+            client.address = old_address
+            client.phone = old_phone
+            client.pppoe = old_pppoe
+            client.password = old_password
+            client.id_paket = old_id_paket
+
             client.save()
-            return redirect('client')  
+            success = True
+        else:
+            error_message = ''
+            for field, errors in form.errors.items():
+                error_message += f"{field}: {', '.join(errors)}\n"
     else:
         initial_data = {
             'name': client.temp_name or client.name,
@@ -309,11 +398,16 @@ def edit_client(request, pk):
             'phone': client.temp_phone or client.phone,
             'pppoe': client.temp_pppoe or client.pppoe,
             'password': client.temp_password or client.password,
-            'id_paket': client.id_paket
+            'id_paket': client.temp_paket or client.id_paket
         }
-        form = ClientForm(initial=initial_data)
+        form = ClientForm(initial=initial_data, instance=client)
 
-    return render(request, 'form-pages/form-client.html', {'form': form, 'is_edit': True})
+    return render(request, 'form-pages/form-client.html', {
+        'form': form,
+        'is_edit': True,
+        'success': success,
+        'error_message': error_message
+    })
 
 
 #delete data
@@ -323,10 +417,9 @@ def delete_server(request, pk):
     
     if request.method == "POST":
         server.delete()
-        messages.success(request, "Server berhasil dihapus.")
-        return redirect('server')  
+        return JsonResponse({'success': True, 'message': "Data berhasil dihapus."})  
     
-    return redirect('detail-server', pk=pk)
+    return JsonResponse({'success': False, 'message': "Metode tidak diizinkan."}, status=400)
 
 
 
@@ -335,30 +428,27 @@ def delete_paket(request, pk):
     
     if request.method == "POST":
         paket.delete()
-        messages.success(request, "Paket berhasil dihapus.")
-        return redirect('paket')  
+        return JsonResponse({'success': True, 'message': "Data berhasil dihapus."})  
     
-    return redirect('paket', pk=pk)
+    return JsonResponse({'success': False, 'message': "Metode tidak diizinkan."}, status=400)
 
 def delete_ip(request, pk):
     ip_pool = get_object_or_404(IPPool, pk=pk)
     
     if request.method == "POST":
         ip_pool.delete()
-        messages.success(request, "IP Pool berhasil dihapus.")
-        return redirect('paket')  
+        return JsonResponse({'success': True, 'message': "Data berhasil dihapus."})  
     
-    return redirect('paket', pk=pk)
+    return JsonResponse({'success': False, 'message': "Metode tidak diizinkan."}, status=400)
 
 def delete_client(request, pk):
     client = get_object_or_404(Client, pk=pk)
     
     if request.method == "POST":
         client.delete()
-        messages.success(request, "IP Pool berhasil dihapus.")
-        return redirect('client')  
+        return JsonResponse({'success': True, 'message': "Data berhasil dihapus."})
     
-    return redirect('client', pk=pk)
+    return JsonResponse({'success': False, 'message': "Metode tidak diizinkan."}, status=400)
 
 #detail
 
@@ -373,32 +463,76 @@ def detailClient(request, client_id) :
     return render(request, 'detail-pages/detail-client.html',{'client': client})
 
 #=========================================================================
-@login_required(login_url='/login/')
+
 def toggle_activasi(request, client_id):
-    client = get_object_or_404(Client, id=client_id)
-    client.isActive = not client.isActive
-    client.save()
-    return redirect('verifikasi')
+    if not request.user.is_authenticated:
+        return JsonResponse({
+            "success": False,
+            "message": "Anda harus login dahulu untuk melakukan verifikasi."
+        }, status=401)
 
-@login_required(login_url='/login/')
-def toggle_activasi_client_detail(request, client_id):
-    client = get_object_or_404(Client, id=client_id)
-    client.isActive = not client.isActive
-    client.save()
-    return redirect('detail-client',client_id=client.id)
+    try:
+        client = get_object_or_404(Client, id=client_id)
+        client.isActive = not client.isActive
+        client.save()
 
-@login_required(login_url='/login/')
+        return JsonResponse({
+            "success": True,
+            "message": "Client berhasil diaktifkan." if client.isActive else "Client berhasil dinonaktifkan."
+        })
+    except Exception as e:
+        return JsonResponse({
+            "success": False,
+            "message": str(e) or "Terjadi kesalahan saat memproses verifikasi."
+        }, status=500)
+
+
 def toggle_verif(request, client_id):
-    client = get_object_or_404(Client, id=client_id)
-    client.id_paket = client.temp_paket
-    client.name = client.temp_name
-    client.address = client.temp_address
-    client.phone = client.temp_phone
-    client.pppoe = client.temp_pppoe
-    client.password = client.temp_password
-    client.isApproved = not client.isApproved
-    client.save()
-    return redirect('client')
+    if not request.user.is_authenticated:
+        return JsonResponse({
+            "success": False,
+            "message": "Anda harus login dahulu untuk melakukan verifikasi."
+        }, status=401)  # Unauthorized
+
+    try:
+        client = get_object_or_404(Client, id=client_id)
+
+         # Cek duplikasi PPPoE hanya jika akan meng-approve
+        if not client.isApproved:
+            if Client.objects.filter(
+                Q(pppoe=client.temp_pppoe) & ~Q(id=client.id)
+            ).exists():
+                return JsonResponse({
+                    "success": False,
+                    "message": f"ID PPPoE '{client.temp_pppoe}' sudah digunakan oleh client lain."
+                })
+
+        # Pindahkan data temp ke data utama
+        client.id_paket = client.temp_paket
+        client.name = client.temp_name
+        client.address = client.temp_address
+        client.phone = client.temp_phone
+        client.pppoe = client.temp_pppoe
+        client.password = client.temp_password
+
+        # Toggle status
+        client.isApproved = not client.isApproved
+        client.save()
+
+        return JsonResponse({
+            "success": True,
+            "message": (
+                f"Client {client.name} berhasil diverifikasi."
+                if client.isApproved else
+                f"Verifikasi untuk {client.name} dibatalkan."
+            )
+        })
+    except Exception as e:
+        return JsonResponse({
+            "success": False,
+            "message": str(e) or "Terjadi kesalahan saat memproses verifikasi."
+        }, status=500)
+
 
 
 def is_reachable(ip):

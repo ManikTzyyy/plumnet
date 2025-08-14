@@ -1,4 +1,4 @@
-{% extends 'dashboard/base.html' %} {% block content %}
+{% extends 'dashboard/base.html' %} {% block content %} {% load custom_filters%}
 
 <div class="content-page client">
   <div class="table-wrapper column">
@@ -62,16 +62,16 @@
                 >edit</a
               >
               <button
-                onclick="openDeleteModal('{{ client.id }}', '{{ client.name }}')"
+                onclick="deleteData('{{ client.id }}', 'client', 'client')"
                 class="danger-button"
               >
                 delete</i>
               </button>              
             </div>
           </td >
-          {% if user.is_authenticated %}<td class="td-center">
+          {% if user.is_authenticated %}<td>
             <button
-              onclick="openVerifModal('{{ client.id }}', '{{ client.name }}')"
+              onclick="cekModifyClientData('{{ client.id }}','{{client.temp_name}}','{{client.temp_address}}','{{client.temp_phone}}', '{{client.temp_paket.id_ip_pool.id_server.name}}', '{{ client.temp_paket.name }} - {{ client.temp_paket.price|rupiah }} - {{ client.temp_paket.limit }}', '{{client.temp_pppoe}}')"
               class="icon-button {% if client.isApproved %}disbale-button{% else %}main-button {% endif %}"
               {% if client.isApproved %}disbale{% else %}{% endif %}
             >
@@ -123,104 +123,11 @@
   </div>
 </div>
 
-<div id="deleteModal" class="modal" style="display: none">
-  <div class="modal-content">
-    <span class="close" onclick="closeModalDelete()">&times;</span>
-    <div class="modal-header">
-      <h3>Konfirmasi Hapus</h3>
-    </div>
 
-    <div class="modal-text column">
-      <i
-        style="--clr-icon-modal: var(--clr-r1)"
-        class="fa-solid fa-triangle-exclamation"
-      ></i>
-      <p>Apakah Anda yakin ingin menghapus <b id="clientName"></b>?</p>
-    </div>
 
-    <form id="deleteForm" method="POST">
-      {% csrf_token %}
-      <button type="submit" class="danger-button">Ya, Hapus</button>
-      <button type="button" onclick="closeModalDelete()" class="grey-button">
-        Batal
-      </button>
-    </form>
-  </div>
-</div>
 
-<div id="verifModal" class="modal" style="display: none">
-  <div class="modal-content">
-    <span class="close" onclick="closeVerifModal()">&times;</span>
-    <div
-      class="modal-header"
-      style="background-color: var(--clr-y1) !important"
-    >
-      <h3>Verification</h3>
-    </div>
-    <div class="modal-text column">
-      <i
-        style="--clr-icon-modal: var(--clr-y1)"
-        class="fa-solid fa-circle-exclamation"
-      ></i>
-      <p>
-        Apakah anda yakin ingin {% if client.isApproved%}unverifikasi{%else%}verifikasi{% endif %}
-        <b id="clientNameVerif"></b>?
-      </p>
-    </div>
 
-    <form id="verifForm" method="POST">
-      {% csrf_token %}
-      <button type="submit" class="success-button">Ya</button>
-      <button type="button" onclick="closeVerifModal()" class="grey-button">
-        Batal
-      </button>
-    </form>
-  </div>
-</div>
 
-<script>
-  function openVerifModal(clientId, clientName) {
-    // console.log(clientId, clientName)
-    document.getElementById("clientNameVerif").textContent = clientName;
-    const modal = document.getElementById("verifModal");
-    const form = document.getElementById("verifForm");
-    form.action = `/client/${clientId}/verification/`;
-    modal.style.display = "block";
-  }
 
-  function closeVerifModal() {
-    document.getElementById("verifModal").style.display = "none";
-  }
-
-  // Menutup modal jika diklik di luar area modal
-  window.onclick = function (event) {
-    const modal = document.getElementById("verifModal");
-    if (event.target === modal) {
-      closeVerifModal();
-    }
-  };
-</script>
-
-<script>
-  function openDeleteModal(clientId, clientName) {
-    document.getElementById("clientName").textContent = clientName;
-    const modal = document.getElementById("deleteModal");
-    const form = document.getElementById("deleteForm");
-    form.action = `/client/${clientId}/delete/`; // sesuaikan dengan URL kamu
-    modal.style.display = "block";
-  }
-
-  function closeModalDelete() {
-    document.getElementById("deleteModal").style.display = "none";
-  }
-
-  // Menutup modal jika diklik di luar area modal
-  window.onclick = function (event) {
-    const modal = document.getElementById("deleteModal");
-    if (event.target === modal) {
-      closeModalDelete();
-    }
-  };
-</script>
 
 {% endblock %}

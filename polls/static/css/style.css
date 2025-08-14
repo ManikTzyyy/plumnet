@@ -117,6 +117,10 @@ button:hover {
   justify-content: end;
 }
 
+.relative{
+  position: relative;
+}
+
 /* Scrollbar utama (track) */
 ::-webkit-scrollbar {
   width: 8px; /* atau height kalau horizontal */
@@ -156,6 +160,10 @@ button:hover {
 .column {
   display: flex;
   flex-direction: column;
+}
+
+.wrap{
+  flex-wrap: wrap;
 }
 
 .img-wrapper {
@@ -328,6 +336,10 @@ button:hover {
   text-align: left;
 }
 
+tr:hover{
+  background-color: rgb(245, 245, 245);
+}
+
 .table .t-d td {
   white-space: nowrap;
   font-size: 0.8em;
@@ -375,6 +387,8 @@ button:hover {
   justify-content: center;
   align-items: center;
 }
+
+
 
 .main-button,
 .success-button,
@@ -1132,6 +1146,16 @@ button:hover {
   font-size: 5em;
   color: var(--clr);
   animation: hu__hu__ 0.5s ease-in-out;
+}
+
+.container-map{
+  background-color: red;
+  /* width: 100%; */
+  display: flex;
+}
+
+*{
+  /* border: 1px solid red; */
 }
 
 @keyframes hu__hu__ {

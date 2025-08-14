@@ -5,12 +5,19 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>-</title>
+    <link href="{% static 'css/leaflet.css' %}" rel="stylesheet" />
+    <link href="{% static 'css/sweetalert2.min.css' %}" rel="stylesheet" />
     <link href="{% static 'css/style.css' %}" rel="stylesheet" />
     <link
       rel="icon"
       type="image/x-icon"
       href="{% static 'assets/logo-circle.png' %}"
     />
+
+    <!-- <script src="{% static 'js/library/jquery-3.7.1.min.js' %}"></script> -->
+    <script src="{% static 'js/service/script.js' %}"></script>
+    <script src="{% static 'js/library/leaflet.js' %}"></script>
+    <script src="{% static 'js/library/sweetalert2.all.min.js' %}"></script>
 
     <!-- font awesome -->
     <link
@@ -93,13 +100,16 @@
                 <div class="main-text">Halo Admin!</div>
                 <div class="text-grey">{% now "d F Y" %}</div>
               </div>
-              <a class="main-button" href="{% url 'logout' %}?next={{ request.path }}">Logout</a>
+              <a
+                class="main-button"
+                href="{% url 'logout' %}?next={{ request.path }}"
+                >Logout</a
+              >
             </div>
             {% else %}
-            <div class="column gap-10 align-end ">
+            <div class="column gap-10 align-end">
               <a class="main-button" href="{% url 'login' %}">Login</a>
               <div class="text-grey">{% now "d F Y" %}</div>
-
             </div>
             {% endif %}
           </div>
@@ -124,13 +134,5 @@
     <script src="{% static 'js/loader.js' %}"></script>
     <script src="{% static 'js/apply-theme.js' %}"></script>
 
-    <script>
-      window.addEventListener("pageshow", function (event) {
-        if (event.persisted) {
-          // Halaman datang dari cache (back/forward)
-          window.location.reload();
-        }
-      });
-    </script>
   </body>
 </html>
