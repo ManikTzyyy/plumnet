@@ -4,6 +4,8 @@ from django.contrib.auth import views as auth_views
 
 
 urlpatterns = [
+    path('map', views.map, name='map'),
+
     #dashboard
     path('', views.dashboard, name='dashboard'),
     path('get-server-info/<int:server_id>/', views.get_server_info, name='get_server_info'),

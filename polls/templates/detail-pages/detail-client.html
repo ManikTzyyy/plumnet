@@ -154,49 +154,6 @@
   </div>
 </div>
 
-<script>
-  function openVerifModal(clientId, clientName) {
-    const modal = document.getElementById("verifModal");
-    const form = document.getElementById("verifForm");
-    form.action = `/client/${clientId}/verification/`;
-    modal.style.display = "block";
-  }
-
-  function closeVerifModal() {
-    document.getElementById("verifModal").style.display = "none";
-  }
-
-  // Menutup modal jika diklik di luar area modal
-  window.onclick = function (event) {
-    const modal = document.getElementById("verifModal");
-    if (event.target === modal) {
-      closeVerifModal();
-    }
-  };
-</script>
-
-
-
-<script>
-  function openActivasiModal(clientId) {
-    const modal = document.getElementById("activasiModal");
-    const form = document.getElementById("activasiForm");
-    form.action = `/client-detail/${clientId}/toggle/`;
-    modal.style.display = "block";
-  }
-
-  function closeModal() {
-    document.getElementById("activasiModal").style.display = "none";
-  }
-
-  // Menutup modal jika diklik di luar area modal
-  window.onclick = function (event) {
-    const modal = document.getElementById("activasiModal");
-    if (event.target === modal) {
-      closeModal();
-    }
-  };
-</script>
 
 <script>
   const deleteForm = document.getElementById("delete-form");
@@ -204,12 +161,12 @@
 
 
 <script>
-  var latitude = -8.118556
-  var longitude = 115.103444
+  var latitude = '{{ client.lat|default:"0" }}';
+  var longitude = '{{ client.long|default:"0" }}';
 
    var map = L.map('map-client').setView(
             [latitude, longitude],
-            15
+            35
         );
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -218,7 +175,7 @@
 
         L.marker([latitude, longitude])
             .addTo(map)
-            .bindPopup("Sumedang")
+            .bindPopup("{{client.name}}")
             .openPopup();
 </script>
 
