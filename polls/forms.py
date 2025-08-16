@@ -47,7 +47,7 @@ class ipPoolForm(forms.ModelForm):
 class ClientForm(forms.ModelForm):
     class Meta:
         model = Client
-        fields = ['id_paket', 'name', 'address', 'phone', 'pppoe', 'password']
+        fields = ['id_paket', 'name', 'address', 'phone', 'pppoe', 'password', 'lat', 'long']
         widgets = {
             'id_paket': forms.Select(attrs={'class': 'form-control'}),
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Masukan Nama Pelanggan'}),
@@ -55,6 +55,8 @@ class ClientForm(forms.ModelForm):
             'phone': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Masukan No Hp Pelanggan'}),
             'pppoe': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Masukan id pppoe Pelanggan'}),
             'password': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Masukan password id pppoe Pelanggan'}),
+            'lat': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Masukan latitude lokasi'}),
+            'long': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Masukan longitude lokasi'}),
             
         }
     def clean_pppoe(self):

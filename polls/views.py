@@ -1,5 +1,6 @@
 import json, logging, socket, subprocess, paramiko
 from django.contrib import messages
+from django.core.serializers.json import DjangoJSONEncoder
 
 from django.contrib.auth.decorators import login_required
 
@@ -255,6 +256,8 @@ def addClient(request) :
                 phone=cd['phone'],
                 pppoe=cd['pppoe'],
                 password=cd['password'],
+                lat=cd['lat'],
+                long=cd['long'],
                 
                 # temp_* ikut diisi juga
                 temp_paket=cd['id_paket'],
@@ -263,6 +266,8 @@ def addClient(request) :
                 temp_phone=cd['phone'],
                 temp_pppoe=cd['pppoe'],
                 temp_password=cd['password'],
+                temp_lat=cd['lat'],
+                temp_long=cd['long']
             )
             client.save()
             success = True
@@ -461,6 +466,14 @@ def detailServer(request, server_id) :
 def detailClient(request, client_id) : 
     client = get_object_or_404(Client, id=client_id)
     return render(request, 'detail-pages/detail-client.html',{'client': client})
+
+
+def map(request):
+    clients = Client.objects.all().values("name", "lat", "long")
+    context = {
+        "clients_json": json.dumps(list(clients), cls=DjangoJSONEncoder)
+    }
+    return render(request, "pages/maps.html", context)
 
 #=========================================================================
 

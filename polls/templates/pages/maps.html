@@ -1,0 +1,37 @@
+{% extends 'dashboard/base.html' %} {% block content %}
+
+<div id="map" style="height: 100%; width: 100%"></div>
+
+<script></script>
+
+<script>
+  // Inisialisasi Map
+  var map = L.map('map').setView([0, 120], 5); 
+
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(
+        function(pos){
+            var lat = pos.coords.latitude
+            var lng = pos.coords.longitude
+            map.setView([lat, lng], 14)
+        }
+    )
+  }
+
+  // Tambahkan Tile Layer
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map)
+
+  var clients = {{ clients_json|safe }};
+
+    clients.forEach(function(client) {
+        if (client.lat && client.long) {
+            L.marker([client.lat, client.long])
+             .addTo(map)
+             .bindTooltip("<b>" + client.name + "</b>", { permanent: true });
+        }
+    });
+</script>
+
+{% endblock %}

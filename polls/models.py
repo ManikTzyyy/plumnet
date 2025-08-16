@@ -40,14 +40,23 @@ class Client(models.Model):
     password = models.CharField(max_length=255)
     isActive = models.BooleanField(default=False)
     isApproved = models.BooleanField(default=True)
+    lat = models.CharField(max_length=255, null=True, blank=True)
+    long = models.CharField(max_length=255, null=True, blank=True)
     temp_paket = models.ForeignKey(Paket, on_delete=models.SET_NULL, related_name='temp_paket', null=True, blank=True)
     temp_name = models.CharField(max_length=255, null=True, blank=True)
     temp_address = models.CharField(max_length=255, null=True, blank=True)
     temp_phone = models.CharField(max_length=255, null=True, blank=True)
     temp_pppoe = models.CharField(max_length=255, null=True, blank=True)
     temp_password = models.CharField(max_length=255, null=True, blank=True)
+    temp_lat = models.CharField(max_length=255, null=True, blank=True)
+    temp_long = models.CharField(max_length=255, null=True, blank=True)
     
     def __str__(self):
         return self.name
 
 
+
+class Redaman(models.Model):
+    id_client = models.ForeignKey(Client, on_delete=models.SET_NULL, null=True, blank=True, related_name='clients')
+    value = models.CharField(max_length=255)
+    create_at = models.DateTimeField()

@@ -8,7 +8,10 @@
           class="fa-solid fa-user"
           style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
         ></i>
-        <span class="title">{{ form.instance.pk|yesno:"Edit Pelanggan,Tambah Pelanggan Baru"}}</span>
+        <span class="title"
+          >{{ form.instance.pk|yesno:"Edit Pelanggan,Tambah Pelanggan
+          Baru"}}</span
+        >
       </div>
     </div>
 
@@ -31,8 +34,6 @@
         {{ form.phone }}
       </div>
 
-      
-
       <div class="column">
         <label for="pppoeID">ID PPPoE</label>
         {{ form.pppoe }}
@@ -41,6 +42,20 @@
         <label for="pppoePass">Password PPPoE</label>
         {{ form.password }}
       </div>
+
+      <div class="row gap-20" style="width: full;">
+        <div class="column">
+          <label for="lat">Latitude</label>
+          {{form.lat}}
+        </div>
+
+        <div class="column">
+          <label for="long">Longitude</label>
+          {{form.long}}
+        </div>
+      </div>
+
+      <div id="map-client" style="height: 600px"></div>
 
       <div class="row button-wrapper">
         <button class="success-button" type="submit">Simpan</button>
@@ -58,26 +73,66 @@
 
 {% if success %}
 <script>
-Swal.fire({
-  icon: 'success',
-  title: 'Data berhasil disimpan!',
-  text: 'Anda akan dialihkan ke halaman pelanggan.',
-  timer: 2000,
-  showConfirmButton: false
-}).then(() => {
-  window.location.href = "{% url 'client' %}";
-});
+  Swal.fire({
+    icon: "success",
+    title: "Data berhasil disimpan!",
+    text: "Anda akan dialihkan ke halaman pelanggan.",
+    timer: 2000,
+    showConfirmButton: false,
+  }).then(() => {
+    window.location.href = "{% url 'client' %}";
+  });
+</script>
+{% endif %} {% if error_message %}
+<script>
+  Swal.fire({
+    icon: "error",
+    title: "Gagal menyimpan!",
+    text: "{{ error_message|escapejs }}",
+    confirmButtonText: "OK",
+  });
 </script>
 {% endif %}
 
-{% if error_message %}
 <script>
-Swal.fire({
-  icon: 'error',
-  title: 'Gagal menyimpan!',
-  text: '{{ error_message|escapejs }}',
-  confirmButtonText: 'OK'
-});
+  var map = L.map("map-client").setView([0, 0], 2);
+
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: "&copy; OpenStreetMap contributors",
+  }).addTo(map);
+
+  var marker = L.marker([0, 0], { draggable: true }).addTo(map);
+
+  // Update input kalau marker digeser
+  marker.on("dragend", function (e) {
+    var lat = e.target.getLatLng().lat;
+    var lng = e.target.getLatLng().lng;
+    document.getElementById("id_lat").value = lat;
+    document.getElementById("id_long").value = lng;
+  });
+
+  // Minta lokasi dari browser
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      function (position) {
+        var lat = position.coords.latitude;
+        var lng = position.coords.longitude;
+
+        // Pindah map & marker
+        map.setView([lat, lng], 15);
+        marker.setLatLng([lat, lng]);
+
+        // Isi input form
+        document.getElementById("latitude").value = lat;
+        document.getElementById("longitude").value = lng;
+      },
+      function (error) {
+        alert("Gagal mendapatkan lokasi: " + error.message);
+      }
+    );
+  } else {
+    alert("Browser tidak mendukung geolocation.");
+  }
 </script>
-{% endif %}
+
 {% endblock %}
