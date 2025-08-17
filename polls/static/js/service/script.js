@@ -59,7 +59,7 @@ function deleteData(id, object, url) {
 }
 
 
-function cekModifyClientData(id, name, alamat, phone, server, paket, idpppoe) {
+function cekModifyClientData(id, name, alamat, phone, server, paket, idpppoe, lat, long, local_ip) {
   Swal.fire({
     title: "Detail Perubahan",
     html: `
@@ -69,6 +69,8 @@ function cekModifyClientData(id, name, alamat, phone, server, paket, idpppoe) {
         <tr><td><strong>Nama</strong></td><td>: ${name}</td></tr>
         <tr><td><strong>Alamat</strong></td><td>: ${alamat}</td></tr>
         <tr><td><strong>No HP</strong></td><td>: ${phone}</td></tr>
+        <tr><td><strong>Latitude</strong></td><td>: ${lat}</td></tr>
+        <tr><td><strong>Longitude</strong></td><td>: ${long}</td></tr>
       </table>
 
       <h3 style="margin-top:15px; margin-bottom:5px;">Informasi Server</h3>
@@ -76,6 +78,7 @@ function cekModifyClientData(id, name, alamat, phone, server, paket, idpppoe) {
         <tr><td><strong>Server</strong></td><td>: ${server}</td></tr>
         <tr><td><strong>Paket</strong></td><td>: ${paket}</td></tr>
         <tr><td><strong>ID PPPoE</strong></td><td>: ${idpppoe}</td></tr>
+        <tr><td><strong>Local IP</strong></td><td>: ${local_ip}</td></tr>
       </table>
     </div>
   `,

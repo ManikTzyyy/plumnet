@@ -8,10 +8,7 @@
           class="fa-solid fa-user"
           style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
         ></i>
-        <span class="title"
-          >{{ form.instance.pk|yesno:"Edit Pelanggan,Tambah Pelanggan
-          Baru"}}</span
-        >
+        <span class="title">{{ form.instance.pk|yesno:"Edit Pelanggan,Tambah Pelanggan Baru"}}</span>
       </div>
     </div>
 
@@ -41,6 +38,10 @@
       <div class="column">
         <label for="pppoePass">Password PPPoE</label>
         {{ form.password }}
+      </div>
+      <div class="column">
+        <label for="pppoePass">Local IP</label>
+        {{ form.local_ip }}
       </div>
 
       <div class="row gap-20" style="width: full;">

@@ -40,6 +40,7 @@ class Client(models.Model):
     password = models.CharField(max_length=255)
     isActive = models.BooleanField(default=False)
     isApproved = models.BooleanField(default=True)
+    local_ip = models.GenericIPAddressField(blank=True, null=True)
     lat = models.CharField(max_length=255, null=True, blank=True)
     long = models.CharField(max_length=255, null=True, blank=True)
     temp_paket = models.ForeignKey(Paket, on_delete=models.CASCADE, related_name='temp_paket', null=True, blank=True)
@@ -48,6 +49,7 @@ class Client(models.Model):
     temp_phone = models.CharField(max_length=255, null=True, blank=True)
     temp_pppoe = models.CharField(max_length=255, null=True, blank=True)
     temp_password = models.CharField(max_length=255, null=True, blank=True)
+    temp_local_ip = models.GenericIPAddressField(blank=True, null=True)
     temp_lat = models.CharField(max_length=255, null=True, blank=True)
     temp_long = models.CharField(max_length=255, null=True, blank=True)
     

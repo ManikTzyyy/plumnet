@@ -288,6 +288,7 @@ def addClient(request) :
                 password=cd['password'],
                 lat=cd['lat'],
                 long=cd['long'],
+                local_ip=cd['local_ip'],
                 
                 # temp_* ikut diisi juga
                 temp_paket=cd['id_paket'],
@@ -296,6 +297,7 @@ def addClient(request) :
                 temp_phone=cd['phone'],
                 temp_pppoe=cd['pppoe'],
                 temp_password=cd['password'],
+                temp_local_ip=cd['local_ip'],
                 temp_lat=cd['lat'],
                 temp_long=cd['long']
             )
@@ -454,6 +456,9 @@ def edit_client(request, pk):
         old_pppoe = client.pppoe
         old_password = client.password
         old_id_paket = client.id_paket
+        old_lat = client.lat
+        old_long = client.long
+        old_localIP = client.local_ip
 
         form = ClientForm(request.POST, instance=client)
         if form.is_valid():
@@ -464,6 +469,9 @@ def edit_client(request, pk):
             client.temp_phone = cd['phone']
             client.temp_pppoe = cd['pppoe']
             client.temp_password = cd['password']
+            client.temp_lat = cd['lat']
+            client.temp_long = cd['long']
+            client.temp_local_ip = cd['local_ip']
             client.isApproved = False
 
             # Balikin field asli
@@ -472,6 +480,9 @@ def edit_client(request, pk):
             client.phone = old_phone
             client.pppoe = old_pppoe
             client.password = old_password
+            client.local_ip = old_localIP
+            client.lat = old_lat
+            client.long = old_long
             client.id_paket = old_id_paket
 
             client.save()
@@ -487,7 +498,10 @@ def edit_client(request, pk):
             'phone': client.temp_phone or client.phone,
             'pppoe': client.temp_pppoe or client.pppoe,
             'password': client.temp_password or client.password,
-            'id_paket': client.temp_paket or client.id_paket
+            'id_paket': client.temp_paket or client.id_paket,
+            'local_ip': client.temp_local_ip or client.local_ip,
+            'lat': client.temp_lat or client.lat,
+            'long':client.temp_long or client.long
         }
         form = ClientForm(initial=initial_data, instance=client)
 
@@ -650,6 +664,8 @@ def toggle_verif(request, client_id):
         client.phone = client.temp_phone
         client.pppoe = client.temp_pppoe
         client.password = client.temp_password
+        client.lat = client.temp_lat
+        client.long = client.temp_long
 
         # Toggle status
         client.isApproved = not client.isApproved
