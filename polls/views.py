@@ -5,11 +5,10 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.contrib.auth.decorators import login_required
 
 from mysite import settings
-
-
+from polls.templates.network.netmiko_service import create_pool, delete_pool, edit_pool
+from .templates.network.routeros_service import get_mikrotik_info
 
 from .models import Paket, Server, IPPool, Client
-from .mikrotik import get_mikrotik_info
 
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render, get_object_or_404
@@ -34,7 +33,7 @@ def get_server_info(request, server_id):
         info = get_mikrotik_info(server.host, server.username, server.password)
         return JsonResponse(info)
     except Server.DoesNotExist:
-        raise Http404("Server not found")
+        return JsonResponse({"error": "Server not found"}, status=404)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
@@ -227,8 +226,21 @@ def addIp(request) :
     if request.method == "POST":
         form = ipPoolForm(request.POST)
         if form.is_valid():
-            form.save()
-            success = True
+            server = form.cleaned_data['id_server']
+            pool_name = form.cleaned_data['name']
+            pool_range = form.cleaned_data['ip_range']
+            try:
+                create_pool(
+                    server.host, 
+                    server.username, 
+                    server.password,
+                    pool_name,
+                    pool_range
+                    )
+                form.save()
+                success = True
+            except Exception as e:
+                error_message = str(e)        
         else:
             error_message = ''
             for field, errors in form.errors.items():
@@ -336,12 +348,46 @@ def edit_ip(request, pk):
     success = False
     error_message = None
     ip_pool = get_object_or_404(IPPool, pk=pk)
+    current_pool = ip_pool.name
+    server = ip_pool.id_server
 
     if request.method == 'POST':
         form = ipPoolForm(request.POST, instance=ip_pool)
         if form.is_valid():
-            form.save()
-            success = True 
+            pool_name = form.cleaned_data['name']
+            pool_range = form.cleaned_data['ip_range']
+            new_server = form.cleaned_data['id_server']
+            try:
+                if server != new_server:
+                    delete_pool(
+                            server.host, 
+                            server.username, 
+                            server.password,
+                            current_pool
+                    )
+                    create_pool(
+                        new_server.host, 
+                        new_server.username, 
+                        new_server.password,
+                        pool_name,
+                        pool_range
+                    )
+                  
+                   
+                else:
+                    edit_pool(
+                        server.host, 
+                        server.username, 
+                        server.password,
+                        pool_name,
+                        pool_range,
+                        current_pool,
+                    )
+                form.save()
+                success = True 
+            except Exception as e:
+                error_message = str(e) 
+            
         else:
             error_message = ''
             for field, errors in form.errors.items():
@@ -439,10 +485,21 @@ def delete_paket(request, pk):
 
 def delete_ip(request, pk):
     ip_pool = get_object_or_404(IPPool, pk=pk)
-    
+    server = ip_pool.id_server
+    current_pool = ip_pool.name
     if request.method == "POST":
-        ip_pool.delete()
-        return JsonResponse({'success': True, 'message': "Data berhasil dihapus."})  
+        try:
+            delete_pool( 
+                server.host, 
+                server.username, 
+                server.password,
+                current_pool
+                )
+            ip_pool.delete()
+            return JsonResponse({'success': True, 'message': "Data berhasil dihapus."})
+        except Exception as e:
+                error_message = str(e) 
+        
     
     return JsonResponse({'success': False, 'message': "Metode tidak diizinkan."}, status=400)
 
@@ -585,7 +642,7 @@ def test_connection(request, pk):
 
 logger = logging.getLogger(__name__)
 
-BAD_COMMANDS = ['reboot', 'shutdown', 'halt', 'poweroff', 'logout', 'exit']
+BAD_COMMANDS = ['reboot', 'shutdown', 'ping' 'halt', 'poweroff', 'logout', 'exit']
 
 def execute_command(host, username, password, command):
     output = ""

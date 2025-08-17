@@ -27,37 +27,37 @@ function deleteData(id, object, url) {
     confirmButtonText: "Ya, hapus!",
     cancelButtonText: "Batal",
   }).then((result) => {
-    if (result.isConfirmed) {
-      fetch(`/${object}/${id}/delete/`, {
-        method: "POST",
-        headers: {
-          "X-CSRFToken": getCSRFToken(),
-          Accept: "application/json",
-        },
+    if (!result.isConfirmed) return;
+
+    showLoader();
+
+    fetch(`/${object}/${id}/delete/`, {
+      method: "POST",
+      headers: {
+        "X-CSRFToken": getCSRFToken(),
+        Accept: "application/json",
+      },
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error(`Server error: ${res.status}`);
+        return res.json();
       })
-        .then((res) => {
-          if (!res.ok) {
-            throw new Error(`Server error: ${res.status}`);
-          }
-          return res.json();
-        })
-        .then((data) => {
-          if (data.success) {
-            Swal.fire("Terhapus!", "Data berhasil dihapus.", "success").then(
-              () => {
-                location.href = `/${url}`;
-              }
-            );
-          } else {
-            throw new Error(data.message || "Gagal menghapus data");
-          }
-        })
-        .catch((err) => {
-          Swal.fire("Gagal!", err.message, "error");
-        });
-    }
+      .then((data) => {
+        if (data.success) {
+          Swal.fire("Terhapus!", "Data berhasil dihapus.", "success").then(() => {
+            location.href = `/${url}`;
+          });
+        } else {
+          throw new Error(data.message || "Gagal menghapus data");
+        }
+      })
+      .catch((err) => {
+        hideLoader(); // jangan showLoader lagi
+        Swal.fire("Gagal!", err.message, "error");
+      });
   });
 }
+
 
 function cekModifyClientData(id, name, alamat, phone, server, paket, idpppoe) {
   Swal.fire({
