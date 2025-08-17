@@ -5,7 +5,7 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.contrib.auth.decorators import login_required
 
 from mysite import settings
-from polls.templates.network.netmiko_service import clear_config, create_pool, delete_pool, edit_pool
+from polls.templates.network.netmiko_service import clear_config, create_pool, create_profile, delete_pool, delete_profile, edit_pool, edit_profile
 from .templates.network.routeros_service import get_mikrotik_info
 
 from .models import Paket, Server, IPPool, Client
@@ -204,8 +204,26 @@ def addProfile(request) :
     if request.method == "POST":
         form = PaketForm(request.POST)
         if form.is_valid():
-            form.save()
-            success = True
+            limit = form.cleaned_data['limit']
+            profile_name = form.cleaned_data['name']
+            ip_pool = form.cleaned_data['id_ip_pool']
+            server = ip_pool.id_server
+            try:
+                # print(limit, profile_name, server.name, server.host)
+
+                create_profile(
+                    server.host,
+                    server.username,
+                    server.password,
+                    profile_name,
+                    ip_pool.name,
+                    limit
+                )
+                form.save()
+                success = True
+            except Exception as e:
+                error_message = str(e) 
+            
 
         else:
             error_message = ''
@@ -324,11 +342,31 @@ def edit_paket(request, pk):
     error_message = None
     paket = get_object_or_404(Paket, pk=pk)
 
+    current_profile = paket.name
+
     if request.method == 'POST':
         form = PaketForm(request.POST, instance=paket)
+
         if form.is_valid():
-            form.save()
-            success = True 
+            limit = form.cleaned_data['limit']
+            profile_name = form.cleaned_data['name']
+            ip_pool = form.cleaned_data['id_ip_pool']
+            server = ip_pool.id_server
+            try:
+                edit_profile(
+                    server.host,
+                    server.username,
+                    server.password,
+                    profile_name,
+                    ip_pool.name,
+                    limit,
+                    current_profile
+                )
+                form.save()
+                success = True 
+            except Exception as e:
+                error_message = str(e) 
+            
         else:
             error_message = ''
             for field, errors in form.errors.items():
@@ -467,14 +505,17 @@ def delete_server(request, pk):
     server = get_object_or_404(Server, pk=pk)
 
     pool_data = list(IPPool.objects.filter(id_server=server).values_list('name', flat=True))
+    profile_data = list(Paket.objects.filter(id_ip_pool__id_server=server).values_list('name', flat=True))
     print(pool_data)
     if request.method == "POST":
         try:
+            
             clear_config(
                 server.host, 
                 server.username, 
                 server.password,
-                pool_data
+                pool_data,
+                profile_data
             )
             server.delete()
             return JsonResponse({'success': True, 'message': "Data berhasil dihapus."}) 
@@ -487,10 +528,22 @@ def delete_server(request, pk):
 
 def delete_paket(request, pk):
     paket = get_object_or_404(Paket, pk=pk)
-    
+    current_profile = paket.name
+    ip_pool = paket.id_ip_pool
+    server = ip_pool.id_server
     if request.method == "POST":
-        paket.delete()
-        return JsonResponse({'success': True, 'message': "Data berhasil dihapus."})  
+        try:
+            delete_profile( 
+                server.host, 
+                server.username, 
+                server.password,
+                current_profile
+                )
+            paket.delete()
+            return JsonResponse({'success': True, 'message': "Data berhasil dihapus."}) 
+        except Exception as e:
+                error_message = str(e) 
+        
     
     return JsonResponse({'success': False, 'message': "Metode tidak diizinkan."}, status=400)
 
@@ -498,13 +551,15 @@ def delete_ip(request, pk):
     ip_pool = get_object_or_404(IPPool, pk=pk)
     server = ip_pool.id_server
     current_pool = ip_pool.name
+    profile_data = list(Paket.objects.filter(id_ip_pool_id=ip_pool).values_list('name', flat=True))
     if request.method == "POST":
         try:
             delete_pool( 
                 server.host, 
                 server.username, 
                 server.password,
-                current_pool
+                current_pool,
+                profile_data
                 )
             ip_pool.delete()
             return JsonResponse({'success': True, 'message': "Data berhasil dihapus."})
