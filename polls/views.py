@@ -5,7 +5,7 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.contrib.auth.decorators import login_required
 
 from mysite import settings
-from polls.templates.network.netmiko_service import create_pool, delete_pool, edit_pool
+from polls.templates.network.netmiko_service import clear_config, create_pool, delete_pool, edit_pool
 from .templates.network.routeros_service import get_mikrotik_info
 
 from .models import Paket, Server, IPPool, Client
@@ -465,11 +465,22 @@ def edit_client(request, pk):
 
 def delete_server(request, pk):
     server = get_object_or_404(Server, pk=pk)
-    
+
+    pool_data = list(IPPool.objects.filter(id_server=server).values_list('name', flat=True))
+    print(pool_data)
     if request.method == "POST":
-        server.delete()
-        return JsonResponse({'success': True, 'message': "Data berhasil dihapus."})  
-    
+        try:
+            clear_config(
+                server.host, 
+                server.username, 
+                server.password,
+                pool_data
+            )
+            server.delete()
+            return JsonResponse({'success': True, 'message': "Data berhasil dihapus."}) 
+        except Exception as e:
+            error_message = str(e) 
+        
     return JsonResponse({'success': False, 'message': "Metode tidak diizinkan."}, status=400)
 
 

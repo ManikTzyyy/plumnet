@@ -11,6 +11,21 @@ def get_mikrotik_conn (host, username, password):
     return  ConnectHandler(**device)
 
 
+def clear_config(host, username, password, pools=None):
+    try:
+        conn = get_mikrotik_conn(host, username, password)
+
+        if pools:
+            for pool_item in pools:
+                command = f'/ip pool remove [find name="{pool_item}"]'
+                conn.send_command(command)
+
+        conn.disconnect()
+        return True
+
+    except Exception as e:
+        raise Exception(f"Error: {e}")
+
 def create_pool(host, username, password, pool_name, ip_range):
     try:
         conn = get_mikrotik_conn(host, username, password)
