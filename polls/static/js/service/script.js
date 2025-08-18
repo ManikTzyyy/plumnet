@@ -44,22 +44,34 @@ function deleteData(id, object, url) {
       })
       .then((data) => {
         if (data.success) {
-          Swal.fire("Terhapus!", "Data berhasil dihapus.", "success").then(() => {
-            location.href = `/${url}`;
-          });
+          Swal.fire("Terhapus!", "Data berhasil dihapus.", "success").then(
+            () => {
+              location.href = `/${url}`;
+            }
+          );
         } else {
           throw new Error(data.message || "Gagal menghapus data");
         }
       })
       .catch((err) => {
-        hideLoader(); // jangan showLoader lagi
+        hideLoader(); 
         Swal.fire("Gagal!", err.message, "error");
       });
   });
 }
 
-
-function cekModifyClientData(id, name, alamat, phone, server, paket, idpppoe, lat, long, local_ip) {
+function cekModifyClientData(
+  id,
+  name,
+  alamat,
+  phone,
+  server,
+  paket,
+  idpppoe,
+  lat,
+  long,
+  local_ip
+) {
   Swal.fire({
     title: "Detail Perubahan",
     html: `
@@ -157,6 +169,7 @@ function toggleActivasiClient(clientId, name, status, url) {
     cancelButtonText: "Batal",
   }).then((result) => {
     if (result.isConfirmed) {
+      showLoader();
       fetch(`/client/${clientId}/toggle/`, {
         method: "POST",
         headers: {
@@ -209,8 +222,59 @@ function toggleActivasiClient(clientId, name, status, url) {
           }
         })
         .catch((err) => {
+          hideLoader();
           Swal.fire("Gagal!", err.message, "error");
         });
     }
   });
 }
+
+function test_connection(host, username, password) {
+    console.log(host, username, password);
+
+    // munculin modal loading
+    Swal.fire({
+        title: "Testing koneksi...",
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    fetch("/test-conn/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCookie("csrftoken")
+        },
+        body: JSON.stringify({
+            host: host,
+            username: username,
+            password: password
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            Swal.fire({
+                icon: "success",
+                title: "Success",
+                text: data.message,
+            });
+        } else {
+            Swal.fire({
+                icon: "error",
+                title: "Failed to connect",
+                text: data.message,
+            });
+        }
+    })
+    .catch(error => {
+        Swal.fire({
+            icon: "error",
+            title: "Failed to connect",
+            text: error,
+        });
+    });
+}
+

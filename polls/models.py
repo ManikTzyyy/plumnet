@@ -1,6 +1,6 @@
 from django.db import models
 
-from .utils.formatPrice import format_rupiah
+from .utils.formater import format_rupiah
 
 class Server(models.Model):
     name = models.CharField(max_length=255)

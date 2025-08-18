@@ -1186,7 +1186,13 @@ tr:hover{
   text-align: center;
 }
 
+#map-client{
+  position: relative;
+  z-index: 50;
+}
+
 .loader-wrapper {
+
   position: fixed;
   top: 0;
   left: 0;

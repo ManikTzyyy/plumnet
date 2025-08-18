@@ -11,6 +11,16 @@ def get_mikrotik_conn (host, username, password):
     return  ConnectHandler(**device)
 
 
+
+def test_conn(host, username, password):  
+        conn = get_mikrotik_conn(host, username, password)
+        output = conn.send_command("/system resource print")
+        conn.disconnect()
+        return output
+
+
+
+
 def clear_config(host, username, password, pools=None, profiles=None):
     try:
         conn = get_mikrotik_conn(host, username, password)
@@ -79,7 +89,7 @@ def delete_pool(host, username, password, current_pool, profiles):
 def create_profile(host, username, password, profile_name, pool_name, limit):
     try:
         conn = get_mikrotik_conn(host, username, password)
-        command = f"/ppp profile add name={profile_name} local-address={host} remote-address={pool_name} rate-limit={limit}"
+        command = f"/ppp profile add name={profile_name} remote-address={pool_name} rate-limit={limit}"
         output = conn.send_command(command)
         conn.disconnect()
         return output
@@ -90,7 +100,7 @@ def create_profile(host, username, password, profile_name, pool_name, limit):
 def edit_profile(host, username, password, profile_name, pool_name, limit, current_profile):
     try:
         conn = get_mikrotik_conn(host, username, password)
-        command = f"/ppp profile set {current_profile} name={profile_name} local-address={host} remote-address={pool_name} rate-limit={limit}"
+        command = f"/ppp profile set {current_profile} name={profile_name} remote-address={pool_name} rate-limit={limit}"
         output = conn.send_command(command)
         conn.disconnect()
         return output
@@ -98,11 +108,56 @@ def edit_profile(host, username, password, profile_name, pool_name, limit, curre
         raise Exception(f"Gagal edit Profile: {e}")
     
 def delete_profile(host, username, password, current_profile):
-
+    
     try:
         conn = get_mikrotik_conn(host, username, password)
         command = f"/ppp profile remove {current_profile}"
         output = conn.send_command(command)
+        conn.disconnect()
         return output
     except Exception as e:
         raise Exception(f"Gagal hapus Profile: {e}")
+    
+
+def create_pppoe(host, username, password, pppoe, password_pppoe, profile, local_ip):
+    try:
+        conn = get_mikrotik_conn(host, username, password)
+        command = f"/ppp secret add name={pppoe} password={password_pppoe}, profile={profile} local-address={local_ip} service=pppoe disabled=yes"
+        output = conn.send_command(command)
+        conn.disconnect()
+        return output
+    except Exception as e:
+        raise Exception(f"Gagal membuat PPPoE: {e}")
+
+
+def edit_pppoe(host, username, password, pppoe, password_pppoe, profile, local_ip, current_pppoe):
+    try:
+        conn = get_mikrotik_conn(host, username, password)
+        command = f"/ppp secret set {current_pppoe} name={pppoe} password={password_pppoe}, profile={profile} local-address={local_ip} service=pppoe"
+        output = conn.send_command(command)
+        conn.disconnect()
+        return output
+    except Exception as e:
+        raise Exception(f"Gagal edit PPPoE: {e}")
+    
+def delete_pppoe(host, username, password, current_pppoe):
+    try:
+        conn = get_mikrotik_conn(host, username, password)
+        command = f"/ppp secret remove {current_pppoe}"
+        output = conn.send_command(command)
+        conn.disconnect()
+        return output
+    except Exception as e:
+        raise Exception(f'Gagal hapus PPPoE : {e}')
+
+        
+
+def set_disabled_pppoe(host, username, password, pppoe, status):
+    try:
+        conn = get_mikrotik_conn(host, username, password)
+        command = f"/ppp secret set {pppoe} disabled={status}"
+        output = conn.send_command(command)
+        conn.disconnect()
+        return output
+    except Exception as e:
+        raise Exception(f"Gagal activasi PPPoE: {e}")

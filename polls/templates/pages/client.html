@@ -27,6 +27,7 @@
       <table class="table">
         <tr class="t-head">
           <th>#</th>
+          <th>PPPoE</th>
           <th>Nama</th>
           <th>Alamat</th>
           <th>No Hp</th>
@@ -40,6 +41,7 @@
         {% for client in clients %}
         <tr class="t-d">
           <td>{{ client.id }}</td>
+          <td>{{ client.pppoe }}</td>
           <td>{{ client.name }}</td>
           <td>{{ client.address }}</td>
           <td>{{ client.phone }}</td>

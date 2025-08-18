@@ -5,7 +5,8 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.contrib.auth.decorators import login_required
 
 from mysite import settings
-from polls.templates.network.netmiko_service import clear_config, create_pool, create_profile, delete_pool, delete_profile, edit_pool, edit_profile
+from polls.templates.network.netmiko_service import clear_config, create_pool, create_pppoe, create_profile, delete_pool, delete_pppoe, delete_profile, edit_pool, edit_pppoe, edit_profile, set_disabled_pppoe, test_conn
+from polls.utils.formater import parse_mikrotik_output
 from .templates.network.routeros_service import get_mikrotik_info
 
 from .models import Paket, Server, IPPool, Client
@@ -20,12 +21,8 @@ from polls.forms import ServerForm, PaketForm, ipPoolForm, ClientForm
 from django.conf.urls import handler404
 
 
-def custom_404(request, exception):
-    return render(request, '404.html', status=404)
 
-handler404 = custom_404
 
-# Create your views here.
 
 def get_server_info(request, server_id):
     try:
@@ -279,31 +276,44 @@ def addClient(request) :
         form = ClientForm(request.POST)
         if form.is_valid():
             cd = form.cleaned_data
+            paket = cd['id_paket']
+            server = paket.id_ip_pool.id_server
             client = Client(
-                id_paket=cd['id_paket'],
-                name=cd['name'],
-                address=cd['address'],
-                phone=cd['phone'],
-                pppoe=cd['pppoe'],
-                password=cd['password'],
-                lat=cd['lat'],
-                long=cd['long'],
-                local_ip=cd['local_ip'],
+                    id_paket=cd['id_paket'],
+                    name=cd['name'],
+                    address=cd['address'],
+                    phone=cd['phone'],
+                    pppoe=cd['pppoe'],
+                    password=cd['password'],
+                    lat=cd['lat'],
+                    long=cd['long'],
+                    local_ip=cd['local_ip'],
+                    temp_paket=cd['id_paket'],
+                    temp_name=cd['name'],
+                    temp_address=cd['address'],
+                    temp_phone=cd['phone'],
+                    temp_pppoe=cd['pppoe'],
+                    temp_password=cd['password'],
+                    temp_local_ip=cd['local_ip'],
+                    temp_lat=cd['lat'],
+                    temp_long=cd['long']
+                    )
+            try:
+                create_pppoe(
+                    server.host,
+                    server.username,
+                    server.password,
+                    cd['pppoe'],
+                    cd['password'],
+                    paket.name,
+                    cd['local_ip']
+                )
                 
-                # temp_* ikut diisi juga
-                temp_paket=cd['id_paket'],
-                temp_name=cd['name'],
-                temp_address=cd['address'],
-                temp_phone=cd['phone'],
-                temp_pppoe=cd['pppoe'],
-                temp_password=cd['password'],
-                temp_local_ip=cd['local_ip'],
-                temp_lat=cd['lat'],
-                temp_long=cd['long']
-            )
-            client.save()
-            success = True
-            # return redirect('client')
+                client.save()
+                success = True
+            except Exception as e:
+                error_message = str(e) 
+            
         else:
             error_message = ''
             for field, errors in form.errors.items():
@@ -449,7 +459,7 @@ def edit_client(request, pk):
     error_message = None
 
     if request.method == 'POST':
-        # Simpan nilai asli biar gak ketimpa
+        
         old_name = client.name
         old_address = client.address
         old_phone = client.phone
@@ -463,30 +473,32 @@ def edit_client(request, pk):
         form = ClientForm(request.POST, instance=client)
         if form.is_valid():
             cd = form.cleaned_data
-            client.temp_paket = cd['id_paket']
-            client.temp_name = cd['name']
-            client.temp_address = cd['address']
-            client.temp_phone = cd['phone']
-            client.temp_pppoe = cd['pppoe']
-            client.temp_password = cd['password']
-            client.temp_lat = cd['lat']
-            client.temp_long = cd['long']
-            client.temp_local_ip = cd['local_ip']
-            client.isApproved = False
+            try:
+                client.temp_paket = cd['id_paket']
+                client.temp_name = cd['name']
+                client.temp_address = cd['address']
+                client.temp_phone = cd['phone']
+                client.temp_pppoe = cd['pppoe']
+                client.temp_password = cd['password']
+                client.temp_lat = cd['lat']
+                client.temp_long = cd['long']
+                client.temp_local_ip = cd['local_ip']
+                client.isApproved = False
+                client.name = old_name
+                client.address = old_address
+                client.phone = old_phone
+                client.pppoe = old_pppoe
+                client.password = old_password
+                client.local_ip = old_localIP
+                client.lat = old_lat
+                client.long = old_long
+                client.id_paket = old_id_paket
 
-            # Balikin field asli
-            client.name = old_name
-            client.address = old_address
-            client.phone = old_phone
-            client.pppoe = old_pppoe
-            client.password = old_password
-            client.local_ip = old_localIP
-            client.lat = old_lat
-            client.long = old_long
-            client.id_paket = old_id_paket
+                client.save()
+                success = True
 
-            client.save()
-            success = True
+            except Exception as e:
+                error_message = str(e) 
         else:
             error_message = ''
             for field, errors in form.errors.items():
@@ -536,7 +548,7 @@ def delete_server(request, pk):
         except Exception as e:
             error_message = str(e) 
         
-    return JsonResponse({'success': False, 'message': "Metode tidak diizinkan."}, status=400)
+    return JsonResponse({'success': False, 'message': error_message}, status=400)
 
 
 
@@ -559,7 +571,7 @@ def delete_paket(request, pk):
                 error_message = str(e) 
         
     
-    return JsonResponse({'success': False, 'message': "Metode tidak diizinkan."}, status=400)
+    return JsonResponse({'success': False, 'message': error_message}, status=400)
 
 def delete_ip(request, pk):
     ip_pool = get_object_or_404(IPPool, pk=pk)
@@ -581,16 +593,29 @@ def delete_ip(request, pk):
                 error_message = str(e) 
         
     
-    return JsonResponse({'success': False, 'message': "Metode tidak diizinkan."}, status=400)
+    return JsonResponse({'success': False, 'message': error_message}, status=400)
 
 def delete_client(request, pk):
     client = get_object_or_404(Client, pk=pk)
     
     if request.method == "POST":
-        client.delete()
-        return JsonResponse({'success': True, 'message': "Data berhasil dihapus."})
+        paket = client.id_paket
+        server = paket.id_ip_pool.id_server
+
+        try:
+            res = delete_pppoe( 
+                server.host, 
+                server.username, 
+                server.password,
+                client.pppoe
+                )            
+            client.delete()
+            return JsonResponse({'success': True, 'message': "Data berhasil dihapus."})
+        except Exception as e:
+                error_message = str(e) 
+       
     
-    return JsonResponse({'success': False, 'message': "Metode tidak diizinkan."}, status=400)
+    return JsonResponse({'success': False, 'message': error_message}, status=400)
 
 #detail
 
@@ -622,8 +647,23 @@ def toggle_activasi(request, client_id):
         }, status=401)
 
     try:
+        status = 'no'
         client = get_object_or_404(Client, id=client_id)
+        paket = client.id_paket
+        server = paket.id_ip_pool.id_server
         client.isActive = not client.isActive
+
+        if(client.isActive == False):
+            status = 'yes'
+            
+        set_disabled_pppoe(
+            server.host,
+            server.username,
+            server.password,
+            client.pppoe,
+            status
+        )
+
         client.save()
 
         return JsonResponse({
@@ -646,8 +686,10 @@ def toggle_verif(request, client_id):
 
     try:
         client = get_object_or_404(Client, id=client_id)
+        paket = client.id_paket
+        server = paket.id_ip_pool.id_server
+        old_pppoe = client.pppoe
 
-         # Cek duplikasi PPPoE hanya jika akan meng-approve
         if not client.isApproved:
             if Client.objects.filter(
                 Q(pppoe=client.temp_pppoe) & ~Q(id=client.id)
@@ -656,7 +698,16 @@ def toggle_verif(request, client_id):
                     "success": False,
                     "message": f"ID PPPoE '{client.temp_pppoe}' sudah digunakan oleh client lain."
                 })
-
+        edit_pppoe(
+                    server.host,
+                    server.username,
+                    server.password,
+                    client.temp_pppoe,
+                    client.temp_password,
+                    paket.name,
+                    client.temp_local_ip,
+                    old_pppoe
+                )
         # Pindahkan data temp ke data utama
         client.id_paket = client.temp_paket
         client.name = client.temp_name
@@ -664,6 +715,7 @@ def toggle_verif(request, client_id):
         client.phone = client.temp_phone
         client.pppoe = client.temp_pppoe
         client.password = client.temp_password
+        client.local_ip = client.temp_local_ip
         client.lat = client.temp_lat
         client.long = client.temp_long
 
@@ -694,30 +746,21 @@ def is_reachable(ip):
     except subprocess.CalledProcessError:
         return False
 
-def test_connection(request, pk):
-    print(f"Test koneksi untuk server ID: {pk}")
-    
-    try:
-        server = Server.objects.get(pk=pk)
-        host = server.host
-        port = 8291
 
-        # Cek apakah bisa di-ping
-        if not is_reachable(host):
-            print(f"Host {host} tidak bisa diping")
-            status = 'Tidak Aktif'
-        else:
-            print(f"Mencoba konek ke {host}:{port}")
-            with socket.create_connection((host, port), timeout=2):
-                print("Terkoneksi", host)
-                status = 'Aktif'
-    except Exception as e:
-        print("Gagal konek:", e)
-        status = 'Tidak Aktif'
+def test_conn_view(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        host = data.get("host")
+        username = data.get("username")
+        password = data.get("password")
+        try:
+            res = test_conn(host, username, password)
+            parse_mikrotik_output(res)
+            return JsonResponse({"success": True, "message": res})
+        except Exception as e:
+            return JsonResponse({"success": False, "message": f"Error: {e}"})
 
-    return JsonResponse({'status': status})
-
-
+    return JsonResponse({"success": False, "message": "Invalid request"})
 
 
 
