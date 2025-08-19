@@ -123,7 +123,7 @@ def delete_profile(host, username, password, current_profile):
 def create_pppoe(host, username, password, pppoe, password_pppoe, profile, local_ip):
     try:
         conn = get_mikrotik_conn(host, username, password)
-        command = f"/ppp secret add name={pppoe} password={password_pppoe}, profile={profile} local-address={local_ip} service=pppoe disabled=yes"
+        command = f"/ppp secret add name={pppoe} password={password_pppoe} profile={profile} local-address={local_ip} service=pppoe disabled=yes"
         output = conn.send_command(command)
         conn.disconnect()
         return output
