@@ -1,3 +1,4 @@
+import ipaddress
 from netmiko import ConnectHandler
 
 
@@ -161,3 +162,92 @@ def set_disabled_pppoe(host, username, password, pppoe, status):
         return output
     except Exception as e:
         raise Exception(f"Gagal activasi PPPoE: {e}")
+    
+
+
+def create_auto_config(host, interfaceHost, newUser,oldPass, newPass, interfacePPPoE):
+    device = {
+        "device_type": "mikrotik_routeros",
+        "ip": host,
+        "username": "admin",
+        "password": oldPass,  
+    }
+
+    try:
+        # Connect
+        net_connect = ConnectHandler(**device)
+        print("✅ Connected to MikroTik Router", flush=True)
+
+        # DHCP client on ether1
+        print("🔄 Enabling DHCP client on ether1...", flush=True)
+        net_connect.send_config_set(["/ip dhcp-client add interface=ether1 disabled=no"])
+        print("✅ DHCP client enabled on ether1", flush=True)
+        net_connect.send_config_set(["/ip dhcp-client print"]),
+
+        # NAT masquerade
+        print("🔄 Setting NAT masquerade on ether1...", flush=True)
+        net_connect.send_config_set(["/ip firewall nat add chain=srcnat action=masquerade out-interface=ether1"])
+        print("✅ NAT masquerade configured", flush=True)
+
+        # DNS
+        print("🔄 Setting DNS servers (8.8.8.8, 8.8.4.4)...", flush=True)
+        net_connect.send_config_set(['/ip dns set servers=8.8.8.8,8.8.4.4'])
+        print("✅ DNS servers configured", flush=True)
+
+        # DHCP Server on interfaceHost
+        print(f"🔄 Checking IP address on {interfaceHost}...", flush=True)
+        output = net_connect.send_command(f"/ip address print where interface={interfaceHost}")
+
+        ip_cidr = None
+        for line in output.splitlines():
+            if "/" in line and "ADDRESS" not in line:
+                parts = line.split()
+                ip_cidr = parts[1]
+                break
+
+        if not ip_cidr:
+            print(f"❌ No IP address found on {interfaceHost}, please configure manually first.", flush=True)
+        else:
+            ip_iface = ipaddress.ip_interface(ip_cidr)
+            network = ip_iface.network
+            gateway = str(ip_iface.ip)
+
+            hosts = list(network.hosts())
+            if len(hosts) >= 2:
+                start_ip = str(hosts[1])   # biasanya .2
+                end_ip   = str(hosts[-1])  # biasanya .254
+                pool_range = f"{start_ip}-{end_ip}"
+
+                print(f"🔄 Creating IP pool for {interfaceHost} ({pool_range})...", flush=True)
+                net_connect.send_config_set([
+                    f"/ip pool add name=dhcp_pool ranges={pool_range}",
+                ])
+                print(f"✅ IP pool created: {pool_range}", flush=True)
+
+                print(f"🔄 Configuring DHCP server on {interfaceHost}...", flush=True)
+                net_connect.send_config_set([
+                    f"/ip dhcp-server add name=dhcp1 interface={interfaceHost} address-pool=dhcp_pool disabled=no",
+                    f"/ip dhcp-server network add address={network.with_prefixlen} gateway={gateway} dns-server=8.8.8.8"
+                ])
+                print(f"✅ DHCP server activated on {interfaceHost}", flush=True)
+            else:
+                print("❌ Network range too small, failed to create IP pool", flush=True)
+
+        # PPPoE Server
+        print(f"🔄 Enabling PPPoE server on {interfacePPPoE}...", flush=True)
+        net_connect.send_config_set([f"/interface pppoe-server server add service-name=pppoe_server interface={interfacePPPoE} disabled=no"])
+        print(f"✅ PPPoE server activated on {interfacePPPoE}", flush=True)
+
+        # User update
+        print("🔄 Updating admin username & password...", flush=True)
+        if newUser != "admin" or newPass != "":
+            net_connect.send_config_set([f"/user set [find name=admin] name={newUser} password={newPass}"])
+            print("✅ Username & password updated", flush=True)
+        else:
+            print("ℹ️ Username/password unchanged (still default)", flush=True)
+
+        print("🎉 Auto configuration finished successfully!", flush=True)
+
+    except Exception as e:
+        raise Exception(f"Error: {e}")
+

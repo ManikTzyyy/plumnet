@@ -56,7 +56,7 @@
           </button>
         </div>
         <br />
-        <form id="terminalForm" class="column">
+        <!-- <form id="terminalForm" class="column">
           <div class="column">
             <label for="command">Terminal</label>
             <textarea
@@ -71,76 +71,11 @@
 
         <div class="output-command" id="commandOutput">
           <span class="loader-form"></span>
-        </div>
+        </div> -->
       </div>
     </div>
   </div>
 </div>
-
-<div id="deleteModal" class="modal" style="display: none">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h3>Konfirmasi Hapus</h3>
-    </div>
-    <span class="close" onclick="closeModalDelete()"
-      >&times;</span
-    >
-
-    <div class="modal-text column">
-      <i style="--clr-icon-modal:var(--clr-r1)" class="fa-solid fa-triangle-exclamation"></i>
-      <p>Apakah Anda yakin ingin menghapus server ini?</p>
-    </div>
-    <form id="deleteForm" method="POST">
-      {% csrf_token %}
-      <button type="submit" class="danger-button">Ya, Hapus</button>
-      <button type="button" onclick="closeModalDelete()" class="grey-button">
-        Batal
-      </button>
-    </form>
-  </div>
-</div>
-
-<script>
-  function openDeleteModal(serverId) {
-    const modal = document.getElementById("deleteModal");
-    const form = document.getElementById("deleteForm");
-    form.action = `/server/${serverId}/delete/`; // sesuaikan dengan URL kamu
-    modal.style.display = "block";
-  }
-
-  function closeModalDelete() {
-    document.getElementById("deleteModal").style.display = "none";
-  }
-
-  // Menutup modal jika diklik di luar area modal
-  window.onclick = function (event) {
-    const modal = document.getElementById("deleteModal");
-    if (event.target === modal) {
-      closeModal();
-    }
-  };
-</script>
-
-<script>
-  function showLoader() {
-    document.querySelector(".loader-wrapper").style.display = "flex"; // atau "block" sesuai CSS-mu
-  }
-
-  function hideLoader() {
-    document.querySelector(".loader-wrapper").style.display = "none";
-  }
-
-  function closeModal() {
-    document.getElementById("connectionModal").style.display = "none";
-  }
-
-  window.onclick = function (event) {
-    const modal = document.getElementById("connectionModal");
-    if (event.target == modal) {
-      modal.style.display = "none";
-    }
-  };
-</script>
 
 <script>
   function showLoaderForm() {

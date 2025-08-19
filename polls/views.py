@@ -5,7 +5,7 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.contrib.auth.decorators import login_required
 
 from mysite import settings
-from polls.templates.network.netmiko_service import clear_config, create_pool, create_pppoe, create_profile, delete_pool, delete_pppoe, delete_profile, edit_pool, edit_pppoe, edit_profile, set_disabled_pppoe, test_conn
+from polls.templates.network.netmiko_service import clear_config, create_auto_config, create_pool, create_pppoe, create_profile, delete_pool, delete_pppoe, delete_profile, edit_pool, edit_pppoe, edit_profile, set_disabled_pppoe, test_conn
 from polls.utils.formater import parse_mikrotik_output
 from .templates.network.routeros_service import get_mikrotik_info
 
@@ -536,7 +536,7 @@ def delete_server(request, pk):
     if request.method == "POST":
         try:
             
-            clear_config(
+            res = clear_config(
                 server.host, 
                 server.username, 
                 server.password,
@@ -544,7 +544,7 @@ def delete_server(request, pk):
                 profile_data
             )
             server.delete()
-            return JsonResponse({'success': True, 'message': "Data berhasil dihapus."}) 
+            return JsonResponse({'success': True, 'message': res}) 
         except Exception as e:
             error_message = str(e) 
         
@@ -559,14 +559,14 @@ def delete_paket(request, pk):
     server = ip_pool.id_server
     if request.method == "POST":
         try:
-            delete_profile( 
+            res = delete_profile( 
                 server.host, 
                 server.username, 
                 server.password,
                 current_profile
                 )
             paket.delete()
-            return JsonResponse({'success': True, 'message': "Data berhasil dihapus."}) 
+            return JsonResponse({'success': True, 'message': res}) 
         except Exception as e:
                 error_message = str(e) 
         
@@ -580,7 +580,7 @@ def delete_ip(request, pk):
     profile_data = list(Paket.objects.filter(id_ip_pool_id=ip_pool).values_list('name', flat=True))
     if request.method == "POST":
         try:
-            delete_pool( 
+            res = delete_pool( 
                 server.host, 
                 server.username, 
                 server.password,
@@ -588,7 +588,7 @@ def delete_ip(request, pk):
                 profile_data
                 )
             ip_pool.delete()
-            return JsonResponse({'success': True, 'message': "Data berhasil dihapus."})
+            return JsonResponse({'success': True, 'message': res})
         except Exception as e:
                 error_message = str(e) 
         
@@ -610,7 +610,7 @@ def delete_client(request, pk):
                 client.pppoe
                 )            
             client.delete()
-            return JsonResponse({'success': True, 'message': "Data berhasil dihapus."})
+            return JsonResponse({'success': True, 'message': res})
         except Exception as e:
                 error_message = str(e) 
        
@@ -763,6 +763,38 @@ def test_conn_view(request):
     return JsonResponse({"success": False, "message": "Invalid request"})
 
 
+def auto_config(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        host=data.get('host')
+        interfaceHost = data.get("hostEther")
+        username = data.get("username")
+        oldPassword = data.get("oldPassword")
+        password = data.get("password")
+        interfacePPPoE = data.get("pppoeEther")
+        try:
+            res = create_auto_config(
+                host, 
+                interfaceHost, 
+                username, 
+                oldPassword,
+                password, 
+                interfacePPPoE
+                )
+
+            server = Server.objects.create(
+                name=f"Router-{host}",  # kamu bisa kasih input `name` dari form kalau mau
+                host=host,
+                username=username,
+                password=password,
+            )
+
+            server.save()
+            return JsonResponse({"success": True, "message": res})
+        except Exception as e:
+            return JsonResponse({"success": False, "message": f"Error: {e}"})  
+         
+    return JsonResponse({"success": False, "message": "Invalid request"})  
 
 
 logger = logging.getLogger(__name__)
