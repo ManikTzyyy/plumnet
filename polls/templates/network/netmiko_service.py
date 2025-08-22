@@ -22,7 +22,7 @@ def test_conn(host, username, password):
 
 
 
-def clear_config(host, username, password, pools=None, profiles=None):
+def clear_config(host, username, password, pools=None, profiles=None, clients=None):
     try:
         conn = get_mikrotik_conn(host, username, password)
 
@@ -34,7 +34,10 @@ def clear_config(host, username, password, pools=None, profiles=None):
             for profile_item in profiles:
                 command = f'/ppp profile remove [find name="{profile_item}"]'
                 conn.send_command(command)
-                
+        if clients:
+            for client_item in clients:
+                command = f'/ppp secret remove [find name="{client_item}"]'
+                conn.send_command(command)
         conn.disconnect()
         return True
 
@@ -108,10 +111,13 @@ def edit_profile(host, username, password, profile_name, pool_name, limit, curre
     except Exception as e:
         raise Exception(f"Gagal edit Profile: {e}")
     
-def delete_profile(host, username, password, current_profile):
-    
+def delete_profile(host, username, password, current_profile, pppoe_clients):
     try:
         conn = get_mikrotik_conn(host, username, password)
+        if pppoe_clients:
+            for item in pppoe_clients:
+                command = f'/ppp secret remove [find name="{item}"]'
+                conn.send_command(command)
         command = f"/ppp profile remove {current_profile}"
         output = conn.send_command(command)
         conn.disconnect()
@@ -134,7 +140,7 @@ def create_pppoe(host, username, password, pppoe, password_pppoe, profile, local
 def edit_pppoe(host, username, password, pppoe, password_pppoe, profile, local_ip, current_pppoe):
     try:
         conn = get_mikrotik_conn(host, username, password)
-        command = f"/ppp secret set {current_pppoe} name={pppoe} password={password_pppoe}, profile={profile} local-address={local_ip} service=pppoe"
+        command = f"/ppp secret set {current_pppoe} name={pppoe} password={password_pppoe} profile={profile} local-address={local_ip} service=pppoe"
         output = conn.send_command(command)
         conn.disconnect()
         return output

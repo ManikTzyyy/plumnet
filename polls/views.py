@@ -353,8 +353,8 @@ def edit_paket(request, pk):
     success = False
     error_message = None
     paket = get_object_or_404(Paket, pk=pk)
-
-    current_profile = paket.name
+    current_server = paket.id_ip_pool.id_server if paket.id_ip_pool else None
+    current_profile = paket.name if paket.name else None
 
     if request.method == 'POST':
         form = PaketForm(request.POST, instance=paket)
@@ -363,22 +363,26 @@ def edit_paket(request, pk):
             limit = form.cleaned_data['limit']
             profile_name = form.cleaned_data['name']
             ip_pool = form.cleaned_data['id_ip_pool']
-            server = ip_pool.id_server
-            try:
-                edit_profile(
-                    server.host,
-                    server.username,
-                    server.password,
-                    profile_name,
-                    ip_pool.name,
-                    limit,
-                    current_profile
-                )
-                form.save()
-                success = True 
-            except Exception as e:
-                error_message = str(e) 
-            
+            if ip_pool == None:
+                error_message = "IP Pool tidak boleh Null"          
+            else:
+                new_server = ip_pool.id_server
+                if new_server == None:
+                    error_message = "Tambahkan Server pada IP Pool Terlebih Dahulu!"
+                else:
+                    try:
+                        if current_server is None:
+                            create_profile(new_server.host,new_server.username,new_server.password,profile_name,ip_pool.name,limit,)
+                            form.save()
+                            success = True
+                        elif current_server != new_server:
+                            error_message = "Tidak boleh mengganti IP Pool yang berbeda dengan server lama."
+                        else:
+                            edit_profile(new_server.host,new_server.username,new_server.password,profile_name,ip_pool.name,limit,current_profile)
+                            form.save()
+                            success = True 
+                    except Exception as e:
+                        error_message = str(e) 
         else:
             error_message = ''
             for field, errors in form.errors.items():
@@ -397,9 +401,11 @@ def edit_paket(request, pk):
 def edit_ip(request, pk):
     success = False
     error_message = None
+
     ip_pool = get_object_or_404(IPPool, pk=pk)
     current_pool = ip_pool.name
     server = ip_pool.id_server
+    
 
     if request.method == 'POST':
         form = ipPoolForm(request.POST, instance=ip_pool)
@@ -407,38 +413,44 @@ def edit_ip(request, pk):
             pool_name = form.cleaned_data['name']
             pool_range = form.cleaned_data['ip_range']
             new_server = form.cleaned_data['id_server']
-            try:
-                if server != new_server:
-                    delete_pool(
+
+            if new_server is None:
+                error_message = "Server tidak boleh kosong."
+            else:
+                try:
+                    if server is None:
+                        # kasus: belum ada server → boleh create pool
+                        create_pool(
+                            new_server.host, 
+                            new_server.username, 
+                            new_server.password,
+                            pool_name, 
+                            pool_range
+                        )
+                        form.save()
+                        success = True
+
+                    elif server != new_server:
+                        # kasus: server lama ada, tapi user coba ganti → error
+                        error_message = "Tidak boleh mengganti server lama."
+
+                    else:
+                        # kasus: server lama sama → boleh edit pool
+                        edit_pool(
                             server.host, 
                             server.username, 
                             server.password,
+                            pool_name, 
+                            pool_range, 
                             current_pool
-                    )
-                    create_pool(
-                        new_server.host, 
-                        new_server.username, 
-                        new_server.password,
-                        pool_name,
-                        pool_range
-                    )
-                  
-                   
-                else:
-                    edit_pool(
-                        server.host, 
-                        server.username, 
-                        server.password,
-                        pool_name,
-                        pool_range,
-                        current_pool,
-                    )
-                form.save()
-                success = True 
-            except Exception as e:
-                error_message = str(e) 
-            
+                        )
+                        form.save()
+                        success = True
+
+                except Exception as e:
+                    error_message = str(e)
         else:
+            # gabung error form
             error_message = ''
             for field, errors in form.errors.items():
                 error_message += f"{field}: {', '.join(errors)}\n"
@@ -446,11 +458,11 @@ def edit_ip(request, pk):
         form = ipPoolForm(instance=ip_pool)
 
     return render(request, 'form-pages/form-ip.html', {
-        'form': form, 
+        'form': form,
         'is_edit': True,
         'success': success,
         'error_message': error_message
-        })
+    })
 
 
 def edit_client(request, pk):
@@ -459,90 +471,96 @@ def edit_client(request, pk):
     error_message = None
 
     if request.method == 'POST':
-        
-        old_name = client.name
-        old_address = client.address
-        old_phone = client.phone
-        old_pppoe = client.pppoe
-        old_password = client.password
-        old_id_paket = client.id_paket
-        old_lat = client.lat
-        old_long = client.long
-        old_localIP = client.local_ip
-
+    
+        current_server = client.id_paket.id_ip_pool.id_server if client.id_paket else None       
         form = ClientForm(request.POST, instance=client)
+
         if form.is_valid():
             cd = form.cleaned_data
-            try:
-                client.temp_paket = cd['id_paket']
-                client.temp_name = cd['name']
-                client.temp_address = cd['address']
-                client.temp_phone = cd['phone']
-                client.temp_pppoe = cd['pppoe']
-                client.temp_password = cd['password']
-                client.temp_lat = cd['lat']
-                client.temp_long = cd['long']
-                client.temp_local_ip = cd['local_ip']
-                client.isApproved = False
-                client.name = old_name
-                client.address = old_address
-                client.phone = old_phone
-                client.pppoe = old_pppoe
-                client.password = old_password
-                client.local_ip = old_localIP
-                client.lat = old_lat
-                client.long = old_long
-                client.id_paket = old_id_paket
+            
+            client.refresh_from_db(fields=['id_paket', 'name', 'address', 'phone','pppoe', 'password', 'lat', 'long', 'local_ip'])
 
-                client.save()
-                success = True
 
-            except Exception as e:
-                error_message = str(e) 
+            new_paket = form.cleaned_data['id_paket']
+            new_server = new_paket.id_ip_pool.id_server if new_paket else None
+            
+            if new_server == None:
+                error_message = "Paket tidak boleh kosong."
+            elif current_server is None:
+
+                try:
+                    client.temp_paket = new_paket
+                    client.temp_name = cd['name']
+                    client.temp_address = cd['address']
+                    client.temp_phone = cd['phone']
+                    client.temp_pppoe = cd['pppoe']
+                    client.temp_password = cd['password']
+                    client.temp_lat = cd['lat']
+                    client.temp_long = cd['long']
+                    client.temp_local_ip = cd['local_ip']
+                    client.isApproved = False
+                    client.isServerNull = True
+                   
+                    client.save()
+                    success = True
+                except Exception as e:
+                    error_message = str(e)
+                
+            elif new_server !=  current_server:
+                error_message = 'Tidak boleh mengganti paket ke server berbeda!'
+            else:
+                try:
+                    client.temp_paket = new_paket
+                    client.temp_name = cd['name']
+                    client.temp_address = cd['address']
+                    client.temp_phone = cd['phone']
+                    client.temp_pppoe = cd['pppoe']
+                    client.temp_password = cd['password']
+                    client.temp_lat = cd['lat']
+                    client.temp_long = cd['long']
+                    client.temp_local_ip = cd['local_ip']
+                    client.isApproved = False
+                   
+                    client.save()
+                    success = True
+                except Exception as e:
+                    error_message = str(e)
         else:
-            error_message = ''
-            for field, errors in form.errors.items():
-                error_message += f"{field}: {', '.join(errors)}\n"
+            error_message = "\n".join(
+                [f"{field}: {', '.join(errors)}" for field, errors in form.errors.items()]
+            )
     else:
-        initial_data = {
-            'name': client.temp_name or client.name,
-            'address': client.temp_address or client.address,
-            'phone': client.temp_phone or client.phone,
-            'pppoe': client.temp_pppoe or client.pppoe,
-            'password': client.temp_password or client.password,
-            'id_paket': client.temp_paket or client.id_paket,
-            'local_ip': client.temp_local_ip or client.local_ip,
-            'lat': client.temp_lat or client.lat,
-            'long':client.temp_long or client.long
-        }
-        form = ClientForm(initial=initial_data, instance=client)
+        form = ClientForm(instance=client)
 
     return render(request, 'form-pages/form-client.html', {
         'form': form,
         'is_edit': True,
         'success': success,
-        'error_message': error_message
+        'error_message': error_message,
     })
+
+
+
 
 
 #delete data
 
 def delete_server(request, pk):
     server = get_object_or_404(Server, pk=pk)
-
     pool_data = list(IPPool.objects.filter(id_server=server).values_list('name', flat=True))
     profile_data = list(Paket.objects.filter(id_ip_pool__id_server=server).values_list('name', flat=True))
-    print(pool_data)
+    client_data = list(Client.objects.filter(id_paket__id_ip_pool__id_server=server).values_list('pppoe', flat=True))
     if request.method == "POST":
         try:
-            
             res = clear_config(
                 server.host, 
                 server.username, 
                 server.password,
                 pool_data,
-                profile_data
+                profile_data,
+                client_data
             )
+            
             server.delete()
             return JsonResponse({'success': True, 'message': res}) 
         except Exception as e:
@@ -553,24 +571,29 @@ def delete_server(request, pk):
 
 
 def delete_paket(request, pk):
+    res = None
     paket = get_object_or_404(Paket, pk=pk)
     current_profile = paket.name
     ip_pool = paket.id_ip_pool
     server = ip_pool.id_server
+    client_data = list(Client.objects.filter(id_paket_id=paket.id).values_list('pppoe', flat=True))
+    # print(client_data)
     if request.method == "POST":
         try:
-            res = delete_profile( 
-                server.host, 
-                server.username, 
-                server.password,
-                current_profile
-                )
+            if server != None:
+                # print(res)
+                
+                res = delete_profile( 
+                    server.host, 
+                    server.username, 
+                    server.password,
+                    current_profile,
+                    client_data
+                    )
             paket.delete()
-            return JsonResponse({'success': True, 'message': res}) 
+            return JsonResponse({'success': True, 'message': res or "Paket deleted without server action"}) 
         except Exception as e:
                 error_message = str(e) 
-        
-    
     return JsonResponse({'success': False, 'message': error_message}, status=400)
 
 def delete_ip(request, pk):
@@ -580,15 +603,16 @@ def delete_ip(request, pk):
     profile_data = list(Paket.objects.filter(id_ip_pool_id=ip_pool).values_list('name', flat=True))
     if request.method == "POST":
         try:
-            res = delete_pool( 
-                server.host, 
-                server.username, 
-                server.password,
-                current_pool,
-                profile_data
-                )
+            if server != None:
+                res = delete_pool( 
+                    server.host, 
+                    server.username, 
+                    server.password,
+                    current_pool,
+                    profile_data
+                    )
             ip_pool.delete()
-            return JsonResponse({'success': True, 'message': res})
+            return JsonResponse({'success': True, 'message': res or "Pool deleted without server action"})
         except Exception as e:
                 error_message = str(e) 
         
@@ -652,6 +676,7 @@ def toggle_activasi(request, client_id):
         paket = client.id_paket
         server = paket.id_ip_pool.id_server
         client.isActive = not client.isActive
+       
 
         if(client.isActive == False):
             status = 'yes'
@@ -682,44 +707,78 @@ def toggle_verif(request, client_id):
         return JsonResponse({
             "success": False,
             "message": "Anda harus login dahulu untuk melakukan verifikasi."
-        }, status=401)  # Unauthorized
+        }, status=401)
 
     try:
         client = get_object_or_404(Client, id=client_id)
-        paket = client.id_paket
-        server = paket.id_ip_pool.id_server
         old_pppoe = client.pppoe
+        paket = client.id_paket
 
+        # pastikan temp_paket ada
+        if not client.temp_paket:
+            return JsonResponse({
+                "success": False,
+                "message": "Client belum memilih paket sementara."
+            }, status=400)
+
+        new_server = client.temp_paket.id_ip_pool.id_server
+        new_paket = client.temp_paket
+
+        # cek kalau pppoe sudah dipakai
         if not client.isApproved:
-            if Client.objects.filter(
-                Q(pppoe=client.temp_pppoe) & ~Q(id=client.id)
-            ).exists():
+            if Client.objects.filter(Q(pppoe=client.temp_pppoe) & ~Q(id=client.id)).exists():
                 return JsonResponse({
                     "success": False,
                     "message": f"ID PPPoE '{client.temp_pppoe}' sudah digunakan oleh client lain."
                 })
-        edit_pppoe(
-                    server.host,
-                    server.username,
-                    server.password,
-                    client.temp_pppoe,
-                    client.temp_password,
-                    paket.name,
-                    client.temp_local_ip,
-                    old_pppoe
-                )
-        # Pindahkan data temp ke data utama
-        client.id_paket = client.temp_paket
-        client.name = client.temp_name
-        client.address = client.temp_address
-        client.phone = client.temp_phone
-        client.pppoe = client.temp_pppoe
-        client.password = client.temp_password
-        client.local_ip = client.temp_local_ip
-        client.lat = client.temp_lat
-        client.long = client.temp_long
 
-        # Toggle status
+        if paket is None:
+            # create baru
+            create_pppoe(
+                new_server.host,
+                new_server.username,
+                new_server.password,
+                client.temp_pppoe,
+                client.temp_password,
+                new_paket.name,
+                client.temp_local_ip
+            )
+            client.id_paket = new_paket
+            client.name = client.temp_name
+            client.address = client.temp_address
+            client.phone = client.temp_phone
+            client.pppoe = client.temp_pppoe
+            client.password = client.temp_password
+            client.local_ip = client.temp_local_ip
+            client.lat = client.temp_lat
+            client.long = client.temp_long
+            
+        else:
+            # edit existing
+            edit_pppoe(
+                new_server.host,
+                new_server.username,
+                new_server.password,
+                client.temp_pppoe,
+                client.temp_password,
+                new_paket.name,
+                client.temp_local_ip,
+                old_pppoe
+            )
+
+            # update data client
+            client.id_paket = new_paket
+            client.name = client.temp_name
+            client.address = client.temp_address
+            client.phone = client.temp_phone
+            client.pppoe = client.temp_pppoe
+            client.password = client.temp_password
+            client.local_ip = client.temp_local_ip
+            client.lat = client.temp_lat
+            client.long = client.temp_long
+
+        # toggle verif
+        client.isServerNull = not client.isServerNull
         client.isApproved = not client.isApproved
         client.save()
 
@@ -731,10 +790,11 @@ def toggle_verif(request, client_id):
                 f"Verifikasi untuk {client.name} dibatalkan."
             )
         })
+
     except Exception as e:
         return JsonResponse({
             "success": False,
-            "message": str(e) or "Terjadi kesalahan saat memproses verifikasi."
+            "message": f"Error internal: {str(e)}"
         }, status=500)
 
 

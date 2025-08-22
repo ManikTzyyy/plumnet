@@ -37,10 +37,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'polls',
+    'polls.apps.PollsConfig',
     'django_extensions',
-  
 ]
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

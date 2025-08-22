@@ -110,6 +110,7 @@ function cekModifyClientData(
         cancelButtonText: "Batal",
       }).then((result) => {
         if (result.isConfirmed) {
+          showMyLoader();
           fetch(`/client/${id}/verification/`, {
             method: "POST",
             headers: {
@@ -120,6 +121,7 @@ function cekModifyClientData(
             .then((res) => {
               // console.log("Status:", res.status);
               if (res.status === 401) {
+                
                 throw new Error(
                   "Anda harus login dahulu untuk melakukan verifikasi."
                 );
@@ -140,6 +142,7 @@ function cekModifyClientData(
               }
             })
             .catch((err) => {
+              hideLoader();
               //  console.error("Fetch error:", err);
               Swal.fire("Gagal!", err.message, "error");
             });
