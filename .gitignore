@@ -1,1 +1,4 @@
 polls/__pycache__
+
+
+*.sqlite3

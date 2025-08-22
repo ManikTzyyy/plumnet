@@ -40,10 +40,10 @@
         </div>
         <div class="row button-wrapper">
           <button
-            onclick="testConnection('{{ server.id }}')"
+            onclick="test_connection('{{ server.host }}', '{{ server.username }}', '{{ server.password }}')"
             class="main-button"
           >
-            Ping Host IP
+            Test Connection
           </button>
           <a href="{% url 'edit-server' server.id %}" class="warning-button"
             >Edit</a
@@ -56,7 +56,7 @@
           </button>
         </div>
         <br />
-        <form id="terminalForm" class="column">
+        <!-- <form id="terminalForm" class="column">
           <div class="column">
             <label for="command">Terminal</label>
             <textarea
@@ -71,108 +71,11 @@
 
         <div class="output-command" id="commandOutput">
           <span class="loader-form"></span>
-        </div>
+        </div> -->
       </div>
     </div>
   </div>
 </div>
-
-<div id="deleteModal" class="modal" style="display: none">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h3>Konfirmasi Hapus</h3>
-    </div>
-    <span class="close" onclick="closeModalDelete()"
-      >&times;</span
-    >
-
-    <div class="modal-text column">
-      <i style="--clr-icon-modal:var(--clr-r1)" class="fa-solid fa-triangle-exclamation"></i>
-      <p>Apakah Anda yakin ingin menghapus server ini?</p>
-    </div>
-    <form id="deleteForm" method="POST">
-      {% csrf_token %}
-      <button type="submit" class="danger-button">Ya, Hapus</button>
-      <button type="button" onclick="closeModalDelete()" class="grey-button">
-        Batal
-      </button>
-    </form>
-  </div>
-</div>
-
-<script>
-  function openDeleteModal(serverId) {
-    const modal = document.getElementById("deleteModal");
-    const form = document.getElementById("deleteForm");
-    form.action = `/server/${serverId}/delete/`; // sesuaikan dengan URL kamu
-    modal.style.display = "block";
-  }
-
-  function closeModalDelete() {
-    document.getElementById("deleteModal").style.display = "none";
-  }
-
-  // Menutup modal jika diklik di luar area modal
-  window.onclick = function (event) {
-    const modal = document.getElementById("deleteModal");
-    if (event.target === modal) {
-      closeModal();
-    }
-  };
-</script>
-
-<script>
-  function showLoader() {
-    document.querySelector(".loader-wrapper").style.display = "flex"; // atau "block" sesuai CSS-mu
-  }
-
-  function hideLoader() {
-    document.querySelector(".loader-wrapper").style.display = "none";
-  }
-
-  function testConnection(serverId) {
-    showLoader(); // Tampilkan loader
-
-    fetch(`/server-list/test-connection/${serverId}/`)
-      .then((response) => response.json())
-      .then((data) => {
-        const modal = document.getElementById("connectionModal");
-        const statusText = document.getElementById("connectionStatus");
-
-        if (data.status === "Aktif") {
-          statusText.innerHTML =
-            "<div class='column'><div class='modal-icon'><i class='fa-regular fa-circle-check' style='--clr:green'></i></div><h2>Konek cuy 😋👍</h2></div>";
-        } else {
-          statusText.innerHTML =
-            "<div class='column'><div class='modal-icon'><i class='fa-solid fa-xmark' style='--clr:red'></i></div><h2>Ga konek 😱</h2><p>Coba cek perangkatmu</p></div>";
-        }
-
-        modal.style.display = "block";
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-        const modal = document.getElementById("connectionModal");
-        const statusText = document.getElementById("connectionStatus");
-        statusText.innerHTML =
-          '<span style="color: orange;">Terjadi kesalahan saat mencoba koneksi.</span>';
-        modal.style.display = "block";
-      })
-      .finally(() => {
-        hideLoader(); // Sembunyikan loader setelah fetch selesai
-      });
-  }
-
-  function closeModal() {
-    document.getElementById("connectionModal").style.display = "none";
-  }
-
-  window.onclick = function (event) {
-    const modal = document.getElementById("connectionModal");
-    if (event.target == modal) {
-      modal.style.display = "none";
-    }
-  };
-</script>
 
 <script>
   function showLoaderForm() {

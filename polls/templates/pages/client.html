@@ -27,6 +27,7 @@
       <table class="table">
         <tr class="t-head">
           <th>#</th>
+          <th>PPPoE</th>
           <th>Nama</th>
           <th>Alamat</th>
           <th>No Hp</th>
@@ -40,6 +41,7 @@
         {% for client in clients %}
         <tr class="t-d">
           <td>{{ client.id }}</td>
+          <td>{{ client.pppoe }}</td>
           <td>{{ client.name }}</td>
           <td>{{ client.address }}</td>
           <td>{{ client.phone }}</td>
@@ -71,7 +73,7 @@
           </td >
           {% if user.is_authenticated %}<td>
             <button
-              onclick="cekModifyClientData('{{ client.id }}','{{client.temp_name}}','{{client.temp_address}}','{{client.temp_phone}}', '{{client.temp_paket.id_ip_pool.id_server.name}}', '{{ client.temp_paket.name }} - {{ client.temp_paket.price|rupiah }} - {{ client.temp_paket.limit }}', '{{client.temp_pppoe}}')"
+              onclick="cekModifyClientData('{{ client.id }}','{{client.temp_name}}','{{client.temp_address}}','{{client.temp_phone}}', '{{client.temp_paket.id_ip_pool.id_server.name}}', '{{ client.temp_paket.name }} - {{ client.temp_paket.price|rupiah }} - {{ client.temp_paket.limit }}', '{{client.temp_pppoe}}', '{{client.temp_lat}}', '{{client.temp_long}}', '{{client.temp_local_ip}}')"
               class="icon-button {% if client.isApproved %}disbale-button{% else %}main-button {% endif %}"
               {% if client.isApproved %}disbale{% else %}{% endif %}
             >
