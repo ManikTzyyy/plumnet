@@ -28,6 +28,10 @@ def get_server_info(request, server_id):
     try:
         server = Server.objects.get(id=server_id)
         info = get_mikrotik_info(server.host, server.username, server.password)
+        client_count = Client.objects.filter(id_paket__id_ip_pool__id_server=server).count()
+        client_active =  Client.objects.filter(id_paket__id_ip_pool__id_server=server,  isActive=True).count()
+        info['client_count'] = client_count
+        info['client_active'] = client_active
         return JsonResponse(info)
     except Server.DoesNotExist:
         return JsonResponse({"error": "Server not found"}, status=404)
@@ -77,7 +81,7 @@ def dashboard(request) :
         'query' : query,
         'clients' : clients
     }
-    return render(request, 'dashboard/dashboard.html', context)
+    return render(request, 'pages/dashboard.html', context)
 
 
 
@@ -478,7 +482,7 @@ def edit_client(request, pk):
         if form.is_valid():
             cd = form.cleaned_data
             
-            client.refresh_from_db(fields=['id_paket', 'name', 'address', 'phone','pppoe', 'password', 'lat', 'long', 'local_ip'])
+            client.refresh_from_db(fields=['id_paket', 'name', 'address', 'email', 'phone','pppoe', 'password', 'lat', 'long', 'local_ip'])
 
 
             new_paket = form.cleaned_data['id_paket']
@@ -493,6 +497,7 @@ def edit_client(request, pk):
                     client.temp_name = cd['name']
                     client.temp_address = cd['address']
                     client.temp_phone = cd['phone']
+                    client.temp_email = cd['email']
                     client.temp_pppoe = cd['pppoe']
                     client.temp_password = cd['password']
                     client.temp_lat = cd['lat']
@@ -514,6 +519,7 @@ def edit_client(request, pk):
                     client.temp_name = cd['name']
                     client.temp_address = cd['address']
                     client.temp_phone = cd['phone']
+                    client.temp_email = cd['email']
                     client.temp_pppoe = cd['pppoe']
                     client.temp_password = cd['password']
                     client.temp_lat = cd['lat']
@@ -746,6 +752,7 @@ def toggle_verif(request, client_id):
             client.id_paket = new_paket
             client.name = client.temp_name
             client.address = client.temp_address
+            client.email = client.temp_email
             client.phone = client.temp_phone
             client.pppoe = client.temp_pppoe
             client.password = client.temp_password
@@ -770,6 +777,7 @@ def toggle_verif(request, client_id):
             client.id_paket = new_paket
             client.name = client.temp_name
             client.address = client.temp_address
+            client.email = client.temp_email
             client.phone = client.temp_phone
             client.pppoe = client.temp_pppoe
             client.password = client.temp_password

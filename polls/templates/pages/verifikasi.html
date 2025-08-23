@@ -1,4 +1,4 @@
-{% extends 'dashboard/base.html' %} {% block content %} {% load custom_filters%}
+{% extends 'index.html' %} {% block content %} {% load custom_filters%}
 
 <div class="content-page client">
   <div class="table-wrapper column">
@@ -27,9 +27,10 @@
       <table class="table">
         <tr class="t-head">
           <th>#</th>
-          <th>PPPoE</th>
+
           <th>Nama</th>
           <th>Alamat</th>
+          <th>Email</th>
           <th>No HP</th>
           <th>Paket</th>
 
@@ -40,9 +41,10 @@
 
         <tr class="t-d">
           <td>{{ client.id }}</td>
-          <td>{{ client.pppoe }}</td>
+       
           <td>{{ client.name }}</td>
           <td>{{ client.address }}</td>
+          <td>{{ client.email }}</td>
           <td>{{ client.phone }}</td>
           <td>
             {{ client.id_paket.name }} - {{ client.id_paket.price|rupiah }}

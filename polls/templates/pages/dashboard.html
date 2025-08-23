@@ -1,4 +1,4 @@
-{% extends 'dashboard/base.html' %} {% block content %} {% load static %}
+{% extends 'index.html' %} {% block content %} {% load static %} {% load custom_filters%}
 
 <div class="column dashboard content-page">
   <div class="main-container row">
@@ -49,15 +49,7 @@
           <div class="main-text" style="--clr: var(--clr-second)">Server</div>
           <select name="server" id="server">
             {% for server in servers %}
-            <option
-              value="{{ server.id }}"
-              {%
-              if
-              forloop.first
-              %}selected{%
-              endif
-              %}
-            >
+            <option value="{{ server.id }}" {% if forloop.first %} selected {% endif %}>
               {{ server.name }}
             </option>
             {% endfor %}
@@ -156,6 +148,7 @@
           <th class="w-sm">Paket</th>
           <th class="center-th">Status</th>
           <th>ID PPPoE</th>
+          <th>Server</th>
           <th>Rx</th>
           <th class="center-th">Device Aktif</th>
           <th>IP TR069</th>
@@ -165,7 +158,7 @@
         <tr class="t-d">
           <td>{{ client.id }}</td>
           <td>{{ client.name }}</td>
-          <td>{{ client.id_paket }}</td>
+          <td>{{ client.id_paket.price|rupiah }} | {{client.id_paket.limit}}</td>
           <td class="td-center">
             <div
               class="{% if client.isActive %}enable-t{% else %}disable-t{% endif %}"
@@ -174,6 +167,7 @@
             </div>
           </td>
           <td>{{ client.pppoe }}</td>
+          <td>{{ client.id_paket.id_ip_pool.id_server.name }}</td>
           <td>-18 dbm</td>
           <td class="td-center" style="padding: 18px 0;">5</td>
           <td>192.168.1.1</td>
@@ -225,101 +219,7 @@
   </div>
 </div>
 
-<script src="{% static 'js/component/chartDashboard.js' %}"></script>
-
-<script>
-  function loadServerInfo(serverId) {
-    const infoDiv = document.getElementById("server-info");
-    infoDiv.innerHTML = loadingComponent();
-
-    fetch(`/get-server-info/${serverId}/`)
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.error) {
-          infoDiv.innerHTML = errorComponent(data.error);
-          initChartsWithDummy();
-        } else {
-          infoDiv.innerHTML = serverInfoComponent(data);
-
-          // Inisialisasi Chart-nya
-          new Chart(document.getElementById("cpuLoad"), {
-            type: "doughnut",
-            data: {
-              datasets: [
-                {
-                  rotation: 180,
-                  cutout: 60,
-                  data: [data.cpu_load, 100 - data.cpu_load],
-                  backgroundColor: ["#211C84", "#E8E2F5"],
-                },
-              ],
-            },
-          });
-
-          const used = data.total_memory - data.free_memory;
-          const usedPercent = ((used / data.total_memory) * 100).toFixed(2);
-
-          new Chart(document.getElementById("memoryUsage"), {
-            type: "doughnut",
-            data: {
-              datasets: [
-                {
-                  rotation: 180,
-                  cutout: 60,
-                  data: [usedPercent, 100 - usedPercent],
-                  backgroundColor: ["#211C84", "#E8E2F5"],
-                },
-              ],
-            },
-          });
-
-          new Chart(document.getElementById("pppClient"), {
-            type: "doughnut",
-            data: {
-              datasets: [
-                {
-                  rotation: 180,
-                  cutout: 60,
-                  data: [90, 10],
-                  backgroundColor: ["#211C84", "#E8E2F5"],
-                },
-              ],
-            },
-          });
-        }
-      })
-      .catch((err) => {
-        infoDiv.innerHTML = errorComponent(err.message || err);
-      });
-  }
-
-  document.addEventListener("DOMContentLoaded", function () {
-    const selectEl = document.getElementById("server");
-    const infoDiv = document.getElementById("server-info");
-
-    // Muat info server pertama saat halaman terbuka
-    if (selectEl && selectEl.value) {
-      loadServerInfo(selectEl.value);
-    } else {
-      infoDiv.innerHTML = `
-      <div class="no-data column">
-        <div class="img-wrapper">
-          <img src="{% static 'assets/nodata.webp' %}" alt="" />
-        </div>
-        <h3>Belum ada data yang ditambahkan</h3>
-        <p>Silakan tambahkan data <a href="{% url 'server' %}">disini</a> </p>
-      </div>
-      
-      
-      `;
-    }
-
-    // Ganti info saat pilih server lain
-    selectEl.addEventListener("change", function () {
-      loadServerInfo(this.value);
-    });
-  });
-</script>
+<script src="{% static 'js/scripts/chartDashboard.js' %}"></script>
 
 <script src="{% static 'js/library/chart.umd.js' %}"></script>
 

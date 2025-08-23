@@ -6,6 +6,14 @@ const hideLoader = () => {
   document.querySelector(".loader-wrapper").style.display = "none";
 };
 
+function showLoaderForm() {
+  document.querySelector(".loader-form").style.display = "block";
+}
+
+function hideLoaderForm() {
+  document.querySelector(".loader-form").style.display = "none";
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll("form").forEach((form) => {
     form.addEventListener("submit", (e) => {
@@ -14,7 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-   document.querySelectorAll("button.delete-button").forEach((btn) => {
+  document.querySelectorAll("button.delete-button").forEach((btn) => {
     btn.addEventListener("click", () => {
       showMyLoader();
     });

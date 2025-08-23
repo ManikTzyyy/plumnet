@@ -244,6 +244,28 @@ def create_auto_config(host, interfaceHost, newUser,oldPass, newPass, interfaceP
         net_connect.send_config_set([f"/interface pppoe-server server add service-name=pppoe_server interface={interfacePPPoE} disabled=no"])
         print(f"✅ PPPoE server activated on {interfacePPPoE}", flush=True)
 
+
+                # Pool & Profile Isolir
+        print("🔄 Creating IP pool for isolir...", flush=True)
+        net_connect.send_config_set([
+            "/ip pool add name=pool-isolir ranges=10.50.0.2-10.50.3.254",
+        ])
+        print("✅ Pool isolir created", flush=True)
+
+        print("🔄 Creating PPP profile for isolir...", flush=True)
+        net_connect.send_config_set([
+            "/ppp profile add name=profile-isolir local-address=10.50.0.1 remote-address=pool-isolir dns-server=8.8.8.8",
+        ])
+        print("✅ PPP profile isolir created", flush=True)
+
+        # Firewall NAT redirect
+        print("🔄 Adding firewall NAT redirect for isolir...", flush=True)
+        net_connect.send_config_set([
+            "/ip firewall nat add chain=dstnat src-address=10.50.0.0/22 protocol=tcp dst-port=!80 action=redirect to-ports=80",
+        ])
+        print("✅ Firewall NAT redirect configured", flush=True)
+
+
         # User update
         print("🔄 Updating admin username & password...", flush=True)
         if newUser != "admin" or newPass != "":
