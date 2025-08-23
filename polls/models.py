@@ -20,7 +20,7 @@ class IPPool(models.Model):
 
     def __str__(self):
         server_name = self.id_server.name if self.id_server else "No Server"
-        return f"{self.name} - {server_name}"
+        return f"{server_name} | {self.name} ({self.ip_range})"
     
 class Paket(models.Model):
     name = models.CharField(max_length=255)
@@ -31,7 +31,8 @@ class Paket(models.Model):
     def __str__(self):
         server_name = self.id_ip_pool.id_server.name if self.id_ip_pool and self.id_ip_pool.id_server else "No Server"
         pool_name = self.id_ip_pool.name if self.id_ip_pool else "No IP Pool"
-        return f"{format_rupiah(self.price)} - {self.name} - {self.limit} - {pool_name} - {server_name}"
+        range = self.id_ip_pool.ip_range if self.id_ip_pool else "No Range"
+        return f"{format_rupiah(self.price)} | {self.limit} | {server_name}. ({range})"
 
 
 class Client(models.Model):

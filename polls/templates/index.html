@@ -26,6 +26,10 @@
     />
   </head>
   <body>
+    <div class="loader-wrapper">
+      <span class="loader"></span>
+      <p>Sabar ngab...</p>
+    </div>
     <div class="base-wrapper row">
       <div class="sidebar-box menu-collapse"></div>
       <div class="sidebar column">
@@ -88,7 +92,7 @@
               <span class="menu-text">Activasi</span>
             </div>
           </a>
-           <a
+          <a
             href="{% url 'map' %}"
             class="menu-link"
             data-url="{% url 'map' %}"
@@ -128,21 +132,8 @@
       </div>
     </div>
 
-    <div id="connectionModal" class="custom-modal">
-      <div class="custom-modal-content">
-        <span class="custom-modal-close" onclick="closeModal()">&times;</span>
-        <div id="connectionStatus"></div>
-      </div>
-    </div>
-
-    <div class="loader-wrapper">
-      <span class="loader"></span>
-      <p>Sabar ngab...</p>
-    </div>
-
-    <script src="{% static 'js/app.js' %}"></script>
-    <script src="{% static 'js/loader.js' %}"></script>
-    <script src="{% static 'js/apply-theme.js' %}"></script>
-
+    <script src="{% static 'js/scripts/app.js' %}"></script>
+    <script src="{% static 'js/scripts/loader.js' %}"></script>
+    <script src="{% static 'js/scripts/apply-theme.js' %}"></script>
   </body>
 </html>

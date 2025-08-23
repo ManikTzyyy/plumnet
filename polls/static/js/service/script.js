@@ -70,7 +70,8 @@ function cekModifyClientData(
   idpppoe,
   lat,
   long,
-  local_ip
+  local_ip,
+  email
 ) {
   Swal.fire({
     title: "Detail Perubahan",
@@ -81,6 +82,7 @@ function cekModifyClientData(
         <tr><td><strong>Nama</strong></td><td>: ${name}</td></tr>
         <tr><td><strong>Alamat</strong></td><td>: ${alamat}</td></tr>
         <tr><td><strong>No HP</strong></td><td>: ${phone}</td></tr>
+        <tr><td><strong>Email</strong></td><td>: ${email}</td></tr>
         <tr><td><strong>Latitude</strong></td><td>: ${lat}</td></tr>
         <tr><td><strong>Longitude</strong></td><td>: ${long}</td></tr>
       </table>

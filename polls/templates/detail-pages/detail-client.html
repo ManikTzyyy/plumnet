@@ -1,4 +1,4 @@
-{% extends 'dashboard/base.html' %} {% block content %} {% load custom_filters%}
+{% extends 'index.html' %} {% block content %} {% load custom_filters%}
 
 <div class="content-page">
   <div class="form-wrapper column">
@@ -12,7 +12,7 @@
       </div>
       <a href="{% url 'client' %}" class="main-button">Kembali</a>
       {% if not client.isApproved %}
-      <button  class="info-button" id="data-baru-btn" onclick="cekModifyClientData('{{ client.id }}','{{client.temp_name}}','{{client.temp_address}}','{{client.temp_phone}}', '{{client.temp_paket.id_ip_pool.id_server.name}}', '{{ client.temp_paket.name }} - {{ client.temp_paket.price|rupiah }} - {{ client.temp_paket.limit }}', '{{client.temp_pppoe}}', '{{client.temp_lat}}', '{{client.temp_long}}', '{{client.temp_local_ip}}')">Pembaruan</button>
+      <button  class="info-button" id="data-baru-btn" onclick="cekModifyClientData('{{ client.id }}','{{client.temp_name}}','{{client.temp_address}}','{{client.temp_phone}}', '{{client.temp_paket.id_ip_pool.id_server.name}}', '{{ client.temp_paket.name }} - {{ client.temp_paket.price|rupiah }} - {{ client.temp_paket.limit }}', '{{client.temp_pppoe}}', '{{client.temp_lat}}', '{{client.temp_long}}', '{{client.temp_local_ip}}', '{{client.temp_email}}')">Pembaruan</button>
       {% endif %}
     </div>
     <div class="info-client relative row">
@@ -25,6 +25,10 @@
         <div class="column">
           <div class="title strong">Alamat</div>
           <div class="text">{{ client.address }}</div>
+        </div>
+        <div class="column">
+          <div class="title strong">Email</div>
+          <div class="text">{{ client.email }}</div>
         </div>
         <div class="column">
           <div class="title strong">No HP</div>
@@ -51,7 +55,7 @@
         </div>
         <div class="column">
           <div class="title strong">Paket</div>
-          <div class="text">{{ client.id_paket.name }} - {{ client.id_paket.price|rupiah }} - {{ client.id_paket.limit }}</div>
+          <div class="text">{{ client.id_paket.price|rupiah }} | {{ client.id_paket.name }} | {{ client.id_paket.limit }}</div>
         </div>
         <div class="column">
           <div class="title strong">Id PPPoE</div>
@@ -87,76 +91,6 @@
     </div>
 
 
-
-<div id="deleteModal" class="modal" style="display: none">
-  <div class="modal-content">
-    <span class="close" onclick="closeModalDelete()">&times;</span>
-    <div class="modal-header">
-      <h3>Konfirmasi Hapus</h3>
-    </div>
-    <div class="modal-text column">
-      <i style="--clr-icon-modal:var(--clr-r1)" class="fa-solid fa-triangle-exclamation"></i>
-      <p>Apakah Anda yakin ingin menghapus server ini?</p>
-    </div>
-    <form id="deleteForm" method="POST">
-      {% csrf_token %}
-      <button type="submit" class="danger-button">Ya, Hapus</button>
-      <button type="button" onclick="closeModalDelete()" class="grey-button">
-        Batal
-      </button>
-    </form>
-  </div>
-</div>
-
-<div id="activasiModal" class="modal" style="display: none">
-  <div class="modal-content">
-    <div class="modal-header" style="background-color: var(--clr-y1)!important;">
-      <h3>Konfirmasi {% if client.isActive %}Nonaktifkan{% else %}Aktivasi{% endif %}</h3>
-    </div>
-    <span class="close" onclick="closeModal()">&times;</span>
-   <div class="modal-text column">
-      <i style="--clr-icon-modal:var(--clr-y1)" class="fa-solid fa-circle-exclamation"></i>
-       <p>Apakah anda yakin ingin {% if client.isActive %}Nonaktifkan{% else %}Aktivasi{% endif %} <b>{{ client.name }}</b>?</p>
-    </div>
-   
-    <form id="activasiForm" method="POST">
-      {% csrf_token %}
-      <button type="submit" class="success-button">Ya</button>
-      <button type="button" onclick="closeModal()" class="grey-button">
-        Batal
-      </button>
-    </form>
-  </div>
-</div>
-
-<div id="verifModal" class="modal" style="display: none">
-  <div class="modal-content">
-    <span class="close" onclick="closeVerifModal()">&times;</span>
-    <div
-      class="modal-header"
-      style="background-color: var(--clr-y1) !important"
-    >
-      <h3>Verification</h3>
-    </div>
-    <div class="modal-text column">
-      <i
-        style="--clr-icon-modal: var(--clr-y1)"
-        class="fa-solid fa-circle-exclamation"
-      ></i>
-      <p>
-        Apakah anda yakin ingin verifikasi perubahan data <b>{{ client.name }}</b>?
-      </p>
-    </div>
-
-    <form id="verifForm" method="POST">
-      {% csrf_token %}
-      <button type="submit" class="success-button">Ya</button>
-      <button type="button" onclick="closeVerifModal()" class="grey-button">
-        Batal
-      </button>
-    </form>
-  </div>
-</div>
 
 
 <script>

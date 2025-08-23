@@ -1,4 +1,4 @@
-{% extends 'dashboard/base.html' %} {% block content %} {% load custom_filters%}
+{% extends 'index.html' %} {% block content %} {% load custom_filters%}
 
 <div class="content-page client">
   <div class="table-wrapper column">
@@ -27,10 +27,10 @@
       <table class="table">
         <tr class="t-head">
           <th>#</th>
-          <th>PPPoE</th>
           <th>Nama</th>
           <th>Alamat</th>
           <th>No Hp</th>
+          <th>Email</th>
           <th>Paket</th>
           <th>Server</th>
           <th class="center-th">Status</th>
@@ -41,11 +41,11 @@
         {% for client in clients %}
         <tr class="t-d">
           <td>{{ client.id }}</td>
-          <td>{{ client.pppoe }}</td>
           <td>{{ client.name }}</td>
           <td>{{ client.address }}</td>
           <td>{{ client.phone }}</td>
-          <td>{{ client.id_paket.name }} - {{ client.id_paket.limit }}</td>
+          <td>{{ client.email }}</td>
+          <td>{{ client.id_paket.price|rupiah }} - {{ client.id_paket.limit }}</td>
           <td>{{ client.id_paket.id_ip_pool.id_server.name }}</td>
 
           <td class="td-center">
@@ -73,7 +73,7 @@
           </td >
           {% if user.is_authenticated %}<td>
             <button
-              onclick="cekModifyClientData('{{ client.id }}','{{client.temp_name}}','{{client.temp_address}}','{{client.temp_phone}}', '{{client.temp_paket.id_ip_pool.id_server.name}}', '{{ client.temp_paket.name }} - {{ client.temp_paket.price|rupiah }} - {{ client.temp_paket.limit }}', '{{client.temp_pppoe}}', '{{client.temp_lat}}', '{{client.temp_long}}', '{{client.temp_local_ip}}')"
+              onclick="cekModifyClientData('{{ client.id }}','{{client.temp_name}}','{{client.temp_address}}','{{client.temp_phone}}', '{{client.temp_paket.id_ip_pool.id_server.name}}', '{{ client.temp_paket.name }} - {{ client.temp_paket.price|rupiah }} - {{ client.temp_paket.limit }}', '{{client.temp_pppoe}}', '{{client.temp_lat}}', '{{client.temp_long}}', '{{client.temp_local_ip}}', '{{client.temp_email}}')"
               class="icon-button {% if client.isApproved %}disbale-button{% else %}main-button {% endif %}"
               {% if client.isApproved %}disbale{% else %}{% endif %}
             >

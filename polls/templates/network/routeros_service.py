@@ -39,6 +39,10 @@ def get_mikrotik_info(host, username, password, port=8728):
                 'tx_mbps': tx_mbps
         })
 
+        # --- PPPoE Active ---
+        # ppp_active = api.get_resource('/ppp/active').get()
+        # pppoe_active_count = len(ppp_active)
+
         api_pool.disconnect()
 
         return {
@@ -52,6 +56,7 @@ def get_mikrotik_info(host, username, password, port=8728):
             'version': system_info['version'],
             'board_name': system_info['board-name'],
             'interface': interface_data,
+            # 'pppoe_active_count': pppoe_active_count,
         }
     except Exception as e:
         return {
@@ -65,6 +70,7 @@ def get_mikrotik_info(host, username, password, port=8728):
             'version': '--',
             'board_name': '--',
             'interface': [],
+            # 'pppoe_active_count': 0, 
             'error': str(e)
     }
 
