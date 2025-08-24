@@ -558,7 +558,8 @@ def delete_server(request, pk):
     client_data = list(Client.objects.filter(id_paket__id_ip_pool__id_server=server).values_list('pppoe', flat=True))
     if request.method == "POST":
         try:
-            res = clear_config(
+            res = 'Server Deleted'
+            clear_config(
                 server.host, 
                 server.username, 
                 server.password,
@@ -581,23 +582,20 @@ def delete_paket(request, pk):
     paket = get_object_or_404(Paket, pk=pk)
     current_profile = paket.name
     ip_pool = paket.id_ip_pool
-    server = ip_pool.id_server
+    server = ip_pool.id_server if ip_pool else None
     client_data = list(Client.objects.filter(id_paket_id=paket.id).values_list('pppoe', flat=True))
     # print(client_data)
     if request.method == "POST":
         try:
+            # print(server)
             if server != None:
-                # print(res)
-                
-                res = delete_profile( 
-                    server.host, 
-                    server.username, 
-                    server.password,
-                    current_profile,
-                    client_data
-                    )
-            paket.delete()
-            return JsonResponse({'success': True, 'message': res or "Paket deleted without server action"}) 
+                res = 'Paket deleted'
+                delete_profile(server.host, server.username, server.password,current_profile,client_data)
+                paket.delete()
+            else:
+                res = 'Paket deleted without server action'
+                paket.delete()
+            return JsonResponse({'success': True, 'message': res }) 
         except Exception as e:
                 error_message = str(e) 
     return JsonResponse({'success': False, 'message': error_message}, status=400)
@@ -610,19 +608,15 @@ def delete_ip(request, pk):
     if request.method == "POST":
         try:
             if server != None:
-                res = delete_pool( 
-                    server.host, 
-                    server.username, 
-                    server.password,
-                    current_pool,
-                    profile_data
-                    )
-            ip_pool.delete()
-            return JsonResponse({'success': True, 'message': res or "Pool deleted without server action"})
+                res = 'IP Pool deleted'
+                delete_pool(server.host, server.username, server.password, current_pool, profile_data)
+                ip_pool.delete()
+            else:
+                res = 'Pool deleted without server action'
+                ip_pool.delete()
+            return JsonResponse({'success': True, 'message': res})
         except Exception as e:
                 error_message = str(e) 
-        
-    
     return JsonResponse({'success': False, 'message': error_message}, status=400)
 
 def delete_client(request, pk):
@@ -630,16 +624,15 @@ def delete_client(request, pk):
     
     if request.method == "POST":
         paket = client.id_paket
-        server = paket.id_ip_pool.id_server
-
+        server = paket.id_ip_pool.id_server if paket else None
         try:
-            res = delete_pppoe( 
-                server.host, 
-                server.username, 
-                server.password,
-                client.pppoe
-                )            
-            client.delete()
+            if server != None:
+                res = 'Client deleted'
+                delete_pppoe( server.host, server.username, server.password,client.pppoe)            
+                client.delete()
+            else:
+                res = 'Client deleted without server action'
+                client.delete()
             return JsonResponse({'success': True, 'message': res})
         except Exception as e:
                 error_message = str(e) 

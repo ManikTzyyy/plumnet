@@ -44,7 +44,8 @@ function deleteData(id, object, url) {
       })
       .then((data) => {
         if (data.success) {
-          Swal.fire("Terhapus!", "Data berhasil dihapus.", "success").then(
+          // console.log(data)
+          Swal.fire("Terhapus!", data.message, "success").then(
             () => {
               location.href = `/${url}`;
             }
