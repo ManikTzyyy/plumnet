@@ -165,7 +165,7 @@ document.addEventListener("DOMContentLoaded", () => {
     infoDiv.innerHTML = `
         <div class="no-data column">
           <div class="img-wrapper">
-            <img src="{% static 'assets/nodata.webp' %}" alt="" />
+           <img src="${NO_DATA_IMG}" alt="" />
           </div>
           <h3>Belum ada data yang ditambahkan</h3>
           <p>Silakan tambahkan data <a href="{% url 'server' %}">disini</a></p>

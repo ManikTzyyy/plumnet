@@ -286,6 +286,7 @@ def addClient(request) :
                     id_paket=cd['id_paket'],
                     name=cd['name'],
                     address=cd['address'],
+                    email=cd['email'],
                     phone=cd['phone'],
                     pppoe=cd['pppoe'],
                     password=cd['password'],
@@ -491,7 +492,6 @@ def edit_client(request, pk):
             if new_server == None:
                 error_message = "Paket tidak boleh kosong."
             elif current_server is None:
-
                 try:
                     client.temp_paket = new_paket
                     client.temp_name = cd['name']

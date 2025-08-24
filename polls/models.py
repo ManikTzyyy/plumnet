@@ -43,7 +43,7 @@ class Client(models.Model):
     phone = models.CharField(max_length=255)
     pppoe = models.CharField(max_length=255) 
     password = models.CharField(max_length=255)
-    isActive = models.BooleanField(default=False)
+    isActive = models.BooleanField(default=True)
     isApproved = models.BooleanField(default=True)
     local_ip = models.GenericIPAddressField(blank=True, null=True)
     lat = models.CharField(max_length=255, null=True, blank=True)
@@ -59,6 +59,7 @@ class Client(models.Model):
     temp_lat = models.CharField(max_length=255, null=True, blank=True)
     temp_long = models.CharField(max_length=255, null=True, blank=True)
     isServerNull = models.BooleanField(default=False)
+    isPayed = models.BooleanField(default=True)
     
     def __str__(self):
         client_name = self.name if self.name else "Unnamed Client"
