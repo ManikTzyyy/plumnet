@@ -88,7 +88,7 @@
         {% csrf_token %}
       </form>
       <button onclick="toggleActivasiClient('{{ client.id }}', '{{ client.name }}',`{{ client.isActive|yesno:'true,false' }}`, 'detail-client')" class="{% if user.is_authenticated %}main-button{% else %}disbale-button{% endif %}" {% if not user.is_authenticated %}disabled{% endif %} >{% if client.isActive %}Nonaktifkan{% else %}Activasi{% endif %}</button>
-      <button onclick="toggleActivasiClient('{{ client.id }}', '{{ client.name }}',`{{ client.isPayed|yesno:'true,false' }}`, 'detail-client')" class="{% if user.is_authenticated %}main-button{% else %}disbale-button{% endif %}" {% if not user.is_authenticated %}disabled{% endif %} >{% if client.isPayed %}Batalkan Konfirmasi{% else %}Konfirmasi Pembayaran{% endif %}</button>
+      <button onclick="togglePembayaran('{{ client.id }}', '{{ client.name }}',`{{ client.isPayed|yesno:'true,false' }}`, 'detail-client')" class="{% if user.is_authenticated %}main-button{% else %}disbale-button{% endif %}" {% if not user.is_authenticated %}disabled{% endif %} >{% if client.isPayed %}Buat Tagihan{% else %}Konfirmasi Pembayaran{% endif %}</button>
       <button  class="info-button">Reboot Perangkat</button>
       <a href="{% url 'edit-client' client.id %}" class="warning-button">Edit</a>
       <button  onclick="deleteData('{{ client.id }}', 'client', 'client')" class="danger-button">Delete</button>

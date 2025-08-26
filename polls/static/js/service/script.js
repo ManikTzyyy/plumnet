@@ -45,11 +45,9 @@ function deleteData(id, object, url) {
       .then((data) => {
         if (data.success) {
           // console.log(data)
-          Swal.fire("Terhapus!", data.message, "success").then(
-            () => {
-              location.href = `/${url}`;
-            }
-          );
+          Swal.fire("Terhapus!", data.message, "success").then(() => {
+            location.href = `/${url}`;
+          });
         } else {
           throw new Error(data.message || "Gagal menghapus data");
         }
@@ -124,7 +122,6 @@ function cekModifyClientData(
             .then((res) => {
               // console.log("Status:", res.status);
               if (res.status === 401) {
-                
                 throw new Error(
                   "Anda harus login dahulu untuk melakukan verifikasi."
                 );
@@ -190,6 +187,87 @@ function toggleActivasiClient(clientId, name, status, url) {
             Swal.fire({
               icon: "error",
               title: `Gagal ${msg} !`,
+              text: data.message,
+              confirmButtonText: "OK",
+            });
+            return;
+          }
+
+          if (!res.ok) {
+            Swal.fire({
+              icon: "error",
+              title: `Gagal ${msg} !`,
+              text: data.message || `Server error: ${res.status}`,
+              confirmButtonText: "OK",
+            });
+            return;
+          }
+
+          if (data.success) {
+            Swal.fire({
+              icon: "success",
+              title: `Client Berhasil di ${msg} !`,
+
+              confirmButtonText: "OK",
+            }).then(() => {
+              if (url === "activation") {
+                location.href = "/verifikasi";
+              } else if (url === "detail-client") {
+                location.href = `/client/id=${clientId}`;
+              }
+            });
+          } else {
+            Swal.fire({
+              icon: "error",
+              title: `Client Gagal di ${msg} !`,
+              text: data.message || "Terjadi kesalahan.",
+              confirmButtonText: "OK",
+            });
+          }
+        })
+        .catch((err) => {
+          hideLoader();
+          Swal.fire("Gagal!", err.message, "error");
+        });
+    }
+  });
+}
+
+function togglePembayaran(clientId, name, status, url) {
+  let msg;
+
+  if (status === "false") {
+    msg = "Konfirmasi Pembayaran";
+  } else {
+    msg = "Buat Tagihan";
+  }
+
+  Swal.fire({
+    title: `${msg} ${name}?`,
+    text: "Aksi ini tidak dapat dibatalkan!",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#13542d",
+    cancelButtonColor: "#aaa",
+    confirmButtonText: `Ya, ${msg}!`,
+    cancelButtonText: "Batal",
+  }).then((result) => {
+    if (result.isConfirmed) {
+      showMyLoader();
+      fetch(`/client/${clientId}/payment/`, {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": getCSRFToken(),
+          Accept: "application/json",
+        },
+      })
+        .then(async (res) => {
+          const data = await res.json(); // <-- parse JSON di sini
+
+          if (res.status === 401) {
+            Swal.fire({
+              icon: "error",
+              title: `Gagal ${msg} !`,
               text: data.message, // langsung pakai dari JSON
               confirmButtonText: "OK",
             });
@@ -212,11 +290,7 @@ function toggleActivasiClient(clientId, name, status, url) {
               title: `Client Berhasil di ${msg} !`,
               confirmButtonText: "OK",
             }).then(() => {
-              if (url === "activation") {
-                location.href = "/verifikasi";
-              } else if (url === "detail-client") {
-                location.href = `/client/id=${clientId}`;
-              }
+              location.href = `/client/id=${clientId}`;
             });
           } else {
             Swal.fire({
@@ -366,9 +440,9 @@ function addServerWithConfig() {
                   icon: "success",
                   title: "Sukses 🚀",
                   text: data.message || "Konfigurasi berhasil dijalankan!",
-                }).then(()=>{
+                }).then(() => {
                   location.href = `/server-list`;
-                })
+                });
               } else {
                 Swal.fire({
                   icon: "error",
@@ -389,4 +463,3 @@ function addServerWithConfig() {
     }
   });
 }
-

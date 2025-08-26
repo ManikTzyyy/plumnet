@@ -5,8 +5,8 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.contrib.auth.decorators import login_required
 
 from mysite import settings
-from polls.templates.network.netmiko_service import clear_config, create_auto_config, create_pool, create_pppoe, create_profile, delete_pool, delete_pppoe, delete_profile, edit_pool, edit_pppoe, edit_profile, set_disabled_pppoe, test_conn
-from polls.utils.formater import parse_mikrotik_output
+from polls.templates.network.netmiko_service import clear_config, connect_network, create_auto_config, create_pool, create_pppoe, create_profile, cut_network, delete_pool, delete_pppoe, delete_profile, edit_pool, edit_pppoe, edit_profile, set_disabled_pppoe, test_conn
+from polls.utils.utlis import parse_mikrotik_output
 from .templates.network.routeros_service import get_mikrotik_info
 
 from .models import Paket, Server, IPPool, Client
@@ -670,29 +670,26 @@ def toggle_activasi(request, client_id):
         }, status=401)
 
     try:
-        status = 'no'
         client = get_object_or_404(Client, id=client_id)
         paket = client.id_paket
         server = paket.id_ip_pool.id_server
-        client.isActive = not client.isActive
-       
+      
 
-        if(client.isActive == False):
-            status = 'yes'
-            
-        set_disabled_pppoe(
-            server.host,
-            server.username,
-            server.password,
-            client.pppoe,
-            status
-        )
-
+        if client.isActive:
+            result = cut_network(server.host, server.username, server.password, [client.pppoe])
+            client.isActive = False
+            msg = 'Client berhasil dinonaktifkan'
+        else:
+            result = connect_network(server.host, server.username, server.password, [{"name":client.pppoe, "profile": paket.name, "local_address":client.local_ip }])
+            client.isActive = True
+            msg ="Client berhasil diaktifkan"
+    
         client.save()
 
         return JsonResponse({
             "success": True,
-            "message": "Client berhasil diaktifkan." if client.isActive else "Client berhasil dinonaktifkan."
+            "message": msg,
+            "server_res": result
         })
     except Exception as e:
         return JsonResponse({
@@ -796,6 +793,28 @@ def toggle_verif(request, client_id):
         return JsonResponse({
             "success": False,
             "message": f"Error internal: {str(e)}"
+        }, status=500)
+
+
+def toggle_pembayaran(request, client_id):
+    if not request.user.is_authenticated:
+        return JsonResponse({
+            "success": False,
+            "message": "Anda harus login dahulu."
+        }, status=401)
+
+    try:
+        client = get_object_or_404(Client, id=client_id)
+        client.isPayed = not client.isPayed
+        client.save()
+        return JsonResponse({
+            "success": True,
+            "message": "Client berhasil diaktifkan." if client.isPayed else "Client berhasil dinonaktifkan."
+        })
+    except Exception as e:
+        return JsonResponse({
+            "success": False,
+            "message": str(e) or "Terjadi kesalahan."
         }, status=500)
 
 
