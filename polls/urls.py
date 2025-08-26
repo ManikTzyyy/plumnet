@@ -43,6 +43,7 @@ urlpatterns = [
 
     #==========================
     path('client/<int:client_id>/toggle/', views.toggle_activasi, name='toggle_activasi'),
+    path('client/<int:client_id>/payment/', views.toggle_pembayaran, name='toggle_pembayaran'),
 
     path('client/<int:client_id>/verification/', views.toggle_verif, name='toggle_verif'),
    

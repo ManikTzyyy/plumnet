@@ -180,12 +180,12 @@
 
         {% empty %}
         <tr>
-          <td colspan="7" class="center">Tidak ada data yang ditemukan</td>
+          <td colspan="7" class="center text-sm">Tidak ada data yang ditemukan</td>
         </tr>
         {% endfor %}
       </table>
     </div>
-    <div class="pagination row">
+    <div class="pagination row text-sm">
       {% if clients.has_previous %}
       <a
         href="?page=1{% if query %}&search={{ query }}{% endif %}"
@@ -218,6 +218,10 @@
     </div>
   </div>
 </div>
+
+<script>
+  const NO_DATA_IMG = "{% static 'assets/nodata.webp' %}";
+</script>
 
 <script src="{% static 'js/scripts/chartDashboard.js' %}"></script>
 

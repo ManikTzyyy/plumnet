@@ -129,7 +129,7 @@ def delete_profile(host, username, password, current_profile, pppoe_clients):
 def create_pppoe(host, username, password, pppoe, password_pppoe, profile, local_ip):
     try:
         conn = get_mikrotik_conn(host, username, password)
-        command = f"/ppp secret add name={pppoe} password={password_pppoe} profile={profile} local-address={local_ip} service=pppoe disabled=yes"
+        command = f"/ppp secret add name={pppoe} password={password_pppoe} profile={profile} local-address={local_ip} service=pppoe disabled=no"
         output = conn.send_command(command)
         conn.disconnect()
         return output
@@ -169,6 +169,53 @@ def set_disabled_pppoe(host, username, password, pppoe, status):
     except Exception as e:
         raise Exception(f"Gagal activasi PPPoE: {e}")
     
+
+def cut_network(host, username, password, ppp_clients):
+    try:
+        conn = get_mikrotik_conn(host, username, password)
+
+        if not ppp_clients:
+            return "Tidak ada client PPPoE"
+        results = []
+        for item in ppp_clients:
+            command = [
+                f'/ppp active remove [find name="{item}"]',
+                f'/ppp secret set [find name="{item}"] profile=profile-isolir',
+                f'/ppp secret unset [find name="{item}"] local-address'
+            ]
+            out = conn.send_config_set(command)
+            results.append({item: out})  
+        return results
+    except Exception as e:
+        raise Exception(f"Gagal Memutus Pelanggan: {e}")
+    
+def connect_network(host, username, password, data_client):
+    try:
+        conn = get_mikrotik_conn(host, username, password)
+
+        if not data_client:
+            return "Tidak ada client PPPoE"
+
+        results = []
+        for item in data_client:
+            client = item["name"]
+            profile = item["profile"]
+            local_address = item['local_address']
+
+            # Set profile sesuai request
+            commands = [
+                    f'/ppp secret set [find name="{client}"] profile={profile}',
+                    f'/ppp secret set [find name="{client}"] local-address={local_address}'
+                ]
+            out = conn.send_config_set(commands)
+            results.append({client: f"Connected dengan profile {profile}", "output": out})
+
+        return results
+
+    except Exception as e:
+        raise Exception(f"Gagal koneksi PPPoE: {e}")
+
+
 
 
 def create_auto_config(host, interfaceHost, newUser,oldPass, newPass, interfacePPPoE):

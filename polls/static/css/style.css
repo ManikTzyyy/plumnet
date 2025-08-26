@@ -54,6 +54,10 @@ body {
   font-family: "poppin";
 }
 
+.text-sm {
+  font-size: 0.8em;
+}
+
 * {
   font-family: "poppin";
 }
@@ -361,7 +365,7 @@ tr:hover{
 /* ================================================== */
 
 .enable-t,
-.disable-t {
+.disable-t, .waiting-t {
   text-align: center;
   border-radius: 5px;
   padding: 0 10px;
@@ -380,6 +384,11 @@ tr:hover{
 .disable-t {
   color: var(--clr-r1);
   background-color: var(--clr-r2);
+}
+
+.waiting-t{
+  color: var(--clr-y1);
+  background-color: var(--clr-y2);
 }
 
 .button-wrapper {
@@ -478,20 +487,23 @@ tr:hover{
 }
 
 /* ======================================================= */
+
+
 .sidebar {
-  padding: 20px;
+  padding: 20px 5px;
   height: 100%; /* Tinggi sidebar 100% dari wrapper */
   position: fixed; /* Memperbaiki sidebar di tempat */
   top: 0;
   left: 0;
+
 }
 .sidebar-box {
-  width: 205px;
+  width: 160px;
   position: relative;
 }
 
 .sidebar-box.collapse {
-  width: 96px;
+  width: 65px;
 }
 
 .menu {
@@ -539,6 +551,7 @@ tr:hover{
 
 .menu-link {
   border-radius: 20px;
+  font-size: 0.8em;
 }
 
 .menu-link:hover {
@@ -555,6 +568,7 @@ tr:hover{
 
 .menu-text.hidden {
   display: none;
+  
 }
 
 /* ============dashboard================= */
