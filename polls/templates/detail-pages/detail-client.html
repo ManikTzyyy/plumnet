@@ -1,4 +1,4 @@
-{% extends 'index.html' %} {% block content %} {% load custom_filters%}
+{% extends 'index.html' %} {% block content %} {% load custom_filters%} {% load static %}
 
 <div class="content-page">
   <div class="form-wrapper column">
@@ -94,12 +94,18 @@
       <button  onclick="deleteData('{{ client.id }}', 'client', 'client')" class="danger-button">Delete</button>
     </div>
 
+     <canvas id="redamanChart"></canvas>
+ </div>
+
+ <script src="{% static 'js/library/chart.umd.js' %}"></script>
 
 
 
 <script>
   const deleteForm = document.getElementById("delete-form");
 </script>
+
+<script src="{% static 'js/scripts/chartRedaman.js' %}"></script>
 
 
 <script>
