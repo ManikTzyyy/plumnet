@@ -1,6 +1,6 @@
 from django.core.mail import send_mail
 
-from polls.models import Client, IPPool, Paket
+from app.models import Client, IPPool, Paket
 
 send_mail(
     subject="Tes Email Django",
