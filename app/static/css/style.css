@@ -93,8 +93,20 @@ button:hover {
   font-weight: bold;
 }
 
+.min-w-sm{
+  min-width: 30px !important;
+}
+
 .w-sm {
   width: 30px !important;
+}
+
+.w-md{
+  width: 45px !important;
+}
+
+.w-fit{
+  width: fit-content!important;
 }
 
 .gap-20 {
@@ -247,6 +259,9 @@ button:hover {
   padding: 5px 10px;
   border-radius: 10px;
 }
+
+
+
 .form-search .search-button:hover {
   cursor: pointer;
   background-color: var(--clr-third);
@@ -488,6 +503,10 @@ tr:hover{
 
 /* ======================================================= */
 
+.pagination{
+  justify-content: start;
+  align-items: center;
+}
 
 .sidebar {
   padding: 20px 5px;
@@ -895,7 +914,7 @@ tr:hover{
 .form-wrapper .button-wrapper {
   gap: 10px;
   justify-content: start;
-  align-items: center;
+  align-items: start;
   padding-top: 10px;
 }
 
@@ -918,7 +937,7 @@ tr:hover{
 }
 
 .form-header {
-  gap: 20px;
+  gap: 10px;
 }
 
 .form-wrapper form {
@@ -978,9 +997,10 @@ tr:hover{
 }
 
 .form-wrapper .info-client {
-  gap: 30px;
+  gap: 40px;
   flex-wrap: wrap;
   justify-content: start;
+  align-items: start;
 }
 
 .form-wrapper .info-client h2 {
@@ -1172,6 +1192,32 @@ tr:hover{
   background-color: red;
   /* width: 100%; */
   display: flex;
+}
+
+
+#selected-list{
+  padding: 5px;
+  border-radius: 10px;
+  border: 1px solid var(--clr-third);
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  -ms-border-radius: 10px;
+  -o-border-radius: 10px;
+  display: none;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+#selected-list .item-selected{
+  font-size: 0.6em;
+  background-color: var(--clr-fourth);
+  color: var(--clr-main);
+  padding: 5px;
+  border-radius: 10px;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  -ms-border-radius: 10px;
+  -o-border-radius: 10px;
 }
 
 *{

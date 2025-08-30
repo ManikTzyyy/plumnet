@@ -170,50 +170,78 @@ def set_disabled_pppoe(host, username, password, pppoe, status):
         raise Exception(f"Gagal activasi PPPoE: {e}")
     
 
-def cut_network(host, username, password, ppp_clients):
-    try:
-        conn = get_mikrotik_conn(host, username, password)
+def cut_network(data_client):
+    if not data_client:
+        return "Tidak ada client PPPoE"
 
-        if not ppp_clients:
-            return "Tidak ada client PPPoE"
-        results = []
-        for item in ppp_clients:
-            command = [
-                f'/ppp active remove [find name="{item}"]',
-                f'/ppp secret set [find name="{item}"] profile=profile-isolir',
-                f'/ppp secret unset [find name="{item}"] local-address'
-            ]
-            out = conn.send_config_set(command)
-            results.append({item: out})  
-        return results
-    except Exception as e:
-        raise Exception(f"Gagal Memutus Pelanggan: {e}")
-    
-def connect_network(host, username, password, data_client):
-    try:
-        conn = get_mikrotik_conn(host, username, password)
+    results = []
+    for item in data_client:
+        pppoe = item['pppoe']
+        try:
+            host = item['host']
+            username = item['username']
+            password = item['password']
 
-        if not data_client:
-            return "Tidak ada client PPPoE"
+            conn = get_mikrotik_conn(host, username, password)
+            if not conn:
+                raise Exception("Koneksi Mikrotik gagal")
 
-        results = []
-        for item in data_client:
-            client = item["name"]
-            profile = item["profile"]
-            local_address = item['local_address']
-
-            # Set profile sesuai request
             commands = [
-                    f'/ppp secret set [find name="{client}"] profile={profile}',
-                    f'/ppp secret set [find name="{client}"] local-address={local_address}'
-                ]
+                f'/ppp active remove [find name="{pppoe}"]',
+                f'/ppp secret set [find name="{pppoe}"] profile=profile-isolir',
+                f'/ppp secret unset [find name="{pppoe}"] local-address'
+            ]
             out = conn.send_config_set(commands)
-            results.append({client: f"Connected dengan profile {profile}", "output": out})
+            conn.disconnect()
 
-        return results
+            results.append({
+                "pppoe": pppoe,
+                "status": "success",
+                "output": out
+            })
+        except Exception as e:
+            results.append({
+                "pppoe": pppoe,
+                "status": "failed",
+                "error": str(e)
+            })
 
-    except Exception as e:
-        raise Exception(f"Gagal koneksi PPPoE: {e}")
+    return results
+
+
+
+
+
+def connect_network(data_client):
+    if not data_client:
+        return "Tidak ada client PPPoE"
+
+    results = []
+    for item in data_client:
+        pppoe = item["pppoe"]
+        try:
+            host = item["host"]
+            username = item["username"]
+            password = item["password"]
+            profile = item["profile"]
+            local_address = item["local_address"]
+
+            conn = get_mikrotik_conn(host, username, password)
+            if not conn:
+                raise Exception("Koneksi Mikrotik gagal")
+
+            commands = [
+                f'/ppp secret set [find name="{pppoe}"] profile={profile}',
+                f'/ppp secret set [find name="{pppoe}"] local-address={local_address}'
+            ]
+            out = conn.send_config_set(commands)
+
+            results.append({"pppoe": pppoe, "status": "success", "output": out})
+            conn.disconnect()
+        except Exception as e:
+            results.append({"pppoe": pppoe, "status": "failed", "error": str(e)})
+
+    return results
 
 
 

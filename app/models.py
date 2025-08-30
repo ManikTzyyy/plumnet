@@ -60,6 +60,7 @@ class Client(models.Model):
     temp_long = models.CharField(max_length=255, null=True, blank=True)
     isServerNull = models.BooleanField(default=False)
     isPayed = models.BooleanField(default=True)
+    lastPayment = models.DateField(null=True, blank=True)
     
     def __str__(self):
         client_name = self.name if self.name else "Unnamed Client"
