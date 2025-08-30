@@ -45,6 +45,8 @@ urlpatterns = [
     path('client/<int:client_id>/toggle/', views.toggle_activasi, name='toggle_activasi'),
     path('client/<int:client_id>/payment/', views.toggle_pembayaran, name='toggle_pembayaran'),
 
+    path('client/activasi/multi', views.activasi_multi_client, name="activasi_multi"),
+
     path('client/<int:client_id>/verification/', views.toggle_verif, name='toggle_verif'),
    
     path("test-conn/", views.test_conn_view, name="test_conn"),

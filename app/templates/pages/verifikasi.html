@@ -1,4 +1,4 @@
-{% extends 'index.html' %} {% block content %} {% load custom_filters%}
+{% extends 'index.html' %} {% block content %} {% load custom_filters%} {% load static %}
 
 <div class="content-page client">
   <div class="table-wrapper column">
@@ -11,28 +11,53 @@
         <span class="title">Client List</span>
       </div>
       <a href="{% url 'client' %}" class="main-button">View All Client</a>
+
+      <div id="selected-box" class="selected-box column">
+          <p class="text-sm">Client Terpilih</p>
+          <div id="selected-list"></div>
+          <br>
+          <button id="activate-all" class="disbale-button " disabled >Aktivasi Terpilih</button>
+      </div>
+
       <form method="GET" class="form-search row">
-        <input
-          class="search-box"
-          type="search"
-          placeholder="Search"
-          name="s"
-          value="{{ query }}"
-        />
-        <input class="search-button" type="submit" />
+       <div class="column">
+         <label for="per_page" class="text-sm">Search:</label>
+        <input class="search-box" type="search" placeholder="Search" name="s" value="{{ query }}"/>
+       </div>
+       
+       <div class="column">
+        <label for="per_page" class="text-sm">Show:</label>
+        <input class="search-box w-md" type="number" placeholder="{{page_number}}" name="per_page" id="per_page" value="{{ per_page }}" min="1" />
+       </div>
+
+       
+
+       <div class="column">
+        <label for="filter" class="text-sm">Payment</label>
+        <select name="filter" id="filter" onchange="this.form.submit()" class="search-box w-fit">
+          <option value="" {% if filter == "" %}selected{% endif %}>All</option>
+          <option value="done" {% if filter == "done" %}selected{% endif %}>Done</option>
+          <option value="waiting" {% if filter == "waiting" %}selected{% endif %}>Waiting</option>
+        </select>
+       </div>
+        <input style="display:none" type="submit" />
       </form>
     </div>
+
+    
 
     <div class="table-container">
       <table class="table">
         <tr class="t-head">
+          <th></th>
           <th>#</th>
-
           <th>Nama</th>
           <th>Alamat</th>
           <th>Email</th>
           <th>No HP</th>
           <th>Paket</th>
+          <th>Server</th>
+          <th>Payment</th>
 
           <th class="center-th">Action</th>
         </tr>
@@ -40,8 +65,18 @@
         {% for client in clients %}
 
         <tr class="t-d">
+          <td>
+            <input type="checkbox" class="client-checkbox" 
+            data-id="{{ client.id }}" 
+            data-name="{{ client.name }}" 
+            data-host="{{client.id_paket.id_ip_pool.id_server.host}}"
+            data-username="{{client.id_paket.id_ip_pool.id_server.username}}"
+            data-password="{{client.id_paket.id_ip_pool.id_server.password}}"
+            data-pppoe="{{client.pppoe}}"
+            data-paket="{{ client.id_paket.name }}"
+            data-iplocal="{{client.local_ip}}">
+          </td>
           <td>{{ client.id }}</td>
-       
           <td>{{ client.name }}</td>
           <td>{{ client.address }}</td>
           <td>{{ client.email }}</td>
@@ -49,7 +84,11 @@
           <td>
             {{ client.id_paket.name }} - {{ client.id_paket.price|rupiah }}
           </td>
-
+          <td>{{ client.id_paket.id_ip_pool.id_server.name }}</td>
+          <td class="">
+            <div class="{% if client.isPayed %}enable-t{% else %}waiting-t{% endif %}"> {% if client.isPayed %}Done{% else %}Waiting{% endif %}
+            </div>
+          </td>
           <td>
             <div class="row button-wrapper">
               <a href="{% url 'detail-client' client.id %}" class="main-button"
@@ -73,38 +112,26 @@
     </div>
     <div class="pagination row text-sm">
       {% if clients.has_previous %}
-      <a
-        href="?page=1{% if query %}&search={{ query }}{% endif %}"
-        class="page-button"
-        >First</a
-      >
-      <a
-        href="?page={{ clients.previous_page_number }}{% if query %}&search={{ query }}{% endif %}"
-        class="page-button"
-        ><i class="fa-solid fa-angle-left"></i
-      ></a>
+      <a href="?page=1{% if query %}&s={{ query }}{% endif %}&per_page={{ page_number }}&filter={{filter}}" class="page-button">First</a>
+      <a href="?page={{ clients.previous_page_number }}{% if query %}&s={{ query }}{% endif %}&per_page={{ page_number }}&filter={{filter}}" class="page-button">
+        <i class="fa-solid fa-angle-left"></i>
+      </a>
       {% endif %}
-
-      <span class="current-page"
-        >Page {{ clients.number }} of {{ clients.paginator.num_pages }}</span
-      >
+      <span class="current-page">Page {{ clients.number }} of {{ clients.paginator.num_pages }}</span>
 
       {% if clients.has_next %}
-      <a
-        href="?page={{ clients.next_page_number }}{% if query %}&search={{ query }}{% endif %}"
-        class="page-button"
-        ><i class="fa-solid fa-angle-right"></i
-      ></a>
-      <a
-        href="?page={{ clients.paginator.num_pages }}{% if query %}&search={{ query }}{% endif %}"
-        class="page-button"
-        >Last</a
-      >
+      <a href="?page={{ clients.next_page_number }}{% if query %}&s={{ query }}{% endif %}&per_page={{ page_number }}&filter={{filter}}" class="page-button">
+        <i class="fa-solid fa-angle-right"></i>
+      </a>
+      <a href="?page={{ clients.paginator.num_pages }}{% if query %}&s={{ query }}{% endif %}&per_page={{ page_number
+       }}&filter={{filter}}" class="page-button">Last</a>
       {% endif %}
     </div>
   </div>
 </div>
 
+
+<script src="{% static 'js/scripts/checkbox.js' %}"></script>
 
 
 {% endblock %}

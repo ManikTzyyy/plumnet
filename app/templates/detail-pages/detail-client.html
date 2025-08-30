@@ -39,10 +39,8 @@
           <div class="text">{{ client.local_ip }}</div>
         </div>
         <div class="column">
-          <div class="title strong">Pembayaran</div>
-          <div class=" {% if client.isPayed %}enable-t{% else %}waiting-t{% endif %}">
-              {% if client.isPayed %}Done{% else %}Waiting{% endif %}
-            </div>
+          <div class="title strong">Status</div>
+          <div class=" {% if client.isActive %}enable-t{% else %}disable-t{% endif %}"> {% if client.isActive %}Online{% else %}Offline{% endif %} </div>
         </div>
       </div>
       <div class="wrapper column">
@@ -72,27 +70,47 @@
             </a>
           </div>
         </div>
+        <button  class="info-button">Reboot Perangkat</button>
+      </div>
+      <div class="wrapper column">
+        <h2>Status Pembayaran</h2>
         <div class="column">
           <div class="title strong">Status</div>
-          <div class=" {% if client.isActive %}enable-t{% else %}disable-t{% endif %}">
-              {% if client.isActive %}Online{% else %}Offline{% endif %}
+          <div class=" {% if client.isPayed %}enable-t{% else %}waiting-t{% endif %}">
+              {% if client.isPayed %}Done{% else %}Waiting{% endif %}
+          </div>
+        </div>
+        <div class="row wrap gap-20">
+          <div class="column">
+          <div class="title strong">Pembayaran Terakhir</div>
+          <div class="text">{{ client.lastPayment }}</div>
+        </div>
+        <div class="column">
+          <div class="title strong">Tagihan Berikutnya</div>
+          <div class="text">Sept. 20, 2025</div>
+        </div>
+        </div>
+        
+        <div class="column button-wrapper no-loader wrap">
+          <form id="delete-form" method="POST" style="display: none;">
+          {% csrf_token %}
+          </form>
+            <div class="row wrap gap-10">
+              <button onclick="toggleActivasiClient('{{ client.id }}', '{{ client.name }}',`{{ client.isActive|yesno:'true,false' }}`, 'detail-client')" class="{% if user.is_authenticated %}main-button{% else %}disbale-button{% endif %}" {% if not user.is_authenticated %}disabled{% endif %} >{% if client.isActive %}Nonaktifkan{% else %}Activasi{% endif %}</button>
+              <button onclick="togglePembayaran('{{ client.id }}', '{{ client.name }}',`{{ client.isPayed|yesno:'true,false' }}`, 'detail-client')" class="{% if user.is_authenticated %}main-button{% else %}disbale-button{% endif %}" {% if not user.is_authenticated %}disabled{% endif %} >{% if client.isPayed %}Buat Tagihan{% else %}Konfirmasi Pembayaran{% endif %}</button>
             </div>
+           <div class="row wrap gap-10">
+             <a href="{% url 'edit-client' client.id %}" class="warning-button">Edit</a>
+            <button  onclick="deleteData('{{ client.id }}', 'client', 'client')" class="danger-button">Delete</button>
+           </div>
         </div>
       </div>
-      <div class="container-map relative" style="width: 600px; height: 300px;" >
+      
+      <div class="container-map relative" style="width: 100%; height: 300px;" >
         <div id="map-client" style="height: 100%; width: 100%;"></div>
       </div>
     </div>
-    <div class="row button-wrapper no-loader wrap">
-      <form id="delete-form" method="POST" style="display: none;">
-        {% csrf_token %}
-      </form>
-      <button onclick="toggleActivasiClient('{{ client.id }}', '{{ client.name }}',`{{ client.isActive|yesno:'true,false' }}`, 'detail-client')" class="{% if user.is_authenticated %}main-button{% else %}disbale-button{% endif %}" {% if not user.is_authenticated %}disabled{% endif %} >{% if client.isActive %}Nonaktifkan{% else %}Activasi{% endif %}</button>
-      <button onclick="togglePembayaran('{{ client.id }}', '{{ client.name }}',`{{ client.isPayed|yesno:'true,false' }}`, 'detail-client')" class="{% if user.is_authenticated %}main-button{% else %}disbale-button{% endif %}" {% if not user.is_authenticated %}disabled{% endif %} >{% if client.isPayed %}Buat Tagihan{% else %}Konfirmasi Pembayaran{% endif %}</button>
-      <button  class="info-button">Reboot Perangkat</button>
-      <a href="{% url 'edit-client' client.id %}" class="warning-button">Edit</a>
-      <button  onclick="deleteData('{{ client.id }}', 'client', 'client')" class="danger-button">Delete</button>
-    </div>
+    
 
      <canvas id="redamanChart"></canvas>
  </div>

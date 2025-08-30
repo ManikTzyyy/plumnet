@@ -199,7 +199,9 @@ function toggleActivasiClient(clientId, name, status, url) {
               title: `Gagal ${msg} !`,
               text: data.message || `Server error: ${res.status}`,
               confirmButtonText: "OK",
-            });
+            }).then(()=>{
+              hideLoader();
+            })
             return;
           }
 
@@ -222,12 +224,82 @@ function toggleActivasiClient(clientId, name, status, url) {
               title: `Client Gagal di ${msg} !`,
               text: data.message || "Terjadi kesalahan.",
               confirmButtonText: "OK",
-            });
+            }).then(()=>{
+              hideLoader();
+            })
           }
         })
         .catch((err) => {
           hideLoader();
           Swal.fire("Gagal!", err.message, "error");
+        });
+      
+    }
+  });
+}
+
+function toggleActivasiMultiClient(clientList) {
+
+
+  // tampilkan daftar client di modal konfirmasi
+  const clientNames = clientList.map((c) => `${c.name}`).join(", ");
+
+  Swal.fire({
+    title: `Activasi client berikut?`,
+    html: `<div style="text-align:left">${clientNames}</div>`,
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#13542d",
+    cancelButtonColor: "#aaa",
+    confirmButtonText: `Ya!`,
+    cancelButtonText: "Batal",
+  }).then((result) => {
+    if (result.isConfirmed) {
+      showMyLoader();
+
+      fetch("/client/activasi/multi", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie("csrftoken"),
+        },
+        body: JSON.stringify(clientList),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          hideLoader();
+
+          if (data.success) {
+            let detail = "";
+            if (data.results) {
+              detail = data.results
+                .map((r) => {
+                  if (r.error) {
+                    return `${r.name} - ${r.status}`;
+                  } else {
+                    return `${r.name} - ${r.status}`;
+                  }
+                })
+                .join("<br>");
+            } else {
+              detail = data.message;
+            }
+
+            Swal.fire({
+              title: "Tugas Selesai!",
+              html: detail,
+              icon: "warning",
+              confirmButtonText: "Ok",
+            }).then(() => {
+              location.href = "/verifikasi";
+            });
+          } else {
+            Swal.fire("Gagal!", data.message, "error");
+          }
+        })
+        .catch((err) => {
+          hideLoader();
+          Swal.fire("Error!", err.message, "error");
         });
     }
   });

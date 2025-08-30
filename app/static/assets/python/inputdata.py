@@ -1,4 +1,4 @@
-from polls.models import Server
+from app.models import Server
 from faker import Faker
 import random
 

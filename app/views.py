@@ -1,3 +1,4 @@
+from django.utils import timezone
 import json, logging, socket, subprocess, paramiko
 from django.contrib import messages
 from django.core.serializers.json import DjangoJSONEncoder
@@ -21,9 +22,6 @@ from app.forms import ServerForm, PaketForm, ipPoolForm, ClientForm
 from django.conf.urls import handler404
 
 
-
-
-
 def get_server_info(request, server_id):
     try:
         server = Server.objects.get(id=server_id)
@@ -42,6 +40,15 @@ def dashboard(request) :
     servers = Server.objects.all()
     clients = Client.objects.all()
     query = request.GET.get('s', '')
+
+    filter_value = request.GET.get('filter', '')
+    per_page = request.GET.get('per_page', 10)
+    try:
+        per_page = int(per_page)
+        if per_page <= 0:  # minimal 1
+            per_page = 10
+    except ValueError:
+        per_page = 10
 
     total_servers = Server.objects.count() 
     total_pakets = Paket.objects.count() 
@@ -67,7 +74,16 @@ def dashboard(request) :
             status_filter
         )
 
-    paginator = Paginator(clients, 10) 
+    if filter_value == "online":
+        clients = clients.filter(isActive=True)
+    elif filter_value == "offline":
+        clients = clients.filter(isActive=False)
+    elif filter_value == "done":
+        clients = clients.filter(isPayed=True)
+    elif filter_value == "waiting":
+        clients = clients.filter(isPayed=False)
+
+    paginator = Paginator(clients, per_page) 
     page_number = request.GET.get('page') 
     clients = paginator.get_page(page_number)
 
@@ -79,7 +95,9 @@ def dashboard(request) :
         'inactive_clients' : inactive_count,
         'servers' : servers,
         'query' : query,
-        'clients' : clients
+        'clients' : clients,
+        'page_number':per_page,
+        'filter': filter_value
     }
     return render(request, 'pages/dashboard.html', context)
 
@@ -124,10 +142,17 @@ def paket(request) :
 
 def client(request) : 
     query = request.GET.get('s', '')
+    filter_value = request.GET.get('filter', '')
+    per_page = request.GET.get('per_page', 10)
+    try:
+        per_page = int(per_page)
+        if per_page <= 0:  # minimal 1
+            per_page = 10
+    except ValueError:
+        per_page = 10
+
     client_list = Client.objects.all()
-
     query_lower = query.strip().lower()
-
     status_filter = Q()
     if query_lower == "online":
         status_filter = Q(isActive=True)
@@ -145,18 +170,42 @@ def client(request) :
             status_filter
         )
 
-    paginator = Paginator(client_list, 10) 
+    if filter_value == "online":
+        client_list = client_list.filter(isActive=True)
+    elif filter_value == "offline":
+        client_list = client_list.filter(isActive=False)
+    elif filter_value == "done":
+        client_list = client_list.filter(isPayed=True)
+    elif filter_value == "waiting":
+        client_list = client_list.filter(isPayed=False)
+
+    paginator = Paginator(client_list, per_page) 
     page_number = request.GET.get('page') 
     clients = paginator.get_page(page_number)
 
+    context = {
+        'clients': clients, 
+        'query': query,
+        'page_number' : per_page,
+        'filter':filter_value
+        }
 
-    return render(request, 'pages/client.html', {'clients': clients, 'query': query})
+
+    return render(request, 'pages/client.html', context )
 
 
 
 def verifikasi(request) : 
     inactiveClient = Client.objects.filter(isActive=0)
     query = request.GET.get('s', '')
+    filter_value = request.GET.get('filter', '')
+    per_page = request.GET.get('per_page', 10)
+    try:
+        per_page = int(per_page)
+        if per_page <= 0:  # minimal 1
+            per_page = 10
+    except ValueError:
+        per_page = 10
 
     if query:
         inactiveClient = inactiveClient.filter(
@@ -166,14 +215,22 @@ def verifikasi(request) :
             Q(pppoe__icontains=query)| 
             Q(id_paket__name__icontains=query)
         ) 
+    
+    
+    if filter_value == "done":
+        inactiveClient = inactiveClient.filter(isPayed=True)
+    elif filter_value == "waiting":
+        inactiveClient = inactiveClient.filter(isPayed=False)
 
-    paginator = Paginator(inactiveClient, 10) 
+    paginator = Paginator(inactiveClient, per_page) 
     page_number = request.GET.get('page') 
     inactiveClient = paginator.get_page(page_number)
 
     context = {
         'query' : query,
-        'clients' : inactiveClient
+        'clients' : inactiveClient,
+        'page_number' : per_page,
+        'filter':filter_value
     }
 
     return render(request, 'pages/verifikasi.html',context)
@@ -661,41 +718,100 @@ def map(request):
     return render(request, "pages/maps.html", context)
 
 #=========================================================================
+def activasi_multi_client(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({"success": False, "message": "Anda harus login dahulu untuk melakukan verifikasi."}, status=401)
+
+    if request.method != "POST":
+        return JsonResponse({"success": False, "message": "Method not allowed"}, status=405)
+
+    try:
+        data = json.loads(request.body.decode("utf-8"))
+        results = connect_network(data)
+
+        final_results = []
+        for item, res in zip(data, results):
+            client = Client.objects.filter(pppoe=item["pppoe"]).first()
+            if not client:
+                final_results.append({
+                    "name": item['name'],
+                    "pppoe": item["pppoe"],
+                    "host": item["host"],
+                    "status": "Client tidak ditemukan di DB",
+                    "db_update": "FAILED",
+                    "mikrotik": res
+                })
+                continue
+
+            if res["status"] == "success":
+                client.isActive = True
+                client.save()
+                final_results.append({
+                    "name": item['name'],
+                    "pppoe": item["pppoe"],
+                    "host": item["host"],
+                    "status": "Aktivasi berhasil",
+                    "db_update": "OK",
+                    "mikrotik": res
+                })
+            else:
+                final_results.append({
+                    "name": item['name'],
+                    "pppoe": item["pppoe"],
+                    "host": item["host"],
+                    "status": f"{res['status']}",
+                    "db_update": "FAILED",
+                    "mikrotik": res
+                })
+               
+
+        return JsonResponse({"success": True, "message": "Proses aktivasi multi selesai", "results": final_results})
+    except Exception as e:
+        return JsonResponse({"success": False, "message": str(e) or "Terjadi kesalahan saat memproses verifikasi."}, status=500)
+
 
 def toggle_activasi(request, client_id):
     if not request.user.is_authenticated:
-        return JsonResponse({
-            "success": False,
-            "message": "Anda harus login dahulu untuk melakukan verifikasi."
-        }, status=401)
+        return JsonResponse({"success": False, "message": "Anda harus login dahulu untuk melakukan verifikasi."}, status=401)
 
     try:
         client = get_object_or_404(Client, id=client_id)
         paket = client.id_paket
         server = paket.id_ip_pool.id_server
-      
 
         if client.isActive:
-            result = cut_network(server.host, server.username, server.password, [client.pppoe])
-            client.isActive = False
-            msg = 'Client berhasil dinonaktifkan'
+            result = cut_network([{
+                "host": server.host,
+                "username": server.username,
+                "password": server.password,
+                "pppoe": client.pppoe,
+            }])
+            if result[0].get("status") == "success":
+                client.isActive = False
+                client.save()
+                msg = "Client berhasil dinonaktifkan"
+            else:
+                return JsonResponse({"success": False, "message": f"Gagal nonaktifkan: {result[0].get('error')}"})
         else:
-            result = connect_network(server.host, server.username, server.password, [{"name":client.pppoe, "profile": paket.name, "local_address":client.local_ip }])
-            client.isActive = True
-            msg ="Client berhasil diaktifkan"
-    
-        client.save()
+            result = connect_network([{
+                "host": server.host,
+                "username": server.username,
+                "password": server.password,
+                "pppoe": client.pppoe,
+                "profile": paket.name,
+                "local_address": client.local_ip,
+            }])
+            if result[0].get("status") == "success":
+                client.isActive = True
+                client.save()
+                msg = "Client berhasil diaktifkan"
+            else:
+                return JsonResponse({"success": False, "message": f"Gagal aktifkan: {result[0].get('error')}"})
 
-        return JsonResponse({
-            "success": True,
-            "message": msg,
-            "server_res": result
-        })
+        return JsonResponse({"success": True, "message": msg, "server_res": result})
     except Exception as e:
-        return JsonResponse({
-            "success": False,
-            "message": str(e) or "Terjadi kesalahan saat memproses verifikasi."
-        }, status=500)
+        return JsonResponse({"success": False, "message": str(e) or "Terjadi kesalahan saat memproses verifikasi."}, status=500)
+
 
 
 def toggle_verif(request, client_id):
@@ -806,10 +922,18 @@ def toggle_pembayaran(request, client_id):
     try:
         client = get_object_or_404(Client, id=client_id)
         client.isPayed = not client.isPayed
+
+        if client.isPayed:
+            client.lastPayment = timezone.now().date()
+            message = f"Pembayaran untuk {client.name} dikonfirmasi pada {client.lastPayment}."
+        else:
+            
+            message = f"Tagihan untuk {client.name} berhasil dibuat."
+
         client.save()
         return JsonResponse({
             "success": True,
-            "message": "Client berhasil diaktifkan." if client.isPayed else "Client berhasil dinonaktifkan."
+            "message": message
         })
     except Exception as e:
         return JsonResponse({
