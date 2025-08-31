@@ -1,10 +1,11 @@
 from apscheduler.schedulers.background import BackgroundScheduler
 from django.core.mail import send_mail
 from django.utils.timezone import now, timedelta
+import requests
 
 from app.templates.network.netmiko_service import cut_network
 
-from .models import Client
+from .models import Client, Server, Redaman
 from decouple import config
 
 def set_status_false_and_notify():
@@ -41,16 +42,58 @@ def cut_connection_unpaid():
 
     print("Job tanggal", config("CUT_NETWORK_DATE"), "dijalankan:", now())
 
+
+
+def fetch_and_store_redaman():
+    servers = Server.objects.exclude(genieacs__isnull=True).exclude(genieacs="")
+    for srv in servers:
+        url = (
+            f"http://{srv.genieacs}:7557/devices"
+            "?projection=VirtualParameters.redaman._value,"
+            "VirtualParameters.pppoe._value"
+        )
+
+        try:
+            response = requests.get(url, timeout=10)
+            response.raise_for_status()
+            devices = response.json()
+
+            for device in devices:
+                vp = device.get("VirtualParameters", {})
+                pppoe_val = vp.get("pppoe", {}).get("_value")
+                redaman_val = vp.get("redaman", {}).get("_value")
+
+                if not (pppoe_val and redaman_val):
+                    continue
+
+                client = Client.objects.filter(pppoe=pppoe_val).first()
+
+                Redaman.objects.create(
+                    id_client=client,
+                    value=redaman_val
+                )
+
+            print(f"[OK] Redaman data stored from {srv.name} ({srv.genieacs})")
+
+        except Exception as e:
+            print(f"[ERROR] Failed fetching from {srv.name} ({srv.genieacs}): {e}")
+
+
 def start():
     scheduler = BackgroundScheduler()
     scheduler.add_job(set_status_false_and_notify, 'cron', day=int(config("GIVE_NOTIF_DATE")), hour=0, minute=0)
     scheduler.add_job(cut_connection_unpaid, 'cron', day=int(config("CUT_NETWORK_DATE")), hour=0, minute=0)
-    
-    
-    
+
+    scheduler.add_job(fetch_and_store_redaman, 'cron', hour=0, minute=0)
+
+
+
     # For testing
-    # run_time = now() + timedelta(minutes=1)
+    run_time = now() + timedelta(seconds=5)
     # scheduler.add_job(set_status_false_and_notify, 'date', run_date=run_time)
     # scheduler.add_job(cut_connection_unpaid, 'date', run_date=run_time)
+
+    # scheduler.add_job(fetch_and_store_redaman, 'date', run_date=run_time)
+
 
     scheduler.start()

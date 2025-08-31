@@ -7,7 +7,7 @@ class Server(models.Model):
     host = models.GenericIPAddressField()
     username = models.CharField(max_length=255)
     password = models.CharField(max_length=255) 
-    genieacs = models.GenericIPAddressField(blank=True, null=True)
+    genieacs = models.CharField(max_length=255, blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -70,6 +70,13 @@ class Client(models.Model):
 
 
 class Redaman(models.Model):
-    id_client = models.ForeignKey(Client, on_delete=models.SET_NULL, null=True, blank=True, related_name='clients')
+    id_client = models.ForeignKey(
+        Client,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='clients'
+    )
     value = models.CharField(max_length=255)
-    create_at = models.DateTimeField()
+    create_at = models.DateTimeField(auto_now_add=True)
+  

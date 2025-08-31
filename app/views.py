@@ -1,27 +1,47 @@
+# Standard library
+from datetime import timedelta
 import random
+import json
+import logging
+import subprocess
+import urllib.parse
+
+# Third-party
 import requests
+import paramiko
 from django.utils import timezone
-import json, logging, socket, subprocess, paramiko
 from django.contrib import messages
 from django.core.serializers.json import DjangoJSONEncoder
-
 from django.contrib.auth.decorators import login_required
-
-from mysite import settings
-from app.templates.network.netmiko_service import clear_config, connect_network, create_auto_config, create_pool, create_pppoe, create_profile, cut_network, delete_pool, delete_pppoe, delete_profile, edit_pool, edit_pppoe, edit_profile, set_disabled_pppoe, test_conn
-from app.utils.utlis import parse_mikrotik_output
-from .templates.network.routeros_service import get_mikrotik_info
-
-from .models import Paket, Server, IPPool, Client
-
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render, get_object_or_404
 from django.core.paginator import Paginator
 from django.db.models import Q
-
-from app.forms import ServerForm, PaketForm, ipPoolForm, ClientForm
-
 from django.conf.urls import handler404
+
+# Project imports
+from mysite import settings
+from app.forms import ServerForm, PaketForm, ipPoolForm, ClientForm
+from app.utils.utlis import parse_mikrotik_output
+from app.templates.network.netmiko_service import (
+    clear_config,
+    connect_network,
+    create_auto_config,
+    create_pool,
+    create_pppoe,
+    create_profile,
+    cut_network,
+    delete_pool,
+    delete_pppoe,
+    delete_profile,
+    edit_pool,
+    edit_pppoe,
+    edit_profile,
+    test_conn,
+)
+from .templates.network.routeros_service import get_mikrotik_info
+from .models import Paket, Redaman, Server, IPPool, Client
+
 
 
 def get_server_info(request, server_id):
@@ -739,7 +759,72 @@ def detailServer(request, server_id) :
 
 def detailClient(request, client_id) : 
     client = get_object_or_404(Client, id=client_id)
-    return render(request, 'detail-pages/detail-client.html',{'client': client})
+    
+    genieACS = client.id_paket.id_ip_pool.id_server.genieacs
+    today = timezone.now().date()
+    seven_days_ago = today - timedelta(days=6)
+
+    redaman_records = Redaman.objects.filter(
+        id_client=client,
+        create_at__date__range=[seven_days_ago, today]
+    ).order_by('create_at')
+
+    redaman_dict = {record.create_at.date(): record.value for record in redaman_records}
+
+    labels = []
+    data_redaman = []
+    for i in range(6, -1, -1):
+        day = today - timedelta(days=i)
+        labels.append(day.strftime('%d-%b'))  # contoh: '01-Aug'
+        data_redaman.append(float(redaman_dict.get(day, 0))) 
+
+     
+
+    if genieACS:
+
+        try:
+            query = {
+                    "VirtualParameters.pppoe._value": client.pppoe
+                    }
+            projection = (
+                        "VirtualParameters.remote._value,"
+                        "VirtualParameters.redaman._value,"
+                        "VirtualParameters.active._value,"
+                        "VirtualParameters.pppoe._value,"
+                        "VirtualParameters.temperature._value"
+                    )
+            query_str = urllib.parse.quote(str(query).replace("'", '"'))
+
+            url = f"http://{genieACS}:7557/devices?query={query_str}&projection={projection}"
+
+            getData = requests.get(url, timeout=10)
+            getData.raise_for_status()  # lempar error kalau status bukan 200
+            data = getData.json()
+            print(data)
+
+            if data:
+                device = data[0]   # ambil device pertama
+                vp = device.get("VirtualParameters", {})
+                client.redaman = vp.get("redaman", {}).get("_value", "-")
+                client.active = vp.get("active", {}).get("_value", "-")
+                client.remote = vp.get("remote", {}).get("_value", "-")
+                client.temperature = vp.get("temperature", {}).get("_value", "-")
+            else:
+                client.redaman = '-'
+                client.active = '-'
+                client.remote = '-'
+                client.temperature = '-'
+
+        except Exception as e:
+            print("Error fetch ACS API:", e)
+
+    context = {
+        'client': client,
+        'labels': labels,
+        'redaman_data': data_redaman,
+    }
+
+    return render(request, 'detail-pages/detail-client.html',context)
 
 
 def map(request):
