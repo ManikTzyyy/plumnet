@@ -84,7 +84,7 @@
             <a href="http://{{client.remote}}" target="_blank" class="no-loader">{{client.remote}}</a>
           </div>
         </div>
-        <button  class="info-button">Reboot Perangkat</button>
+        <button class="info-button" onclick="rebootDevice('{{ client.name }}', '{{client.device}}', '{{genieacs}}')">Reboot Perangkat</button>
       </div>
       <div class="wrapper column">
         <h2>Status Pembayaran</h2>
@@ -158,10 +158,6 @@
 <script>
   const labels = {{ labels|safe }};
   const data = {{ redaman_data|safe }};
-
-
-  console.log(labels)
-  console.log(data)
 
   const chartData = {
     labels: labels,

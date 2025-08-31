@@ -2,13 +2,13 @@
 from datetime import timedelta
 import random
 import json
-import logging
-import subprocess
 import urllib.parse
+from urllib.parse import quote
+
 
 # Third-party
+from decouple import config
 import requests
-import paramiko
 from django.utils import timezone
 from django.contrib import messages
 from django.core.serializers.json import DjangoJSONEncoder
@@ -781,7 +781,6 @@ def detailClient(request, client_id) :
      
 
     if genieACS:
-
         try:
             query = {
                     "VirtualParameters.pppoe._value": client.pppoe
@@ -800,20 +799,24 @@ def detailClient(request, client_id) :
             getData = requests.get(url, timeout=10)
             getData.raise_for_status()  # lempar error kalau status bukan 200
             data = getData.json()
-            print(data)
+            
 
             if data:
                 device = data[0]   # ambil device pertama
+                device_id = device.get("_id")
                 vp = device.get("VirtualParameters", {})
                 client.redaman = vp.get("redaman", {}).get("_value", "-")
                 client.active = vp.get("active", {}).get("_value", "-")
                 client.remote = vp.get("remote", {}).get("_value", "-")
                 client.temperature = vp.get("temperature", {}).get("_value", "-")
+                client.device = device_id
+               
             else:
                 client.redaman = '-'
                 client.active = '-'
                 client.remote = '-'
                 client.temperature = '-'
+                client.device = '-'
 
         except Exception as e:
             print("Error fetch ACS API:", e)
@@ -822,6 +825,8 @@ def detailClient(request, client_id) :
         'client': client,
         'labels': labels,
         'redaman_data': data_redaman,
+        'genieacs': genieACS
+        
     }
 
     return render(request, 'detail-pages/detail-client.html',context)
@@ -1060,13 +1065,46 @@ def toggle_pembayaran(request, client_id):
 
 
 
-def is_reachable(ip):
-    try:
-        subprocess.check_output(['ping', '-n', '1', '-w', '2000', ip])
-        return True
-    except subprocess.CalledProcessError:
-        return False
 
+GENIEACS_USER = config("GENIEACS_USERNAME")
+GENIEACS_PASS = config("GENIEACS_PASSWORD")
+
+
+
+def reboot(request):
+   
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            device = data.get("device")   # _id dari GenieACS device
+            genieacs = data.get("genieacs")  # IP / hostname GenieACS server
+         
+
+            if not device or not genieacs:
+                return JsonResponse({"status": "error", "message": "Device ID atau GenieACS tidak dikirim"}, status=400)
+
+            device_id = quote(device, safe="")
+            task_url = f"http://{genieacs}:7557/devices/{device_id}/tasks"
+            payload = {"name": "reboot"}
+
+            task_resp = requests.post(
+                task_url,
+                json=payload,
+                auth=(GENIEACS_USER, GENIEACS_PASS),
+                timeout=10
+            )
+
+           
+            task_resp.raise_for_status()  # kalau error akan masuk ke except
+
+            return JsonResponse({"status": "success", "message": f"Perangkat {device} sedang direboot"})
+
+        except requests.RequestException as e:
+            return JsonResponse({"status": "error", "message": f"Gagal kirim perintah reboot: {str(e)}"}, status=500)
+        except Exception as e:
+            return JsonResponse({"status": "error", "message": f"Error: {str(e)}"}, status=500)
+
+    return JsonResponse({"status": "error", "message": "Invalid request"}, status=405)
 
 def test_conn_view(request):
     if request.method == "POST":
@@ -1149,76 +1187,6 @@ def random_devices(request):
 
 
 
-
-
-logger = logging.getLogger(__name__)
-
-BAD_COMMANDS = ['reboot', 'shutdown', 'ping' 'halt', 'poweroff', 'logout', 'exit']
-
-def execute_command(host, username, password, command):
-    output = ""
-    client = paramiko.SSHClient()
-    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-
-    try:
-        # Connect with timeout and without looking for SSH keys
-        client.connect(
-            hostname=host,
-            username=username,
-            password=password,
-            look_for_keys=False,
-            timeout=10
-        )
-
-        stdin, stdout, stderr = client.exec_command(command, timeout=15)
-        output = stdout.read().decode() + stderr.read().decode()
-
-    except Exception as e:
-        logger.error(f"[SSH ERROR] {e}")
-        output = f"SSH Error: {str(e)}"
-
-    finally:
-        client.close()
-
-    return output
-
-def send_command(request):
-    if request.method == "POST":
-        try:
-            data = json.loads(request.body)
-            command = data.get("command", "").strip()
-            server_id = data.get("server_id")
-
-            # Validasi perintah berbahaya
-            for bad_cmd in BAD_COMMANDS:
-                if bad_cmd in command.lower():
-                    return JsonResponse({
-                        "output": f"Perintah '{bad_cmd}' tidak diizinkan demi keamanan."
-                    }, status=400)
-
-            # Validasi input
-            if not command:
-                return JsonResponse({"output": "Perintah tidak boleh kosong."}, status=400)
-
-            server = Server.objects.get(id=server_id)
-
-            logger.info(f"[SEND_COMMAND] Eksekusi command ke server {server.host}: {command}")
-
-            output = execute_command(server.host, server.username, server.password, command)
-
-            return JsonResponse({"output": output or "Tidak ada output dari perintah."})
-
-        except Server.DoesNotExist:
-            return JsonResponse({"output": "Server tidak ditemukan."}, status=404)
-
-        except json.JSONDecodeError:
-            return JsonResponse({"output": "Format request tidak valid."}, status=400)
-
-        except Exception as e:
-            logger.exception("[ERROR] Gagal mengirim perintah")
-            return JsonResponse({"output": f"Exception: {str(e)}"}, status=500)
-
-    return JsonResponse({"output": "Hanya menerima metode POST."}, status=405)
 
 
 def get_theme_settings():
