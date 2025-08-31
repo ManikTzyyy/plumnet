@@ -163,9 +163,6 @@
           <th class="center-th">Status</th>
           <th>ID PPPoE</th>
           <th>Server</th>
-          <th>Rx</th>
-          <th class="center-th">Device Aktif</th>
-          <th>IP TR069</th>
           <th>Action</th>
         </tr>
         {% for client in clients %}
@@ -182,9 +179,6 @@
           </td>
           <td>{{ client.pppoe }}</td>
           <td>{{ client.id_paket.id_ip_pool.id_server.name }}</td>
-          <td>-18 dbm</td>
-          <td class="td-center" style="padding: 18px 0;">5</td>
-          <td>192.168.1.1</td>
           <td>
             <a href="{% url 'detail-client' client.id %}" class="main-button"
               >View</a

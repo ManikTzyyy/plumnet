@@ -1,3 +1,5 @@
+import random
+import requests
 from django.utils import timezone
 import json, logging, socket, subprocess, paramiko
 from django.contrib import messages
@@ -45,7 +47,7 @@ def dashboard(request) :
     per_page = request.GET.get('per_page', 10)
     try:
         per_page = int(per_page)
-        if per_page <= 0:  # minimal 1
+        if per_page <= 0: 
             per_page = 10
     except ValueError:
         per_page = 10
@@ -87,6 +89,35 @@ def dashboard(request) :
     page_number = request.GET.get('page') 
     clients = paginator.get_page(page_number)
 
+    # try:
+    #     response = requests.get("http://localhost:8000/api/")
+    #     response.raise_for_status()
+    #     acs_json = response.json()
+    # except Exception as e:
+    #     print("Error fetch ACS API:", e)
+    #     acs_json = []
+    # if isinstance(acs_json, list):
+    #     acs_data_map = {
+    #         item["VirtualParameters"]["IDPPPoE"]["_value"].strip(): item["VirtualParameters"]
+    #         for item in acs_json
+    #     }
+    # elif isinstance(acs_json, dict):
+    #     acs_data_map = {k.strip(): v for k, v in acs_json.items()}
+    # else:
+    #     acs_data_map = {}
+
+    # for client in clients:
+    #     vp = acs_data_map.get(client.pppoe.strip())
+    #     # print(client.pppoe, "=>", vp)
+    #     if vp:
+    #         client.rxpower = vp["RXpower"]["_value"]
+    #         client.host_active = vp["hostActive"]["_value"]
+    #         client.ip_tr069 = vp["ipTR069"]["_value"]
+    #     else:
+    #         client.rxpower = "-"
+    #         client.host_active = "-"
+    #         client.ip_tr069 = "-"
+
 
     context = {
         'total_servers' : total_servers,
@@ -99,6 +130,7 @@ def dashboard(request) :
         'page_number':per_page,
         'filter': filter_value
     }
+    
     return render(request, 'pages/dashboard.html', context)
 
 
@@ -999,6 +1031,39 @@ def auto_config(request):
             return JsonResponse({"success": False, "message": f"Error: {e}"})  
          
     return JsonResponse({"success": False, "message": "Invalid request"})  
+
+
+
+def random_devices(request):
+    pppoe_ids = [
+        "alex@plumnet",
+        "agung@plumnet",
+        "josep@plumnet",
+        "cika@plumnet",
+        "michael@plumnet"
+    ]
+
+    data = []
+    for idx, pppoe in enumerate(pppoe_ids, start=1):
+        data.append({
+            "_id": str(idx),
+            "VirtualParameters": {
+                "RXpower": {"_value": f"{round(random.uniform(-20, -15), 2)}"},
+                "ipTR069": {"_value": f"192.168.76.{random.randint(1,254)}"},
+                "IDPPPoE": {"_value": pppoe},
+                "hostActive": {"_value": str(random.randint(1, 10))}
+            }
+        })
+
+    return JsonResponse(data, safe=False)
+
+
+
+
+
+
+
+
 
 
 logger = logging.getLogger(__name__)
