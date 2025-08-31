@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'app.apps.appConfig',
-    'django_extensions',
+    'django_crontab',
 ]
 
 
@@ -109,6 +109,14 @@ LOGIN_REDIRECT_URL = '/'
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
+
+CRONJOBS = [
+    ('0 0 20 * *', 'app.cron.set_status_false_and_notify'),  # setiap tanggal 20 jam 00:00
+    ('0 0 30 * *', 'app.cron.cut_connection_unpaid'),        # setiap tanggal 30 jam 00:00
+]
+
+
+
 
 LANGUAGE_CODE = 'en-us'
 

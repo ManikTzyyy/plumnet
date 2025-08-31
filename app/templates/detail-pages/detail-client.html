@@ -4,11 +4,9 @@
   <div class="form-wrapper column">
     <div class="form-header row wrap">
       <div class="row title-head-td ">
-        <i
-          class="fa-solid fa-user"
-          style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
-        ></i>
+        <i class="fa-solid fa-user" style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"></i>
         <span class="title">Pelanggan</span>
+        
       </div>
       <a href="{% url 'client' %}" class="main-button">Kembali</a>
       {% if not client.isApproved %}
@@ -17,7 +15,7 @@
     </div>
     <div class="info-client relative row">
       <div class="wrapper column">
-        <h2>Informasi Pelanggan</h2>
+        <h2>Client</h2>
         <div class="column">
           <div class="title strong">Nama</div>
           <div class="text">{{ client.name }}</div>
@@ -35,24 +33,23 @@
           <div class="text">{{ client.phone }}</div>
         </div>
         <div class="column">
-          <div class="title strong">Local IP</div>
-          <div class="text">{{ client.local_ip }}</div>
+          <div class="title strong">Paket</div>
+          <div class="text">{{ client.id_paket.name }} </div>
+          <div class="text">{{ client.id_paket.limit }}</div>
+          <div class="text">{{ client.id_paket.price|rupiah }} </div>
         </div>
-        <div class="column">
-          <div class="title strong">Status</div>
-          <div class=" {% if client.isActive %}enable-t{% else %}disable-t{% endif %}"> {% if client.isActive %}Online{% else %}Offline{% endif %} </div>
+        <div class="row wrap gap-10">
+             <a href="{% url 'edit-client' client.id %}" class="warning-button">Edit</a>
+            <button  onclick="deleteData('{{ client.id }}', 'client', 'client')" class="danger-button">Delete</button>
         </div>
       </div>
       <div class="wrapper column">
-        <h2>Informasi Server</h2>
+        <h2>Server</h2>
         <div class="column">
           <div class="title strong">Server</div>
           <div class="text">{{ client.id_paket.id_ip_pool.id_server.name }}</div>
         </div>
-        <div class="column">
-          <div class="title strong">Paket</div>
-          <div class="text">{{ client.id_paket.price|rupiah }} | {{ client.id_paket.name }} | {{ client.id_paket.limit }}</div>
-        </div>
+        
         <div class="column">
           <div class="title strong">Id PPPoE</div>
           <div class="text">{{ client.pppoe }}</div>
@@ -62,12 +59,29 @@
           <div class="text">{{ client.password }}</div>
         </div>
         <div class="column">
+          <div class="title strong">Status</div>
+          <div class=" {% if client.isActive %}enable-t{% else %}disable-t{% endif %}"> {% if client.isActive %}Online{% else %}Offline{% endif %} </div>
+        </div>
+        <button onclick="toggleActivasiClient('{{ client.id }}', '{{ client.name }}',`{{ client.isActive|yesno:'true,false' }}`, 'detail-client')" class="{% if user.is_authenticated %}main-button{% else %}disbale-button{% endif %}" {% if not user.is_authenticated %}disabled{% endif %} >{% if client.isActive %}Nonaktifkan{% else %}Activasi{% endif %}</button>
+      </div>
+      <div class="wrapper column">
+        <h2>Device</h2>
+        <div class="column">
+          <div class="title strong">Redaman</div>
+          <div class="text">{{client.redaman}} dBm</div>
+        </div>
+        <div class="column">
+          <div class="title strong">Temperature</div>
+          <div class="text">{{client.temperature}} C</div>
+        </div>
+        <div class="column">
+          <div class="title strong">Device Active</div>
+          <div class="text">{{client.active}}</div>
+        </div>
+        <div class="column">
           <div class="title strong">IP Remote</div>
           <div class="text row">
-            192.168.3.12
-            <a href="http://192.168.3.12"
-              ><i class="fa-solid fa-up-right-from-square"></i>
-            </a>
+            <a href="http://{{client.remote}}" target="_blank" class="no-loader">{{client.remote}}</a>
           </div>
         </div>
         <button  class="info-button">Reboot Perangkat</button>
@@ -96,13 +110,8 @@
           {% csrf_token %}
           </form>
             <div class="row wrap gap-10">
-              <button onclick="toggleActivasiClient('{{ client.id }}', '{{ client.name }}',`{{ client.isActive|yesno:'true,false' }}`, 'detail-client')" class="{% if user.is_authenticated %}main-button{% else %}disbale-button{% endif %}" {% if not user.is_authenticated %}disabled{% endif %} >{% if client.isActive %}Nonaktifkan{% else %}Activasi{% endif %}</button>
               <button onclick="togglePembayaran('{{ client.id }}', '{{ client.name }}',`{{ client.isPayed|yesno:'true,false' }}`, 'detail-client')" class="{% if user.is_authenticated %}main-button{% else %}disbale-button{% endif %}" {% if not user.is_authenticated %}disabled{% endif %} >{% if client.isPayed %}Buat Tagihan{% else %}Konfirmasi Pembayaran{% endif %}</button>
             </div>
-           <div class="row wrap gap-10">
-             <a href="{% url 'edit-client' client.id %}" class="warning-button">Edit</a>
-            <button  onclick="deleteData('{{ client.id }}', 'client', 'client')" class="danger-button">Delete</button>
-           </div>
         </div>
       </div>
       
@@ -123,7 +132,7 @@
   const deleteForm = document.getElementById("delete-form");
 </script>
 
-<script src="{% static 'js/scripts/chartRedaman.js' %}"></script>
+
 
 
 <script>
@@ -146,6 +155,49 @@
 </script>
 
 
+<script>
+  const labels = {{ labels|safe }};
+  const data = {{ redaman_data|safe }};
+
+
+  console.log(labels)
+  console.log(data)
+
+  const chartData = {
+    labels: labels,
+    datasets: [
+      {
+        label: 'Redaman',
+        data: data,
+        borderColor: 'blue',
+        backgroundColor: 'rgba(0, 0, 255, 0.3)',
+      }
+    ]
+  };
+
+  const config = {
+    type: 'line',
+    data: chartData,
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'top' },
+        title: { display: true, text: 'Redaman 7 Hari Terakhir' }
+      },
+      scales: {
+        y: {
+          min: -100,
+          max: 100,
+          ticks: {
+                    stepSize: 5  
+                }
+        }
+      }
+    }
+  };
+
+  new Chart(document.getElementById('redamanChart'), config);
+</script>
 
 
 

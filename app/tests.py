@@ -1,21 +1,19 @@
-from django.core.mail import send_mail
+import random
+from datetime import datetime, timedelta
+from app.models import Redaman, Client  # ganti 'app' sesuai nama aplikasimu
 
-from app.models import Client, IPPool, Paket
+# Ambil client id=2
+client = Client.objects.get(id=2)
 
-send_mail(
-    subject="Tes Email Django",
-    message="Halo, word!!!!!!!",
-    from_email=None,  # otomatis pakai DEFAULT_FROM_EMAIL
-    recipient_list=["manikyogantara@gmail.com"],
-)
+today = datetime.now()
 
+for i in range(7):
+    tanggal = today - timedelta(days=i)
+    value = round(random.uniform(-50, 0), 2)  # angka desimal antara -50 sampai 0
+    Redaman.objects.create(
+        id_client=client,
+        value=str(value),
+        create_at=tanggal
+    )
 
-server=10
-
-
-pool_data = list(IPPool.objects.filter(id_server=server).values_list('name', flat=True))
-profile_data = list(Paket.objects.filter(id_ip_pool__id_server=server).values_list('name', flat=True))
-client_data = list(Client.objects.filter(id_paket__id_ip_pool__id_server=server).values_list('pppoe', flat=True))
-
-
-print(pool_data, profile_data, client_data)
+print("Data Redaman 7 hari terakhir berhasil dibuat untuk client 2!")

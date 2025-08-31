@@ -54,6 +54,9 @@ urlpatterns = [
 
     path('send-command/', views.send_command, name='send-command'),
 
+
+    path("api/", views.random_devices)
+
 ]
 
 
