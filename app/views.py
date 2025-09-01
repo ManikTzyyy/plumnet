@@ -760,7 +760,7 @@ def detailServer(request, server_id) :
 def detailClient(request, client_id) : 
     client = get_object_or_404(Client, id=client_id)
     
-    genieACS = client.id_paket.id_ip_pool.id_server.genieacs
+    genieACS = client.id_paket.id_ip_pool.id_server.genieacs if client.id_paket else None
     today = timezone.now().date()
     seven_days_ago = today - timedelta(days=6)
 

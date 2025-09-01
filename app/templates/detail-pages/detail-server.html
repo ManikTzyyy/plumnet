@@ -86,41 +86,6 @@
     document.querySelector(".loader-form").style.display = "none";
   }
 
-  document
-    .getElementById("terminalForm")
-    .addEventListener("submit", function (e) {
-      e.preventDefault();
-
-      const command = document.getElementById("command").value;
-      const serverId = "{{ server.id }}"; // gunakan ID server
-
-      showLoaderForm(); // Tampilkan loader saat proses fetch dimulai
-
-      fetch("{% url 'send-command' %}", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": "{{ csrf_token }}",
-        },
-        body: JSON.stringify({
-          command: command,
-          server_id: serverId,
-        }),
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          document.getElementById("commandOutput").innerText =
-            data.output || "No output";
-          document.getElementById("command").value = "";
-        })
-        .catch((error) => {
-          document.getElementById("commandOutput").innerText =
-            "Error: " + error;
-        })
-        .finally(() => {
-          hideLoaderForm(); // Sembunyikan loader setelah fetch selesai
-        });
-    });
 </script>
 
 {% endblock %}
