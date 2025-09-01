@@ -8,3 +8,4 @@ python-decouple==3.8
 waitress==3.0.2
 requests==2.32.5
 django-apscheduler==0.7.0
+django-crontab==0.7.1
