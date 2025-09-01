@@ -535,3 +535,67 @@ function addServerWithConfig() {
     }
   });
 }
+
+
+
+function rebootDevice(name, device, genieacs) {
+  Swal.fire({
+    title: `Reboot ${name}?,`,
+    text: "Perangkat akan restart, aksi ini tidak dapat dibatalkan!",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#13542d",
+    cancelButtonColor: "#aaa",
+    confirmButtonText: "Ya, Reboot!",
+    cancelButtonText: "Batal",
+  }).then((result) => {
+    if (!result.isConfirmed) return;
+
+    showMyLoader();  // pastikan kamu punya fungsi showMyLoader
+    fetch(`/client/reboot/`, {
+      method: "POST",
+      headers: {
+        "X-CSRFToken": getCSRFToken(),
+        Accept: "application/json",
+      },
+      body: JSON.stringify({
+        device : device,
+        genieacs : genieacs
+      })
+    })
+      .then(async (res) => {
+        const data = await res.json();
+
+        if (!res.ok) {
+          Swal.fire({
+            icon: "error",
+            title: "Gagal Reboot!",
+            text: data.message || `Server error: ${res.status}`,
+            confirmButtonText: "OK",
+          }).then(() => hideLoader());
+          return;
+        }
+
+        if (data.status === "success") {
+          Swal.fire({
+            icon: "success",
+            title: `Perangkat ${name} sedang direboot!`,
+            confirmButtonText: "OK",
+          }).then(() => {
+            location.reload(); // refresh halaman supaya status device update
+          });
+        } else {
+          Swal.fire({
+            icon: "error",
+            title: "Gagal Reboot!",
+            text: data.message || "Terjadi kesalahan.",
+            confirmButtonText: "OK",
+          }).then(() => hideLoader());
+        }
+      })
+      .catch((err) => {
+        hideLoader();
+        Swal.fire("Gagal!", err.message, "error");
+      });
+  });
+}

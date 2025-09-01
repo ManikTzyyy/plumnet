@@ -52,8 +52,8 @@ urlpatterns = [
     path("test-conn/", views.test_conn_view, name="test_conn"),
     path("auto-conf/", views.auto_config, name="auto-conf"),
 
-    path('send-command/', views.send_command, name='send-command'),
 
+    path("client/reboot/", views.reboot, name="reboot"),
 
     path("api/", views.random_devices)
 
