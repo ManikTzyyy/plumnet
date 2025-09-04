@@ -51,3 +51,29 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 
+
+
+
+
+// Icon for leaftjs
+var serverIcon = L.divIcon({
+    className: 'map-icon',
+    html: '<i class="fas fa-server"></i>',
+    iconSize: [30, 30],
+    iconAnchor: [15, 10]
+});
+
+
+var odpIcon = L.divIcon({
+    className: 'map-icon',
+    html: '<i class="fas fa-network-wired"></i>',
+    iconSize: [30, 30],
+    iconAnchor: [15, 10]
+});
+
+var clientIcon = L.divIcon({
+    className: 'map-icon',
+    html: '<i class="fas fa-user"></i>',
+    iconSize: [30, 30],
+    iconAnchor: [15, 10]
+});

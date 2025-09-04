@@ -1,0 +1,101 @@
+{% extends 'index.html' %} {% block content %}
+
+<div id="map" style="height: 100%; width: 100%"></div>
+
+<script>
+  const server = { id: 1, name: "Server Utama", lat: -6.2, lng: 106.8 };
+
+  const odps = [
+    { id: 1, name: "ODP 1", lat: -6.21, lng: 106.81, server_id: 1 },
+    { id: 2, name: "ODP 2", lat: -6.22, lng: 106.82, server_id: 1 },
+  ];
+
+  const clients = [
+    {
+      id: 1,
+      name: "Client A",
+      lat: -6.211,
+      lng: 106.811,
+      parent_type: "odp",
+      parent_id: 1,
+    },
+    {
+      id: 2,
+      name: "Client B",
+      lat: -6.212,
+      lng: 106.812,
+      parent_type: "odp",
+      parent_id: 1,
+    },
+    {
+      id: 3,
+      name: "Client C",
+      lat: -6.221,
+      lng: 106.821,
+      parent_type: "odp",
+      parent_id: 2,
+    },
+    {
+      id: 4,
+      name: "Client D",
+      lat: -6.222,
+      lng: 106.822,
+      parent_type: "client",
+      parent_id: 3,
+    },
+  ];
+
+  // Inisialisasi map
+  const map = L.map("map").setView([server.lat, server.lng], 14);
+
+  // Tambah tile layer
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {}).addTo(map);
+
+  // Tambah marker server
+  const serverMarker = L.marker([server.lat, server.lng], {title: server.name,})
+    .bindPopup(`<b>${server.name}</b>`)
+    .addTo(map);
+
+  // Tambah marker ODP + tarik garis ke server
+  odps.forEach((odp) => {
+    const odpMarker = L.marker([odp.lat, odp.lng], { title: odp.name })
+      .bindPopup(`<b>${odp.name}</b>`)
+      .addTo(map);
+
+    L.polyline(
+      [
+        [server.lat, server.lng],
+        [odp.lat, odp.lng],
+      ],
+      { color: "blue" }
+    ).addTo(map);
+  });
+
+  // Tambah marker client + tarik garis ke parent
+  clients.forEach((client) => {
+    const clientMarker = L.marker([client.lat, client.lng], {
+      title: client.name,
+    })
+      .bindPopup(`<b>${client.name}</b>`)
+      .addTo(map);
+
+    let parent;
+    if (client.parent_type === "odp") {
+      parent = odps.find((o) => o.id === client.parent_id);
+    } else if (client.parent_type === "client") {
+      parent = clients.find((c) => c.id === client.parent_id);
+    }
+
+    if (parent) {
+      L.polyline(
+        [
+          [parent.lat, parent.lng],
+          [client.lat, client.lng],
+        ],
+        { color: "green" }
+      ).addTo(map);
+    }
+  });
+</script>
+
+{% endblock %}

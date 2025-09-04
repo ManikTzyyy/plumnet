@@ -19,59 +19,127 @@
       </button>
     </div>
     <div class="info-server">
-      <h2>{{ server.name }}</h2>
-      <br />
       <div class="wrapper column">
-        <div class="column">
-          <div class="strong">Host IP</div>
-          <div class="text">{{ server.host }}</div>
-        </div>
-        <div class="column">
-          <div class="strong">Username</div>
-          <div class="text">{{ server.username }}</div>
-        </div>
-        <div class="column">
-          <div class="strong">Password</div>
-          <div class="text">{{ server.password }}</div>
-        </div>
-        <div class="column">
-          <div class="strong">GeniACS</div>
-          <div class="text">{{ server.genieacs|default:"-" }}</div>
-        </div>
-        <div class="row button-wrapper">
-          <button
-            onclick="test_connection('{{ server.host }}', '{{ server.username }}', '{{ server.password }}')"
-            class="main-button"
-          >
-            Test Connection
-          </button>
-          <a href="{% url 'edit-server' server.id %}" class="warning-button"
-            >Edit</a
-          >
-          <button
-            onclick="deleteData('{{ server.id }}', 'server', 'server-list')"
-            class="danger-button"
-          >
-            Delete
-          </button>
-        </div>
-        <br />
-        <!-- <form id="terminalForm" class="column">
-          <div class="column">
-            <label for="command">Terminal</label>
-            <textarea
-              name="command"
-              id="command"
-              placeholder="masukan perintah"
-            ></textarea>
+        <div class="row relative responsive-wrap gap-10">
+          <div style="width: 100%" class="column gap-10">
+            <div class="column">
+              <div class="strong">Server Name</div>
+              <div class="text">{{ server.name }}</div>
+            </div>
+            <div class="column">
+              <div class="strong">Host IP</div>
+              <div class="text">{{ server.host }}</div>
+            </div>
+            <div class="column">
+              <div class="strong">Username</div>
+              <div class="text">{{ server.username }}</div>
+            </div>
+            <div class="column">
+              <div class="strong">Password</div>
+              <div class="text">{{ server.password }}</div>
+            </div>
+            <div class="column">
+              <div class="strong">GeniACS</div>
+              <div class="text">{{ server.genieacs|default:"-" }}</div>
+            </div>
+            <div class="row button-wrapper">
+              <button
+                onclick="test_connection('{{ server.host }}', '{{ server.username }}', '{{ server.password }}')"
+                class="main-button"
+              >
+                Test Connection
+              </button>
+              <a href="{% url 'add-gateway' server.id %}" class="success-button"
+                >Add Gateway</a
+              >
+              <a href="{% url 'edit-server' server.id %}" class="warning-button"
+                >Edit</a
+              >
+              <button
+                onclick="deleteData('{{ server.id }}', 'server', 'server-list')"
+                class="danger-button"
+              >
+                Delete
+              </button>
+            </div>
           </div>
-          <button class="main-button" type="submit">Kirim</button>
-        </form>
-        <div class="text-grey">Output Here</div>
+          <div
+            class="container-map relative"
+            style="width: 100%; height: 300px"
+          >
+            <div id="map-client" style="height: 100%; width: 100%"></div>
+          </div>
+        </div>
 
-        <div class="output-command" id="commandOutput">
-          <span class="loader-form"></span>
-        </div> -->
+        <br />
+         <form method="GET" class="form-search row">
+      
+       
+       <div class="column">
+         <label for="per_page" class="text-sm">Show:</label>
+        <input class="search-box w-md" type="number" placeholder="{{page_number}}" name="per_page" id="per_page" value="{{ per_page }}" min="1" />
+       </div>
+
+
+        <input style="display:none" type="submit" />
+      </form>
+        <div class="table-container">
+          <table class="table">
+            <tr class="t-head">
+              <th>#</th>
+              <th>Gateway Name</th>
+              <th>lat</th>
+              <th>long</th>
+              <th class="center-th"></th>
+            </tr>
+            {% for gateway in gateway_list %}
+            <tr class="t-d">
+              <td>{{ gateway.id }}</td>
+              <td>{{ gateway.name }}</td>
+              <td>{{ gateway.lat }}</td>
+              <td>{{ gateway.long }}</td>
+              <td>
+                <div class="row button-wrapper">
+                  <a
+                    href="{% url 'edit-gateway' server.id gateway.id %}"
+                    class="warning-button"
+                  >
+                    Edit
+                  </a>
+                  <button
+                    onclick="deleteData('{{ gateway.id }}', 'gateway', 'server-list')"
+                    class="danger-button"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="7" class="center text-sm">
+                Tidak ada data yang ditemukan
+              </td>
+            </tr>
+            {% endfor %}
+          </table>
+        </div>
+        <div class="pagination row text-sm">
+      {% if gateway_list.has_previous %}
+      <a href="?page=1&per_page={{ page_number }}" class="page-button">First</a>
+      <a href="?page={{ gateway_list.previous_page_number }}&per_page={{ page_number }}" class="page-button">
+        <i class="fa-solid fa-angle-left"></i>
+      </a>
+      {% endif %}
+      <span class="current-page">Page {{ gateway_list.number }} of {{ gateway_list.paginator.num_pages }}</span>
+
+      {% if gateway_list.has_next %}
+      <a href="?page={{ gateway_list.next_page_number }}&per_page={{ page_number }}" class="page-button">
+        <i class="fa-solid fa-angle-right"></i>
+      </a>
+      <a href="?page={{ gateway_list.paginator.num_pages }}&per_page={{ page_number }}" class="page-button">Last</a>
+      {% endif %}
+    </div>
       </div>
     </div>
   </div>
@@ -85,7 +153,36 @@
   function hideLoaderForm() {
     document.querySelector(".loader-form").style.display = "none";
   }
+</script>
 
+<script>
+  const latitude = '{{ server.lat|default:"0" }}';
+  const longitude = '{{ server.long|default:"0" }}';
+  const gatewayList = {{ data | safe }}
+
+
+  const map = L.map("map-client").setView([latitude, longitude], 15);
+
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: "&copy; OpenStreetMap contributors",
+  }).addTo(map);
+
+  L.marker([latitude, longitude], { icon: serverIcon })
+    .addTo(map)
+    .bindTooltip("{{server.name}}")
+
+    gatewayList.forEach((item)=>{
+      const itemMarker = L.marker([item.lat, item.long], { icon: odpIcon }, 
+      {title: item.name})
+      .bindTooltip(`<b>${item.name}</b>`).addTo(map)
+
+      L.polyline([
+        [item.parent_lat, item.parent_long],
+        [item.lat, item.long]
+      ],{ color: "blue" }).addTo(map)
+    })
+
+  
 </script>
 
 {% endblock %}

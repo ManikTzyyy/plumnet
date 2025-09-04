@@ -180,19 +180,12 @@ document.addEventListener("DOMContentLoaded", function () {
   var latitude = '{{ client.lat|default:"0" }}';
   var longitude = '{{ client.long|default:"0" }}';
 
-   var map = L.map('map-client').setView(
-            [latitude, longitude],
-            35
-        );
+  var map = L.map('map-client').setView([latitude, longitude], 35);
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap contributors'
-        }).addTo(map);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+  
+  L.marker([latitude, longitude], { icon: clientIcon }).addTo(map).bindPopup("{{client.name}}").openPopup();
 
-        L.marker([latitude, longitude])
-            .addTo(map)
-            .bindPopup("{{client.name}}")
-            .openPopup();
 </script>
 
 

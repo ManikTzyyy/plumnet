@@ -22,17 +22,20 @@ urlpatterns = [
 
     #forms
     path('add-server/', views.addServer, name='add-server'),
+    path('server/<int:server_id>/add-gateway/', views.addGateway, name='add-gateway'),
     path('add-paket/', views.addProfile, name='add-paket'),
     path('add-ip-pool/', views.addIp, name='add-ip'),
     path('add-client/', views.addClient, name='add-client'),
 
     #edit
     path('server/edit/<int:pk>/', views.edit_server, name='edit-server'),
+    path('server/<int:server_id>/gateway/edit/<int:pk>/', views.edit_gateway, name='edit-gateway'),
     path('paket/edit/<int:pk>/', views.edit_paket, name='edit-paket'),
     path('ip/edit/<int:pk>/', views.edit_ip, name='edit-ip'),
     path('client/edit/<int:pk>/', views.edit_client, name='edit-client'),
     #delete
     path('server/<int:pk>/delete/', views.delete_server, name='delete-server'),
+    path('gateway/<int:pk>/delete/', views.delete_gateway, name='delete-gateway'),
     path('paket/<int:pk>/delete/', views.delete_paket, name='delete-paket'),
     path('ip/<int:pk>/delete/', views.delete_ip, name='delete-ip'),
     path('client/<int:pk>/delete/', views.delete_client, name='delete-client'),

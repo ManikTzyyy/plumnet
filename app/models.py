@@ -2,15 +2,30 @@ from django.db import models
 
 from .utils.utlis import format_rupiah
 
+
+    
+
+
 class Server(models.Model):
     name = models.CharField(max_length=255)
     host = models.GenericIPAddressField()
     username = models.CharField(max_length=255)
     password = models.CharField(max_length=255) 
     genieacs = models.CharField(max_length=255, blank=True, null=True)
+    lat = models.CharField(max_length=255, null=True, blank=True)
+    long = models.CharField(max_length=255, null=True, blank=True)
 
     def __str__(self):
         return self.name
+    
+
+class Gateway(models.Model):
+    name= models.CharField(max_length=255, null=True, blank=True)
+    server =  models.ForeignKey(Server, on_delete=models.SET_NULL, null=True, blank=True, related_name='gateways') 
+    lat = models.CharField(max_length=255, null=True, blank=True)
+    long = models.CharField(max_length=255, null=True, blank=True)
+    parent_lat = models.CharField(max_length=255, null=True, blank=True)
+    parent_long = models.CharField(max_length=255, null=True, blank=True)
     
 
 class IPPool(models.Model):
@@ -61,6 +76,8 @@ class Client(models.Model):
     isServerNull = models.BooleanField(default=False)
     isPayed = models.BooleanField(default=True)
     lastPayment = models.DateField(null=True, blank=True)
+    gateway = models.ForeignKey(Gateway, on_delete=models.SET_NULL, null=True, blank=True, related_name='gateways') 
+    temp_gateway = models.ForeignKey(Gateway, on_delete=models.SET_NULL, null=True, blank=True, related_name='temp_gateways') 
     
     def __str__(self):
         client_name = self.name if self.name else "Unnamed Client"

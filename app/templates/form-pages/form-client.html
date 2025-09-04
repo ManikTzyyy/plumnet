@@ -48,6 +48,11 @@
         {{ form.local_ip }}
       </div>
 
+       <div class="column">
+        <label for="{{ form.gateway_choice.id_for_label }}">Source (Server / ODP)</label>
+        {{ form.gateway_choice }}
+      </div>
+
       <div class="row gap-20" style="width: full;">
         <div class="column">
           <label for="lat">Latitude</label>
@@ -100,28 +105,53 @@
 {% endif %}
 
 <script>
-  var map = L.map("map-client").setView([0, 0], 2);
+  const map = L.map("map-client").setView([0, 0], 2);
+  const servers = {{servers_json|safe}}
+  const gateways = {{gateways_json|safe}}
 
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: "&copy; OpenStreetMap contributors",
   }).addTo(map);
 
-  var marker = L.marker([0, 0], { draggable: true }).addTo(map);
+
+   servers.forEach(function(server) {
+        if (server.lat && server.long) {
+            L.marker([server.lat, server.long], { icon: serverIcon })
+             .addTo(map)
+             .bindTooltip("<b>" + server.name + "</b>");
+        }
+    });
+
+    gateways.forEach((item)=>{
+      const itemMarker = L.marker([item.lat, item.long], { icon: odpIcon }, 
+      {title: item.name})
+      .addTo(map)
+      .bindTooltip("<b>" + item.name + "</b>");
+
+      L.polyline([
+        [item.parent_lat, item.parent_long],
+        [item.lat, item.long]
+      ],{ color: "blue" }).addTo(map)
+    })
+
+  const marker = L.marker([0, 0], { draggable: true }).addTo(map);
 
   // Update input kalau marker digeser
   marker.on("dragend", function (e) {
-    var lat = e.target.getLatLng().lat;
-    var lng = e.target.getLatLng().lng;
+    const lat = e.target.getLatLng().lat;
+    const lng = e.target.getLatLng().lng;
     document.getElementById("id_lat").value = lat;
     document.getElementById("id_long").value = lng;
   });
+
+
 
   // Minta lokasi dari browser
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
       function (position) {
-        var lat = position.coords.latitude;
-        var lng = position.coords.longitude;
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
 
         // Pindah map & marker
         map.setView([lat, lng], 15);

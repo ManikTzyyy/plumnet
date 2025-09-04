@@ -1,19 +1,52 @@
 from django import forms
-from .models import Server, Paket, IPPool, Client
+from .models import Gateway, Server, Paket, IPPool, Client
 
 
 #server
 class ServerForm(forms.ModelForm):
     class Meta:
         model = Server
-        fields = ['name', 'host', 'username', 'password', 'genieacs']
+        fields = ['name', 'host', 'username', 'password', 'genieacs', 'lat', 'long']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Masukan Nama Server'}),
             'host': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Masukan Host IP'}),
             'username': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Masukan Username'}),
             'password': forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Masukan Password'}),
             'genieacs': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Masukan IP GenieACS, Kosongkan Jika tidak ada'}),
+            'lat': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Masukan latitude lokasi'}),
+            'long': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Masukan longitude lokasi'}),
         }
+class GatewayForm(forms.ModelForm):
+    parent_choice = forms.ChoiceField(
+        choices=[],
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        required=False
+    )
+
+    class Meta:
+        model = Gateway
+        fields = ['name', 'lat', 'long']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Masukan Nama Gateway'}),
+            'lat': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Masukan latitude lokasi'}),
+            'long': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Masukan longitude lokasi'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        server = kwargs.pop('server', None)  # ambil server dari view
+        super().__init__(*args, **kwargs)
+
+        choices = []
+        if server:
+            # opsi server
+            choices.append((f"server-{server.id}", f"Server: {server.name}"))
+
+            # ODP/Gateway yang hanya milik server ini
+            for gw in Gateway.objects.filter(server=server):
+                choices.append((f"gateway-{gw.id}", f"ODP: {gw.name}"))
+
+        self.fields['parent_choice'].choices = choices
+
 
 class PaketForm(forms.ModelForm):
     class Meta : 
@@ -94,6 +127,14 @@ class ipPoolForm(forms.ModelForm):
         
 
 class ClientForm(forms.ModelForm):
+
+    gateway_choice = forms.ChoiceField(
+        choices=[],
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+
+
     class Meta:
         model = Client
         fields = ['id_paket', 'name', 'address', 'email', 'phone', 'pppoe', 'password', 'lat', 'long', 'local_ip']
@@ -109,6 +150,11 @@ class ClientForm(forms.ModelForm):
             'lat': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Masukan latitude lokasi'}),
             'long': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Masukan longitude lokasi'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        choices = [(gw.id, f"{gw.name}") for gw in Gateway.objects.all()]
+        self.fields['gateway_choice'].choices = choices
 
     def clean_pppoe(self):
         pppoe = self.cleaned_data.get('pppoe')
