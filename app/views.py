@@ -37,6 +37,7 @@ from app.templates.network.netmiko_service import (
     edit_pool,
     edit_pppoe,
     edit_profile,
+    get_remote_from_mikrotik,
     test_conn,
 )
 from .templates.network.routeros_service import get_mikrotik_info
@@ -756,88 +757,114 @@ def detailServer(request, server_id) :
     return render(request, 'detail-pages/detail-server.html', {'server': server})
 
 
+def get_client_remote(request, client_id):
+    client = get_object_or_404(Client, id=client_id)
 
-def detailClient(request, client_id) : 
+    host = client.id_paket.id_ip_pool.id_server.host  # atau field server router kamu
+    username = client.id_paket.id_ip_pool.id_server.username
+    password = client.id_paket.id_ip_pool.id_server.password
+
+    remote_ip = get_remote_from_mikrotik(host, username, password, client.pppoe)
+
+    return JsonResponse({
+        "pppoe": client.pppoe,
+        "remote": remote_ip,
+    })
+
+
+
+def get_genieacs_data(request, client_id):
+    client = get_object_or_404(Client, id=client_id)
+    genieACS = client.id_paket.id_ip_pool.id_server.genieacs if client.id_paket else None
+
+    data = {
+        "redaman": "-",
+        "active": "-",
+        "remote": "-",
+        "temperature": "-",
+        "device": "-"
+    }
+
+    if genieACS:
+        try:
+            query = {"VirtualParameters.pppoe._value": client.pppoe}
+            projection = (
+                "VirtualParameters.remote._value,"
+                "VirtualParameters.redaman._value,"
+                "VirtualParameters.active._value,"
+                "VirtualParameters.pppoe._value,"
+                "VirtualParameters.temperature._value"
+            )
+            query_str = urllib.parse.quote(str(query).replace("'", '"'))
+            url = f"http://{genieACS}:7557/devices?query={query_str}&projection={projection}"
+
+            r = requests.get(url, timeout=2)  # biar gak nunggu lama
+            r.raise_for_status()
+            resp = r.json()
+
+            if resp:
+                device = resp[0]
+                vp = device.get("VirtualParameters", {})
+                data = {
+                    "redaman": vp.get("redaman", {}).get("_value", "-"),
+                    "active": vp.get("active", {}).get("_value", "-"),
+                    "remote": vp.get("remote", {}).get("_value", "-"),
+                    "temperature": vp.get("temperature", {}).get("_value", "-"),
+                    "device": device.get("_id", "-")
+                }
+        except Exception as e:
+            print("Error fetch ACS API:", e)
+
+    return JsonResponse(data)
+
+
+
+def detailClient(request, client_id): 
     client = get_object_or_404(Client, id=client_id)
     
-    genieACS = client.id_paket.id_ip_pool.id_server.genieacs if client.id_paket else None
+    # Ambil data redaman dari DB (7 hari terakhir)
     today = timezone.now().date()
     seven_days_ago = today - timedelta(days=6)
 
     redaman_records = Redaman.objects.filter(
         id_client=client,
         create_at__date__range=[seven_days_ago, today]
-    ).order_by('create_at')
+    ).order_by("create_at")
 
     redaman_dict = {record.create_at.date(): record.value for record in redaman_records}
 
-    labels = []
-    data_redaman = []
+    labels, data_redaman = [], []
     for i in range(6, -1, -1):
         day = today - timedelta(days=i)
-        labels.append(day.strftime('%d-%b'))  # contoh: '01-Aug'
-        data_redaman.append(float(redaman_dict.get(day, 0))) 
+        labels.append(day.strftime("%d-%b"))
+        data_redaman.append(float(redaman_dict.get(day, 0)))
 
-     
-
-    if genieACS:
-        try:
-            query = {
-                    "VirtualParameters.pppoe._value": client.pppoe
-                    }
-            projection = (
-                        "VirtualParameters.remote._value,"
-                        "VirtualParameters.redaman._value,"
-                        "VirtualParameters.active._value,"
-                        "VirtualParameters.pppoe._value,"
-                        "VirtualParameters.temperature._value"
-                    )
-            query_str = urllib.parse.quote(str(query).replace("'", '"'))
-
-            url = f"http://{genieACS}:7557/devices?query={query_str}&projection={projection}"
-
-            getData = requests.get(url, timeout=10)
-            getData.raise_for_status()  # lempar error kalau status bukan 200
-            data = getData.json()
-            
-
-            if data:
-                device = data[0]   # ambil device pertama
-                device_id = device.get("_id")
-                vp = device.get("VirtualParameters", {})
-                client.redaman = vp.get("redaman", {}).get("_value", "-")
-                client.active = vp.get("active", {}).get("_value", "-")
-                client.remote = vp.get("remote", {}).get("_value", "-")
-                client.temperature = vp.get("temperature", {}).get("_value", "-")
-                client.device = device_id
-               
-            else:
-                client.redaman = '-'
-                client.active = '-'
-                client.remote = '-'
-                client.temperature = '-'
-                client.device = '-'
-
-        except Exception as e:
-            print("Error fetch ACS API:", e)
+    # Default data GenieACS (biar halaman tetap kebuka cepat)
+    client.redaman = "-"
+    client.active = "-"
+    client.remote = "-"
+    client.temperature = "-"
+    client.device = "-"
 
     context = {
-        'client': client,
-        'labels': labels,
-        'redaman_data': data_redaman,
-        'genieacs': genieACS
-        
+        "client": client,
+        "labels": labels,
+        "redaman_data": data_redaman,
     }
+    return render(request, "detail-pages/detail-client.html", context)
 
-    return render(request, 'detail-pages/detail-client.html',context)
 
 
 def map(request):
-    clients = Client.objects.all().values("name", "lat", "long")
+    clients = Client.objects.all().values("id","name", "lat", "long")
     context = {
         "clients_json": json.dumps(list(clients), cls=DjangoJSONEncoder)
     }
     return render(request, "pages/maps.html", context)
+
+
+def testPage(request):
+    return render(request, "pages/testttt.html",)
 
 #=========================================================================
 def activasi_multi_client(request):

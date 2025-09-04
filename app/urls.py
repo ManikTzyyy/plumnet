@@ -5,6 +5,7 @@ from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     path('map', views.map, name='map'),
+    path('test', views.testPage, name='testPage'),
 
     #dashboard
     path('', views.dashboard, name='dashboard'),
@@ -55,7 +56,13 @@ urlpatterns = [
 
     path("client/reboot/", views.reboot, name="reboot"),
 
-    path("api/", views.random_devices)
+    path("api/", views.random_devices),
+
+     path("api/client-remote/<int:client_id>/", views.get_client_remote, name="client-remote"),
+
+    path("api/genieacs/<int:client_id>/", views.get_genieacs_data, name="get_genieacs_data"),
+
+
 
 ]
 
