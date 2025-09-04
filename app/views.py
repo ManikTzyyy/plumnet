@@ -7,8 +7,9 @@ from urllib.parse import quote
 
 
 # Third-party
-from decouple import config
 import requests
+from django.db.models import F
+from decouple import config
 from django.utils import timezone
 from django.contrib import messages
 from django.core.serializers.json import DjangoJSONEncoder
@@ -21,7 +22,7 @@ from django.conf.urls import handler404
 
 # Project imports
 from mysite import settings
-from app.forms import ServerForm, PaketForm, ipPoolForm, ClientForm
+from app.forms import GatewayForm, ServerForm, PaketForm, ipPoolForm, ClientForm
 from app.utils.utlis import parse_mikrotik_output
 from app.templates.network.netmiko_service import (
     clear_config,
@@ -37,10 +38,11 @@ from app.templates.network.netmiko_service import (
     edit_pool,
     edit_pppoe,
     edit_profile,
+    get_remote_from_mikrotik,
     test_conn,
 )
 from .templates.network.routeros_service import get_mikrotik_info
-from .models import Paket, Redaman, Server, IPPool, Client
+from .models import Gateway, Paket, Redaman, Server, IPPool, Client
 
 
 
@@ -308,6 +310,61 @@ def addServer(request):
 
     return render(request, 'form-pages/form-server.html', {'form': form, 'success': success, 'error_message':error_message})
 
+# views.py
+def addGateway(request, server_id):
+    server = get_object_or_404(Server, pk=server_id)
+
+    if request.method == "POST":
+        form = GatewayForm(request.POST, server=server)
+        if form.is_valid():
+            gw = form.save(commit=False)
+            parent_choice = form.cleaned_data.get("parent_choice")
+            if parent_choice:
+                if parent_choice.startswith("server-"):
+                    # parent adalah server
+                    gw.server = server
+                    gw.parent_lat = server.lat
+                    gw.parent_long = server.long
+                elif parent_choice.startswith("gateway-"):
+                    # parent adalah ODP / gateway lain
+                    gw_id = int(parent_choice.split("-")[1])
+                    parent_gw = get_object_or_404(Gateway, id=gw_id)
+
+                    # copy koordinat parent
+                    gw.parent_lat = parent_gw.lat
+                    gw.parent_long = parent_gw.long
+
+                    # set server dari ODP
+                    gw.server = parent_gw.server
+
+            else:
+                # default: server saat ini
+                gw.server = server
+                gw.parent_lat = server.lat
+                gw.parent_long = server.long
+
+            gw.save()
+            messages.success(request, "Gateway berhasil ditambahkan.")
+            return redirect("detail-server", server_id=server.id)
+
+        else:
+            # handle error
+            error_message = '\n'.join(
+                f"{field}: {', '.join(errors)}"
+                for field, errors in form.errors.items()
+            )
+            messages.error(request, f"Gagal menambahkan Gateway:\n{error_message}")
+
+    else:
+        form = GatewayForm(server=server)
+
+    context = {
+        "form": form,
+        "server": server
+    }
+    return render(request, "form-pages/form-gateway.html", context)
+
+
 def addProfile(request) :
     success = False
     error_message = None 
@@ -383,14 +440,20 @@ def addIp(request) :
         })
 
 def addClient(request) : 
+
+    servers = Server.objects.all().values("id", 'name', 'lat', 'long')
+    gateways = Gateway.objects.all().values("id", "name", "lat", "long", "parent_lat", "parent_long")
+
     success = False
     error_message = None
     if request.method == "POST":
+        paket_id = request.POST.get('id_paket')
+        paket = Paket.objects.get(pk=paket_id) if paket_id else None
+        server = paket.id_ip_pool.id_server if paket else None
+
         form = ClientForm(request.POST)
         if form.is_valid():
             cd = form.cleaned_data
-            paket = cd['id_paket']
-            server = paket.id_ip_pool.id_server
             client = Client(
                     id_paket=cd['id_paket'],
                     name=cd['name'],
@@ -410,7 +473,8 @@ def addClient(request) :
                     temp_password=cd['password'],
                     temp_local_ip=cd['local_ip'],
                     temp_lat=cd['lat'],
-                    temp_long=cd['long']
+                    temp_long=cd['long'],
+                    gateway=Gateway.objects.get(id=cd['gateway_choice']) if cd.get('gateway_choice') else None
                     )
             try:
                 create_pppoe(
@@ -435,7 +499,15 @@ def addClient(request) :
     else:
         form = ClientForm()
 
-    return render(request, 'form-pages/form-client.html', {'form': form, 'success': success, 'error_message':error_message})
+    context = {''
+    'form': form, 
+    'success': success, 
+    'error_message':error_message,
+    "servers_json": json.dumps(list(servers), cls=DjangoJSONEncoder),
+    "gateways_json": json.dumps(list(gateways), cls=DjangoJSONEncoder),
+    }
+
+    return render(request, 'form-pages/form-client.html', context)
 
 
 #edit data
@@ -462,6 +534,68 @@ def edit_server(request, pk):
         'success': success,
         'error_message': error_message
         })
+
+
+def edit_gateway(request, server_id, pk):
+    success = False
+    error_message = None
+    server = get_object_or_404(Server, pk=server_id)
+    gateway = get_object_or_404(Gateway, pk=pk)
+
+    if request.method == 'POST':
+        form = GatewayForm(request.POST, instance=gateway, server=server)
+        if form.is_valid():
+            gw = form.save(commit=False)
+            parent_choice = form.cleaned_data.get("parent_choice")
+            
+            if parent_choice:
+                if parent_choice.startswith("server-"):
+                    # parent adalah server
+                    gw.server = server
+                    gw.parent_lat = server.lat
+                    gw.parent_long = server.long
+                elif parent_choice.startswith("gateway-"):
+                    # parent adalah ODP / gateway lain
+                    gw_id = int(parent_choice.split("-")[1])
+                    parent_gw = get_object_or_404(Gateway, id=gw_id)
+
+                    # copy koordinat parent
+                    gw.parent_lat = parent_gw.lat
+                    gw.parent_long = parent_gw.long
+
+                    # set server dari ODP
+                    gw.server = parent_gw.server
+            else:
+                # default: server saat ini
+                gw.server = server
+                gw.parent_lat = server.lat
+                gw.parent_long = server.long
+
+            gw.save()
+            messages.success(request, "Gateway berhasil diupdate.")
+            success = True
+
+            # redirect ke detail server setelah edit
+            return redirect("detail-server", server_id=server.id)
+        else:
+            error_message = '\n'.join(
+                f"{field}: {', '.join(errors)}"
+                for field, errors in form.errors.items()
+            )
+            messages.error(request, f"Gagal mengupdate Gateway:\n{error_message}")
+
+    else:
+        # untuk GET, form harus aware server supaya dropdown parent_choice benar
+        form = GatewayForm(instance=gateway, server=server)
+
+    context = {
+        'form': form,
+        'is_edit': True,
+        'success': success,
+        'server': server,
+        'error_message': error_message,
+    }
+    return render(request, 'form-pages/form-gateway.html', context)
 
 def edit_paket(request, pk):
     success = False
@@ -584,6 +718,10 @@ def edit_client(request, pk):
     success = False
     error_message = None
 
+
+    servers = Server.objects.all().values("id", 'name', 'lat', 'long')
+    gateways = Gateway.objects.all().values("id", "name", "lat", "long", "parent_lat", "parent_long")
+
     if request.method == 'POST':
     
         current_server = client.id_paket.id_ip_pool.id_server if client.id_paket else None       
@@ -614,6 +752,7 @@ def edit_client(request, pk):
                     client.temp_local_ip = cd['local_ip']
                     client.isApproved = False
                     client.isServerNull = True
+                    client.temp_gateway = Gateway.objects.get(id=cd['gateway_choice']) if cd.get('gateway_choice') else None
                    
                     client.save()
                     success = True
@@ -635,6 +774,7 @@ def edit_client(request, pk):
                     client.temp_long = cd['long']
                     client.temp_local_ip = cd['local_ip']
                     client.isApproved = False
+                    client.temp_gateway = Gateway.objects.get(id=cd['gateway_choice']) if cd.get('gateway_choice') else None
                    
                     client.save()
                     success = True
@@ -652,6 +792,8 @@ def edit_client(request, pk):
         'is_edit': True,
         'success': success,
         'error_message': error_message,
+        "servers_json": json.dumps(list(servers), cls=DjangoJSONEncoder),
+        "gateways_json": json.dumps(list(gateways), cls=DjangoJSONEncoder),
     })
 
 
@@ -684,6 +826,19 @@ def delete_server(request, pk):
         
     return JsonResponse({'success': False, 'message': error_message}, status=400)
 
+
+
+def delete_gateway(request, pk):
+    gateway = get_object_or_404(Gateway, pk=pk)
+    if request.method == "POST":
+        try:
+            res = 'Gateway Deleted'            
+            gateway.delete()
+            return JsonResponse({'success': True, 'message': res}) 
+        except Exception as e:
+            error_message = str(e) 
+        
+    return JsonResponse({'success': False, 'message': error_message}, status=400)
 
 
 def delete_paket(request, pk):
@@ -753,91 +908,147 @@ def delete_client(request, pk):
 
 def detailServer(request, server_id) : 
     server = get_object_or_404(Server, id=server_id)
-    return render(request, 'detail-pages/detail-server.html', {'server': server})
+    gateway_list = Gateway.objects.filter(server=server)
+    gateway_qs = gateway_list.values("id", "name", "lat", "long", "parent_lat", "parent_long" )
+    data = json.dumps(list(gateway_qs), cls=DjangoJSONEncoder)
+
+    per_page = request.GET.get('per_page', 10)
+    try:
+        per_page = int(per_page)
+        if per_page <= 0:  # minimal 1
+            per_page = 10
+    except ValueError:
+        per_page = 10
+
+    paginator = Paginator(gateway_list, per_page) 
+    page_number = request.GET.get('page') 
+    gateway_data = paginator.get_page(page_number)
+
+    context = {
+        'server': server,
+        'gateway_list': gateway_data,
+        'page_number' : per_page,
+        'data': data
+        }
+    return render(request, 'detail-pages/detail-server.html', context)
+
+
+def get_client_remote(request, client_id):
+    client = get_object_or_404(Client, id=client_id)
+
+    host = client.id_paket.id_ip_pool.id_server.host  # atau field server router kamu
+    username = client.id_paket.id_ip_pool.id_server.username
+    password = client.id_paket.id_ip_pool.id_server.password
+
+    remote_ip = get_remote_from_mikrotik(host, username, password, client.pppoe)
+
+    return JsonResponse({
+        "pppoe": client.pppoe,
+        "remote": remote_ip,
+    })
 
 
 
-def detailClient(request, client_id) : 
+def get_genieacs_data(request, client_id):
+    client = get_object_or_404(Client, id=client_id)
+    genieACS = client.id_paket.id_ip_pool.id_server.genieacs if client.id_paket else None
+
+    data = {
+        "redaman": "-",
+        "active": "-",
+        "remote": "-",
+        "temperature": "-",
+        "device": "-"
+    }
+
+    if genieACS:
+        try:
+            query = {"VirtualParameters.pppoe._value": client.pppoe}
+            projection = (
+                "VirtualParameters.remote._value,"
+                "VirtualParameters.redaman._value,"
+                "VirtualParameters.active._value,"
+                "VirtualParameters.pppoe._value,"
+                "VirtualParameters.temperature._value"
+            )
+            query_str = urllib.parse.quote(str(query).replace("'", '"'))
+            url = f"http://{genieACS}:7557/devices?query={query_str}&projection={projection}"
+
+            r = requests.get(url, timeout=2)  # biar gak nunggu lama
+            r.raise_for_status()
+            resp = r.json()
+
+            if resp:
+                device = resp[0]
+                vp = device.get("VirtualParameters", {})
+                data = {
+                    "redaman": vp.get("redaman", {}).get("_value", "-"),
+                    "active": vp.get("active", {}).get("_value", "-"),
+                    "remote": vp.get("remote", {}).get("_value", "-"),
+                    "temperature": vp.get("temperature", {}).get("_value", "-"),
+                    "device": device.get("_id", "-")
+                }
+        except Exception as e:
+            print("Error fetch ACS API:", e)
+
+    return JsonResponse(data)
+
+
+
+def detailClient(request, client_id): 
     client = get_object_or_404(Client, id=client_id)
     
-    genieACS = client.id_paket.id_ip_pool.id_server.genieacs if client.id_paket else None
+    # Ambil data redaman dari DB (7 hari terakhir)
     today = timezone.now().date()
     seven_days_ago = today - timedelta(days=6)
 
     redaman_records = Redaman.objects.filter(
         id_client=client,
         create_at__date__range=[seven_days_ago, today]
-    ).order_by('create_at')
+    ).order_by("create_at")
 
     redaman_dict = {record.create_at.date(): record.value for record in redaman_records}
 
-    labels = []
-    data_redaman = []
+    labels, data_redaman = [], []
     for i in range(6, -1, -1):
         day = today - timedelta(days=i)
-        labels.append(day.strftime('%d-%b'))  # contoh: '01-Aug'
-        data_redaman.append(float(redaman_dict.get(day, 0))) 
+        labels.append(day.strftime("%d-%b"))
+        data_redaman.append(float(redaman_dict.get(day, 0)))
 
-     
-
-    if genieACS:
-        try:
-            query = {
-                    "VirtualParameters.pppoe._value": client.pppoe
-                    }
-            projection = (
-                        "VirtualParameters.remote._value,"
-                        "VirtualParameters.redaman._value,"
-                        "VirtualParameters.active._value,"
-                        "VirtualParameters.pppoe._value,"
-                        "VirtualParameters.temperature._value"
-                    )
-            query_str = urllib.parse.quote(str(query).replace("'", '"'))
-
-            url = f"http://{genieACS}:7557/devices?query={query_str}&projection={projection}"
-
-            getData = requests.get(url, timeout=10)
-            getData.raise_for_status()  # lempar error kalau status bukan 200
-            data = getData.json()
-            
-
-            if data:
-                device = data[0]   # ambil device pertama
-                device_id = device.get("_id")
-                vp = device.get("VirtualParameters", {})
-                client.redaman = vp.get("redaman", {}).get("_value", "-")
-                client.active = vp.get("active", {}).get("_value", "-")
-                client.remote = vp.get("remote", {}).get("_value", "-")
-                client.temperature = vp.get("temperature", {}).get("_value", "-")
-                client.device = device_id
-               
-            else:
-                client.redaman = '-'
-                client.active = '-'
-                client.remote = '-'
-                client.temperature = '-'
-                client.device = '-'
-
-        except Exception as e:
-            print("Error fetch ACS API:", e)
+    # Default data GenieACS (biar halaman tetap kebuka cepat)
+    client.redaman = "-"
+    client.active = "-"
+    client.remote = "-"
+    client.temperature = "-"
+    client.device = "-"
 
     context = {
-        'client': client,
-        'labels': labels,
-        'redaman_data': data_redaman,
-        'genieacs': genieACS
-        
+        "client": client,
+        "labels": labels,
+        "redaman_data": data_redaman,
     }
+    return render(request, "detail-pages/detail-client.html", context)
 
-    return render(request, 'detail-pages/detail-client.html',context)
 
 
 def map(request):
-    clients = Client.objects.all().values("name", "lat", "long")
+    servers = Server.objects.all().values("id", 'name', 'lat', 'long')
+    gateways = Gateway.objects.all().values("id", "name", "lat", "long", "parent_lat", "parent_long")
+    clients_qs = Client.objects.select_related('gateway').annotate(
+    gateway_lat=F('gateway__lat'),
+    gateway_long=F('gateway__long')
+        ).values('id', 'name', 'lat', 'long', 'gateway_lat', 'gateway_long') 
+
     context = {
-        "clients_json": json.dumps(list(clients), cls=DjangoJSONEncoder)
+        "clients_json": json.dumps(list(clients_qs), cls=DjangoJSONEncoder),
+        "servers_json": json.dumps(list(servers), cls=DjangoJSONEncoder),
+        "gateways_json": json.dumps(list(gateways), cls=DjangoJSONEncoder),
     }
     return render(request, "pages/maps.html", context)
+
+
+def testPage(request):
+    return render(request, "pages/testttt.html",)
 
 #=========================================================================
 def activasi_multi_client(request):
@@ -987,6 +1198,7 @@ def toggle_verif(request, client_id):
             client.local_ip = client.temp_local_ip
             client.lat = client.temp_lat
             client.long = client.temp_long
+            client.gateway = client.temp_gateway
             
         else:
             # edit existing
@@ -1012,6 +1224,7 @@ def toggle_verif(request, client_id):
             client.local_ip = client.temp_local_ip
             client.lat = client.temp_lat
             client.long = client.temp_long
+            client.gateway = client.temp_gateway
 
         # toggle verif
         client.isServerNull = not client.isServerNull
@@ -1179,14 +1392,6 @@ def random_devices(request):
         })
 
     return JsonResponse(data, safe=False)
-
-
-
-
-
-
-
-
 
 
 def get_theme_settings():

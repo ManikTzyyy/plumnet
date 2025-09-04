@@ -354,3 +354,37 @@ def create_auto_config(host, interfaceHost, newUser,oldPass, newPass, interfaceP
     except Exception as e:
         raise Exception(f"Error: {e}")
 
+
+
+
+def get_remote_from_mikrotik(host, username, password, pppoe_name):
+    device = {
+        "device_type": "mikrotik_routeros",
+        "host": host,
+        "username": username,
+        "password": password,
+    }
+
+    try:
+        with ConnectHandler(**device) as conn:
+            # Ambil daftar PPP aktif
+            output = conn.send_command("/ppp active print detail without-paging")
+
+        # Parsing output untuk cari address dari PPPoE yang dimaksud
+        remote_ip = "-"
+        found = False
+        for line in output.splitlines():
+            if f'name="{pppoe_name}"' in line:
+                parts = line.split()
+                for part in parts:
+                    if part.startswith("address="):
+                        remote_ip = part.split("=")[1]
+                        found = True
+                        break
+            if found:
+                break
+
+        return remote_ip
+    except Exception as e:
+        print(f"Error get_remote_from_mikrotik: {e}")
+        return "-"

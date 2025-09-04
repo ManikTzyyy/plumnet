@@ -379,6 +379,28 @@ tr:hover{
 
 /* ================================================== */
 
+.map-icon{
+  background-color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  color: var(--clr-main);
+  border-radius: 100%;
+  -webkit-border-radius: 100%;
+  -moz-border-radius: 100%;
+  -ms-border-radius: 100%;
+  -o-border-radius: 100%;
+  filter: drop-shadow(1px 1px 5px black);
+  -webkit-filter: drop-shadow(1px 1px 5px black);
+}
+
+.map-icon i{
+  font-size: 15px;
+  font-weight: bold;
+}
+
+
 .enable-t,
 .disable-t, .waiting-t {
   text-align: center;
@@ -1409,6 +1431,10 @@ tr:hover{
 @media (max-width: 768px) {
   .dashboard .main-container {
     flex-wrap: wrap-reverse;
+  }
+
+  .responsive-wrap{
+    flex-wrap: wrap;
   }
 
   .dashboard .container2 {

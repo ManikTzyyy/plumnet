@@ -68,23 +68,23 @@
         <h2>Device</h2>
         <div class="column">
           <div class="title strong">Redaman</div>
-          <div class="text">{{client.redaman}} dBm</div>
+          <div class="text" id="redaman">- dBm</div>
         </div>
         <div class="column">
           <div class="title strong">Temperature</div>
-          <div class="text">{{client.temperature}} C</div>
+          <div class="text" id="temperature">- C</div>
         </div>
         <div class="column">
           <div class="title strong">Device Active</div>
-          <div class="text">{{client.active}}</div>
+          <div class="text" id="active"></div>
         </div>
         <div class="column">
           <div class="title strong">IP Remote</div>
           <div class="text row">
-            <a href="http://{{client.remote}}" target="_blank" class="no-loader">{{client.remote}}</a>
+            <a href="#" target="_blank" class="no-loader" id="remote">-</a>
           </div>
         </div>
-        <button class="info-button {% if not genieacs %}disbale-button{% endif %}" onclick="rebootDevice('{{ client.name }}', '{{client.device}}', '{{genieacs}}')" {% if not genieacs %}disabled{% endif %}>Reboot Perangkat</button>
+        <button class=" {% if not genieacs %}disbale-button{% else %}info-button {% endif %}" onclick="rebootDevice('{{ client.name }}', '{{client.device}}', '{{genieacs}}')" {% if not genieacs %}disabled{% endif %}>Reboot Perangkat</button>
       </div>
       <div class="wrapper column">
         <h2>Status Pembayaran</h2>
@@ -132,26 +132,60 @@
   const deleteForm = document.getElementById("delete-form");
 </script>
 
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  fetch("/api/genieacs/{{ client.id }}/")
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById("redaman").textContent = data.redaman + " dBm";
+      document.getElementById("temperature").textContent = data.temperature + " °C";
+      document.getElementById("active").textContent = data.active;
 
+      const remoteLink = document.getElementById("remote");
+      if (data.remote && data.remote !== "-") {
+        remoteLink.href = "http://" + data.remote;
+        remoteLink.textContent = data.remote;
+      } else {
+        remoteLink.href = "#";
+        remoteLink.textContent = "-";
+      }
+    })
+    .catch(err => {
+      console.error("GenieACS error:", err);
+    });
+});
+</script>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  fetch("/api/client-remote/{{ client.id }}/")
+    .then(res => res.json())
+    .then(data => {
+      const remoteLink = document.getElementById("remote");
+      if (data.remote && data.remote !== "-") {
+        remoteLink.href = "http://" + data.remote;
+        remoteLink.textContent = data.remote;
+      } else {
+        remoteLink.href = "#";
+        remoteLink.textContent = "-";
+      }
+    })
+    .catch(err => console.error("MikroTik API error:", err));
+});
+</script>
 
 
 <script>
   var latitude = '{{ client.lat|default:"0" }}';
   var longitude = '{{ client.long|default:"0" }}';
 
-   var map = L.map('map-client').setView(
-            [latitude, longitude],
-            35
-        );
+  var map = L.map('map-client').setView([latitude, longitude], 35);
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap contributors'
-        }).addTo(map);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+  
+  L.marker([latitude, longitude], { icon: clientIcon }).addTo(map).bindPopup("{{client.name}}").openPopup();
 
-        L.marker([latitude, longitude])
-            .addTo(map)
-            .bindPopup("{{client.name}}")
-            .openPopup();
 </script>
 
 

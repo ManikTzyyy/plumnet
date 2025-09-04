@@ -4,41 +4,27 @@
   <div class="form-wrapper column">
     <div class="form-header column">
       <div class="row title-head-td">
-        <i
-          class="fa-solid fa-server"
-          style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
-        ></i>
-        <span class="title"
-          >{{ form.instance.pk|yesno:"Edit Server,Buat Server Baru" }}
+        <i class="fa-solid fa-server" style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"></i>
+        <span class="title">
+            {% if form.instance.pk %}
+                Edit Gateway Server {{ server.name }}
+            {% else %}
+                Buat Gateway Server {{ server.name }} Baru
+            {% endif %}
         </span>
       </div>
     </div>
 
     <form method="post" class="column">
       {% csrf_token %}
+       <div class="column">
+        <label for="{{ form.parent_choice.id_for_label }}">Source (Server / ODP)</label>
+        {{ form.parent_choice }}
+      </div>
+
       <div class="column">
-        <label for="{{ form.name.id_for_label }}">Name</label>
+        <label for="name">Name</label>
         {{ form.name }}
-      </div>
-
-      <div class="column">
-        <label for="{{ form.host.id_for_label }}">Host IP</label>
-        {{ form.host }}
-      </div>
-
-      <div class="column">
-        <label for="{{ form.username.id_for_label }}">Username</label>
-        {{ form.username }}
-      </div>
-
-      <div class="column">
-        <label for="{{ form.password.id_for_label }}">Password</label>
-        {{ form.password }}
-      </div>
-
-      <div class="column">
-        <label for="{{ form.genieacs.id_for_label }}">GenieACS</label>
-        {{ form.genieacs }}
       </div>
 
       <div class="row gap-20" style="width: full;">
@@ -103,10 +89,17 @@ Swal.fire({
 
 <script>
   var map = L.map("map-client").setView([0, 0], 2);
+  const latitude = '{{ server.lat|default:"0" }}';
+  const longitude = '{{ server.long|default:"0" }}';
 
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: "&copy; OpenStreetMap contributors",
   }).addTo(map);
+
+
+   L.marker([latitude, longitude], { icon: serverIcon })
+    .addTo(map)
+    .bindPopup("{{server.name}}")
 
   var marker = L.marker([0, 0], { draggable: true }).addTo(map);
 

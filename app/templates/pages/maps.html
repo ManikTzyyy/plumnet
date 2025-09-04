@@ -5,7 +5,7 @@
 
 <script>
   // Inisialisasi Map
-  var map = L.map('map').setView([0, 120], 5); 
+  const map = L.map('map').setView([0, 120], 5); 
 
   if(navigator.geolocation){
     navigator.geolocation.getCurrentPosition(
@@ -22,15 +22,44 @@
       attribution: '&copy; OpenStreetMap contributors'
   }).addTo(map)
 
-  var clients = {{ clients_json|safe }};
+  const clients = {{ clients_json|safe }};
+  const servers = {{servers_json|safe}};
+  const gateways = {{gateways_json|safe}};
+  console.log(clients)
 
-    clients.forEach(function(client) {
-        if (client.lat && client.long) {
-            L.marker([client.lat, client.long])
+  console.log(clients)
+
+
+    servers.forEach(function(server) {
+        if (server.lat && server.long) {
+            L.marker([server.lat, server.long], { icon: serverIcon })
              .addTo(map)
-             .bindTooltip("<b>" + client.name + "</b>", { permanent: true });
+             .bindTooltip("<b>" + server.name + "</b>");
         }
     });
+
+    gateways.forEach((item)=>{
+      const itemMarker = L.marker([item.lat, item.long], { icon: odpIcon }, 
+      {title: item.name})
+      .addTo(map)
+      .bindTooltip("<b>" + item.name + "</b>");
+      L.polyline([
+        [item.parent_lat, item.parent_long],
+        [item.lat, item.long]
+      ],{ color: "blue" }).addTo(map)
+    })
+
+
+     clients.forEach((item)=>{
+      const itemMarker = L.marker([item.lat, item.long], { icon: clientIcon }, 
+      {title: item.name})
+      .addTo(map)
+      .bindTooltip("<b>" + item.name + "</b>");
+      L.polyline([
+        [item.gateway_lat, item.gateway_long],
+        [item.lat, item.long]
+      ],{ color: "black" }).addTo(map)
+    })
 </script>
 
 {% endblock %}
