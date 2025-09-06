@@ -84,7 +84,9 @@
             <a href="#" target="_blank" class="no-loader" id="remote">-</a>
           </div>
         </div>
-        <button class=" {% if not genieacs %}disbale-button{% else %}info-button {% endif %}" onclick="rebootDevice('{{ client.name }}', '{{client.device}}', '{{genieacs}}')" {% if not genieacs %}disabled{% endif %}>Reboot Perangkat</button>
+        {% if acs_ip %}
+        <button id="rebootBtn" class="info-button" style="display:none;" > Reboot Perangkat </button>
+        {% endif %}
       </div>
       <div class="wrapper column">
         <h2>Status Pembayaran</h2>
@@ -137,14 +139,23 @@ document.addEventListener("DOMContentLoaded", function () {
   fetch("/api/genieacs/{{ client.id }}/")
     .then(res => res.json())
     .then(data => {
+      const rebootBtn = document.getElementById("rebootBtn");
       document.getElementById("redaman").textContent = data.redaman + " dBm";
       document.getElementById("temperature").textContent = data.temperature + " °C";
       document.getElementById("active").textContent = data.active;
+
+      console.log(data)
 
       const remoteLink = document.getElementById("remote");
       if (data.remote && data.remote !== "-") {
         remoteLink.href = "http://" + data.remote;
         remoteLink.textContent = data.remote;
+        if (rebootBtn) {
+          rebootBtn.onclick = function () {
+            rebootDevice("{{ client.name }}", data.device, "{{ acs_ip }}");
+          };
+          rebootBtn.style.display = "inline-block";
+        }
       } else {
         remoteLink.href = "#";
         remoteLink.textContent = "-";

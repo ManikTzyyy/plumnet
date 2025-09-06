@@ -1022,10 +1022,16 @@ def detailClient(request, client_id):
     client.temperature = "-"
     client.device = "-"
 
+
+    acs_ip = client.id_paket.id_ip_pool.id_server.genieacs
+
+   
+
     context = {
         "client": client,
         "labels": labels,
         "redaman_data": data_redaman,
+        'acs_ip':acs_ip
     }
     return render(request, "detail-pages/detail-client.html", context)
 
