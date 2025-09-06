@@ -48,7 +48,20 @@ Through this project, I gained a deeper understanding of how FTTH networks and O
 
 
 
-
+## Package
+Django==4.2.7
+django_extensions==4.1
+paramiko==3.3.1
+RouterOS-api==0.21.0
+librouteros==3.4.1
+netmiko==4.6.0
+python-decouple==3.8
+waitress==3.0.2
+requests==2.32.5
+django-apscheduler==0.7.0
+gunicorn==23.0.0
+whitenoise==6.9.0
+waitress==3.0.2
 
 
 
@@ -59,10 +72,13 @@ Through this project, I gained a deeper understanding of how FTTH networks and O
 git clone https://github.com/ManikTzyyy/plumnet
 cd plumnet
 pip install -r requirements.txt
+python manage.py collectstatic
 python manage.py makemigrations
 python manage.py migrate
+python manage.py createsuperuser #fill the data
 python manage.py runserver
-http://127.0.0.1:8000/
+
+Open http://127.0.0.1:8000/
 
 
 
