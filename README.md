@@ -59,10 +59,13 @@ Through this project, I gained a deeper understanding of how FTTH networks and O
 git clone https://github.com/ManikTzyyy/plumnet
 cd plumnet
 pip install -r requirements.txt
+python manage.py collectstatic
 python manage.py makemigrations
 python manage.py migrate
+python manage.py createsuperuser #fill the data
 python manage.py runserver
-http://127.0.0.1:8000/
+
+Open http://127.0.0.1:8000/
 
 
 
