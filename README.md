@@ -48,7 +48,20 @@ Through this project, I gained a deeper understanding of how FTTH networks and O
 
 
 
-
+## Package
+Django==4.2.7
+django_extensions==4.1
+paramiko==3.3.1
+RouterOS-api==0.21.0
+librouteros==3.4.1
+netmiko==4.6.0
+python-decouple==3.8
+waitress==3.0.2
+requests==2.32.5
+django-apscheduler==0.7.0
+gunicorn==23.0.0
+whitenoise==6.9.0
+waitress==3.0.2
 
 
 
