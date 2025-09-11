@@ -21,7 +21,7 @@ class Server(models.Model):
 
 class Gateway(models.Model):
     name= models.CharField(max_length=255, null=True, blank=True)
-    server =  models.ForeignKey(Server, on_delete=models.SET_NULL, null=True, blank=True, related_name='gateways') 
+    server =  models.ForeignKey(Server, on_delete=models.CASCADE, null=True, blank=True, related_name='gateways') 
     lat = models.CharField(max_length=255, null=True, blank=True)
     long = models.CharField(max_length=255, null=True, blank=True)
     parent_lat = models.CharField(max_length=255, null=True, blank=True)
@@ -75,7 +75,6 @@ class Client(models.Model):
     temp_long = models.CharField(max_length=255, null=True, blank=True)
     isServerNull = models.BooleanField(default=False)
     isPayed = models.BooleanField(default=True)
-    lastPayment = models.DateField(null=True, blank=True)
     gateway = models.ForeignKey(Gateway, on_delete=models.SET_NULL, null=True, blank=True, related_name='gateways') 
     temp_gateway = models.ForeignKey(Gateway, on_delete=models.SET_NULL, null=True, blank=True, related_name='temp_gateways') 
     
@@ -85,6 +84,18 @@ class Client(models.Model):
         return f"{client_name} ({paket_name})"
 
 
+
+class Transaction(models.Model):
+    id_client = models.ForeignKey(
+        Client,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='clients_transaction'
+    )
+    lastPayment = models.DateField(null=True, blank=True)
+    value = models.CharField(null=True, blank=True, max_length=255) 
+    create_at = models.DateTimeField(auto_now_add=True)
 
 class Redaman(models.Model):
     id_client = models.ForeignKey(
