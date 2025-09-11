@@ -1023,7 +1023,7 @@ def detailClient(request, client_id):
     client.device = "-"
 
 
-    acs_ip = client.id_paket.id_ip_pool.id_server.genieacs
+    acs_ip = client.id_paket.id_ip_pool.id_server.genieacs if client.id_paket else None
 
    
 
