@@ -32,6 +32,7 @@ class IPPool(models.Model):
     id_server = models.ForeignKey(Server, on_delete=models.SET_NULL, null=True, blank=True, related_name='servers') 
     name = models.CharField(max_length=100)
     ip_range = models.CharField(max_length=100)
+    total_ips = models.IntegerField(default=0)
 
     def __str__(self):
         server_name = self.id_server.name if self.id_server else "No Server"
@@ -42,6 +43,8 @@ class Paket(models.Model):
     price = models.IntegerField()
     limit = models.CharField(max_length=255)
     id_ip_pool = models.ForeignKey(IPPool, on_delete=models.SET_NULL,null=True, blank=True, related_name='ip_pools')
+    total_ips = models.IntegerField(default=0)
+    used_ips = models.IntegerField(default=0)  
        
     def __str__(self):
         server_name = self.id_ip_pool.id_server.name if self.id_ip_pool and self.id_ip_pool.id_server else "No Server"
