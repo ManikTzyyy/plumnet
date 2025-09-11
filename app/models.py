@@ -11,7 +11,7 @@ class Server(models.Model):
     host = models.GenericIPAddressField()
     username = models.CharField(max_length=255)
     password = models.CharField(max_length=255) 
-    genieacs = models.CharField(max_length=255, blank=True, null=True)
+    genieacs = models.CharField(max_length=255, blank=True, null=True, default='127.0.0.1')
     lat = models.CharField(max_length=255, null=True, blank=True)
     long = models.CharField(max_length=255, null=True, blank=True)
 
