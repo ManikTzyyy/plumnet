@@ -1242,6 +1242,11 @@ tr:hover{
   -o-border-radius: 10px;
 }
 
+
+.table tr.selected-row {
+  background-color: #e0f7fa; /* biru muda */
+}
+
 *{
   /* border: 1px solid red; */
 }

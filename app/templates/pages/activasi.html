@@ -13,9 +13,8 @@
       <a href="{% url 'client' %}" class="main-button">View All Client</a>
 
       <div id="selected-box" class="selected-box column">
-          <p class="text-sm">Client Terpilih</p>
-          <div id="selected-list"></div>
-          <br>
+        <div id="selected-list" style="display: none;"></div>
+        <br>
           <button id="activate-all" class="disbale-button " disabled >Aktivasi Terpilih</button>
       </div>
 
@@ -53,8 +52,6 @@
           <th>#</th>
           <th>Nama</th>
           <th>Alamat</th>
-          <th>Email</th>
-          <th>No HP</th>
           <th>Paket</th>
           <th>Server</th>
           <th>Payment</th>
@@ -79,8 +76,6 @@
           <td>{{ client.id }}</td>
           <td>{{ client.name }}</td>
           <td>{{ client.address }}</td>
-          <td>{{ client.email }}</td>
-          <td>{{ client.phone }}</td>
           <td>
             {{ client.id_paket.name }} - {{ client.id_paket.price|rupiah }}
           </td>
