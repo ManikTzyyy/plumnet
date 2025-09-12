@@ -263,7 +263,7 @@ class ClientForm(forms.ModelForm):
 
     class Meta:
         model = Client
-        fields = ['id_paket', 'name', 'address', 'email', 'phone', 'pppoe', 'password', 'lat', 'long', ]
+        fields = ['id_paket', 'name', 'address', 'email', 'phone', 'pppoe', 'password', 'lat', 'long']
         widgets = {
             'id_paket': forms.Select(attrs={'class': 'form-control'}),
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Masukan Nama Pelanggan'}),
