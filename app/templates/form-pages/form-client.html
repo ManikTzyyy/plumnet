@@ -48,13 +48,17 @@
         {{ form.local_ip }}
       </div>
 
-       <div class="column">
-        <label for="{{ form.gateway_choice.id_for_label }}">Source (Server / ODP)</label>
-        {{ form.gateway_choice }}
+       
+
+      <div class="row gap-20 align-start justify-center" style="width: full;">
+         <div class="column">
+        <label>&nbsp;</label>
+        <button type="button" class="button main-button" onclick="openMapSwal()">
+          Pilih Lokasi di Map
+        </button>
       </div>
 
-      <div class="row gap-20" style="width: full;">
-        <div class="column">
+      <div class="column">
           <label for="lat">Latitude</label>
           {{form.lat}}
         </div>
@@ -65,7 +69,11 @@
         </div>
       </div>
 
-      <div id="map-client" style="height: 600px"></div>
+     
+      <div class="column">
+        <label for="{{ form.gateway_choice.id_for_label }}">Source (Server / ODP)</label>
+        {{ form.gateway_choice }}
+      </div>
 
       <div class="row button-wrapper">
         <button class="success-button" type="submit">Simpan</button>
@@ -104,70 +112,136 @@
 </script>
 {% endif %}
 
+
 <script>
-  const map = L.map("map-client").setView([0, 0], 2);
-  const servers = {{servers_json|safe}}
-  const gateways = {{gateways_json|safe}}
+function openMapSwal() {
+  Swal.fire({
+    title: 'Pilih Lokasi di Map',
+    html: '<div id="map-client" style="height:500px; width:100%;"></div>',
+    width: '80%',
+    didOpen: () => {
+      const currentLat = parseFloat(document.getElementById("id_lat").value) || 0;
+      const currentLng = parseFloat(document.getElementById("id_long").value) || 0;
+      const servers = {{servers_json|safe}}
+      const gateways = {{gateways_json|safe}}
 
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    attribution: "&copy; OpenStreetMap contributors",
-  }).addTo(map);
-
-
-   servers.forEach(function(server) {
-        if (server.lat && server.long) {
-            L.marker([server.lat, server.long], { icon: serverIcon })
-             .addTo(map)
-             .bindTooltip("<b>" + server.name + "</b>");
-        }
-    });
-
-    gateways.forEach((item)=>{
-      const itemMarker = L.marker([item.lat, item.long], { icon: odpIcon }, 
-      {title: item.name})
-      .addTo(map)
-      .bindTooltip("<b>" + item.name + "</b>");
-
-      L.polyline([
-        [item.parent_lat, item.parent_long],
-        [item.lat, item.long]
-      ],{ color: "blue" }).addTo(map)
-    })
-
-  const marker = L.marker([0, 0], { draggable: true }).addTo(map);
-
-  // Update input kalau marker digeser
-  marker.on("dragend", function (e) {
-    const lat = e.target.getLatLng().lat;
-    const lng = e.target.getLatLng().lng;
-    document.getElementById("id_lat").value = lat;
-    document.getElementById("id_long").value = lng;
-  });
-
-
-
-  // Minta lokasi dari browser
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      function (position) {
-        const lat = position.coords.latitude;
-        const lng = position.coords.longitude;
-
-        // Pindah map & marker
-        map.setView([lat, lng], 15);
-        marker.setLatLng([lat, lng]);
-
-        // Isi input form
-        document.getElementById("latitude").value = lat;
-        document.getElementById("longitude").value = lng;
-      },
-      function (error) {
-        alert("Gagal mendapatkan lokasi: " + error.message);
+      // fungsi hitung jarak (haversine)
+      function getDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371000;
+        const toRad = (deg) => deg * Math.PI / 180;
+        const dLat = toRad(lat2 - lat1);
+        const dLon = toRad(lon2 - lon1);
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                  Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+                  Math.sin(dLon/2) * Math.sin(dLon/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return R * c;
       }
-    );
-  } else {
-    alert("Browser tidak mendukung geolocation.");
-  }
+
+      // update dropdown gateway_choice
+      function updateGatewayChoices(lat, lng, showPopup=false) {
+        let distances = gateways.map((gw) => {
+          return {
+            id: gw.id,
+            name: gw.name,
+            distance: getDistance(lat, lng, parseFloat(gw.lat), parseFloat(gw.long))
+          };
+        });
+
+        distances.sort((a, b) => a.distance - b.distance);
+
+        const select = document.getElementById("id_gateway_choice");
+        if (select) {
+          select.innerHTML = "";
+          distances.forEach((gw) => {
+            const opt = document.createElement("option");
+            opt.value = gw.id;
+            opt.text = `${gw.name} (${gw.distance.toFixed(1)} m)`;
+            select.appendChild(opt);
+          });
+        }
+
+        // popup rekomendasi hanya kalau user geser marker
+        if (showPopup && distances.length > 0) {
+          Swal.fire({
+            icon: "info",
+            title: "Rekomendasi Gateway Terdekat",
+            text: `${distances[0].name} (${distances[0].distance.toFixed(1)} m)`,
+            timer: 2000,
+            showConfirmButton: false
+          });
+        }
+      }
+
+      const map = L.map("map-client").setView([currentLat, currentLng], 15);
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "&copy; OpenStreetMap contributors",
+      }).addTo(map);
+
+      const marker = L.marker([currentLat, currentLng], { draggable: true }).addTo(map);
+
+      marker.on("dragend", function (e) {
+        const lat = e.target.getLatLng().lat;
+        const lng = e.target.getLatLng().lng;
+        document.getElementById("id_lat").value = lat;
+        document.getElementById("id_long").value = lng;
+        updateGatewayChoices(lat, lng, true); // popup hanya di drag
+      });
+
+      setTimeout(() => { map.invalidateSize(); }, 200);
+
+      // auto geolocation
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          function (position) {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+
+            map.setView([lat, lng], 15);
+            marker.setLatLng([lat, lng]);
+
+            document.getElementById("id_lat").value = lat;
+            document.getElementById("id_long").value = lng;
+
+            updateGatewayChoices(lat, lng, false); // tanpa popup
+          },
+          function (error) {
+            alert("Gagal mendapatkan lokasi: " + error.message);
+          }
+        );
+      }
+
+      servers.forEach(function(server) {
+        if (server.lat && server.long) {
+          L.marker([server.lat, server.long], { icon: serverIcon })
+            .addTo(map)
+            .bindTooltip("<b>" + server.name + "</b>");
+        }
+      });
+
+      gateways.forEach((item)=>{
+        const itemMarker = L.marker([item.lat, item.long], { icon: odpIcon }, 
+        {title: item.name})
+        .addTo(map)
+        .bindTooltip("<b>" + item.name + "</b>");
+
+        L.polyline([
+          [item.parent_lat, item.parent_long],
+          [item.lat, item.long]
+        ],{ color: "blue" }).addTo(map)
+      });
+
+    },
+    confirmButtonText: 'Gunakan Lokasi',
+    showCancelButton: true,
+    cancelButtonText: 'Batal'
+  });
+}
 </script>
+
+
+
+
 
 {% endblock %}
