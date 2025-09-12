@@ -63,83 +63,12 @@ def get_server_info(request, server_id):
 def dashboard(request) : 
     servers = Server.objects.all()
     clients = Client.objects.all()
-    query = request.GET.get('s', '')
-
-    filter_value = request.GET.get('filter', '')
-    per_page = request.GET.get('per_page', 10)
-    try:
-        per_page = int(per_page)
-        if per_page <= 0: 
-            per_page = 10
-    except ValueError:
-        per_page = 10
+    
 
     total_servers = Server.objects.count() 
     total_pakets = Paket.objects.count() 
     total_clients = Client.objects.count() 
     inactive_count = Client.objects.filter(isActive=0).count()
-
-    query_lower = query.strip().lower()
-
-    status_filter = Q()
-    if query_lower == "online":
-        status_filter = Q(isActive=True)
-    elif query_lower == "offline":
-        status_filter = Q(isActive=False)
-
-    if query:
-        clients = clients.filter(
-            Q(name__icontains=query)| 
-            Q(address__icontains=query)| 
-            Q(phone__icontains=query)| 
-            Q(pppoe__icontains=query)| 
-            Q(id_paket__name__icontains=query)|
-            Q(id_paket__id_ip_pool__id_server__name__icontains=query)|
-            status_filter
-        )
-
-    if filter_value == "online":
-        clients = clients.filter(isActive=True)
-    elif filter_value == "offline":
-        clients = clients.filter(isActive=False)
-    elif filter_value == "done":
-        clients = clients.filter(isPayed=True)
-    elif filter_value == "waiting":
-        clients = clients.filter(isPayed=False)
-
-    paginator = Paginator(clients, per_page) 
-    page_number = request.GET.get('page') 
-    clients = paginator.get_page(page_number)
-
-    # try:
-    #     response = requests.get("http://localhost:8000/api/")
-    #     response.raise_for_status()
-    #     acs_json = response.json()
-    # except Exception as e:
-    #     print("Error fetch ACS API:", e)
-    #     acs_json = []
-    # if isinstance(acs_json, list):
-    #     acs_data_map = {
-    #         item["VirtualParameters"]["IDPPPoE"]["_value"].strip(): item["VirtualParameters"]
-    #         for item in acs_json
-    #     }
-    # elif isinstance(acs_json, dict):
-    #     acs_data_map = {k.strip(): v for k, v in acs_json.items()}
-    # else:
-    #     acs_data_map = {}
-
-    # for client in clients:
-    #     vp = acs_data_map.get(client.pppoe.strip())
-    #     # print(client.pppoe, "=>", vp)
-    #     if vp:
-    #         client.rxpower = vp["RXpower"]["_value"]
-    #         client.host_active = vp["hostActive"]["_value"]
-    #         client.ip_tr069 = vp["ipTR069"]["_value"]
-    #     else:
-    #         client.rxpower = "-"
-    #         client.host_active = "-"
-    #         client.ip_tr069 = "-"
-
 
     context = {
         'total_servers' : total_servers,
@@ -147,10 +76,7 @@ def dashboard(request) :
         'total_clients' : total_clients,
         'inactive_clients' : inactive_count,
         'servers' : servers,
-        'query' : query,
         'clients' : clients,
-        'page_number':per_page,
-        'filter': filter_value
     }
     
     return render(request, 'pages/dashboard.html', context)
@@ -158,136 +84,32 @@ def dashboard(request) :
 
 
 def server(request):
-    query = request.GET.get('search', '')  # Ambil query pencarian
     servers_list = Server.objects.all()
-
-    if query:
-        servers_list = servers_list.filter(
-            Q(name__icontains=query) | 
-            Q(host__icontains=query) | 
-            Q(username__icontains=query) | 
-            Q(genieacs__icontains=query)
-        ) # Jika tidak ada pencarian, tampilkan semua data
-
-    paginator = Paginator(servers_list, 10)  # Menampilkan 5 data per halaman
-    page_number = request.GET.get('page')  # Ambil nomor halaman dari URL
-    servers = paginator.get_page(page_number)  # Ambil objek halaman
-
-    return render(request, 'pages/server.html', {'servers': servers, 'query': query})
+    return render(request, 'pages/server.html', {'servers': servers_list})
 
 def paket(request) : 
-    query = request.GET.get('search', '')  # Ambil query pencarian
+   
     paket_list = Paket.objects.all()
     ip_pools = IPPool.objects.all()
-
-
-    if query:
-        paket_list = paket_list.filter(
-            Q(name__icontains=query) | 
-            Q(price__icontains=query) | 
-            Q(limit__icontains=query)
-        ) # Jika tidak ada pencarian, tampilkan semua data
-
-    paginator = Paginator(paket_list, 10) 
-    page_number = request.GET.get('page') 
-    pakets = paginator.get_page(page_number) 
-
-    return render(request, 'pages/paket.html', {'pakets': pakets, 'ip_pools':ip_pools, 'query': query})
+    return render(request, 'pages/paket.html', {'pakets': paket_list, 'ip_pools':ip_pools,})
 
 def client(request) : 
-    query = request.GET.get('s', '')
-    filter_value = request.GET.get('filter', '')
-    per_page = request.GET.get('per_page', 10)
-    try:
-        per_page = int(per_page)
-        if per_page <= 0:  # minimal 1
-            per_page = 10
-    except ValueError:
-        per_page = 10
-
     client_list = Client.objects.all()
-    query_lower = query.strip().lower()
-    status_filter = Q()
-    if query_lower == "online":
-        status_filter = Q(isActive=True)
-    elif query_lower == "offline":
-        status_filter = Q(isActive=False)
-
-    if query:
-        client_list = client_list.filter(
-            Q(name__icontains=query)| 
-            Q(address__icontains=query)| 
-            Q(phone__icontains=query)| 
-            Q(pppoe__icontains=query)| 
-            Q(id_paket__name__icontains=query) | 
-            Q(id_paket__id_ip_pool__id_server__name__icontains=query) |
-            status_filter
-        )
-
-    if filter_value == "online":
-        client_list = client_list.filter(isActive=True)
-    elif filter_value == "offline":
-        client_list = client_list.filter(isActive=False)
-    elif filter_value == "done":
-        client_list = client_list.filter(isPayed=True)
-    elif filter_value == "waiting":
-        client_list = client_list.filter(isPayed=False)
-
-    paginator = Paginator(client_list, per_page) 
-    page_number = request.GET.get('page') 
-    clients = paginator.get_page(page_number)
-
     context = {
-        'clients': clients, 
-        'query': query,
-        'page_number' : per_page,
-        'filter':filter_value
+        'clients': client_list, 
         }
-
 
     return render(request, 'pages/client.html', context )
 
 
 
-def verifikasi(request) : 
+def activasi(request) : 
     inactiveClient = Client.objects.filter(isActive=0)
-    query = request.GET.get('s', '')
-    filter_value = request.GET.get('filter', '')
-    per_page = request.GET.get('per_page', 10)
-    try:
-        per_page = int(per_page)
-        if per_page <= 0:  # minimal 1
-            per_page = 10
-    except ValueError:
-        per_page = 10
-
-    if query:
-        inactiveClient = inactiveClient.filter(
-            Q(name__icontains=query)| 
-            Q(address__icontains=query)| 
-            Q(phone__icontains=query)| 
-            Q(pppoe__icontains=query)| 
-            Q(id_paket__name__icontains=query)
-        ) 
-    
-    
-    if filter_value == "done":
-        inactiveClient = inactiveClient.filter(isPayed=True)
-    elif filter_value == "waiting":
-        inactiveClient = inactiveClient.filter(isPayed=False)
-
-    paginator = Paginator(inactiveClient, per_page) 
-    page_number = request.GET.get('page') 
-    inactiveClient = paginator.get_page(page_number)
-
     context = {
-        'query' : query,
         'clients' : inactiveClient,
-        'page_number' : per_page,
-        'filter':filter_value
     }
 
-    return render(request, 'pages/verifikasi.html',context)
+    return render(request, 'pages/activasi.html',context)
 
 
 #forms
@@ -371,13 +193,17 @@ def addProfile(request) :
     if request.method == "POST":
         form = PaketForm(request.POST)
         if form.is_valid():
+
             limit = form.cleaned_data['limit']
+            print(limit)
             profile_name = form.cleaned_data['name']
             ip_pool = form.cleaned_data['id_ip_pool']
             server = ip_pool.id_server
+            paket = form.save(commit=False)
+            paket.limit = form.cleaned_data['limit']  # pastikan terset
+            
             try:
-                # print(limit, profile_name, server.name, server.host)
-
+      
                 create_profile(
                     server.host,
                     server.username,
@@ -386,7 +212,7 @@ def addProfile(request) :
                     ip_pool.name,
                     limit
                 )
-                form.save()
+                paket.save()
                 success = True
             except Exception as e:
                 error_message = str(e) 
@@ -450,10 +276,21 @@ def addClient(request) :
         paket_id = request.POST.get('id_paket')
         paket = Paket.objects.get(pk=paket_id) if paket_id else None
         server = paket.id_ip_pool.id_server if paket else None
+        ip_range = paket.id_ip_pool.ip_range
 
+        if ip_range:
+            start_ip = ip_range.split("-")[0].strip()   # ambil "10.10.2.2"
+            parts = start_ip.split(".")
+        if len(parts) == 4:
+            local_ip = f"{parts[0]}.{parts[1]}.{parts[2]}.1"   # hasil "10.10.2.1"
+        else:
+            local_ip = None
+
+       
         form = ClientForm(request.POST)
         if form.is_valid():
             cd = form.cleaned_data
+
             client = Client(
                     id_paket=cd['id_paket'],
                     name=cd['name'],
@@ -464,14 +301,14 @@ def addClient(request) :
                     password=cd['password'],
                     lat=cd['lat'],
                     long=cd['long'],
-                    local_ip=cd['local_ip'],
+                    local_ip=local_ip,
                     temp_paket=cd['id_paket'],
                     temp_name=cd['name'],
                     temp_address=cd['address'],
                     temp_phone=cd['phone'],
                     temp_pppoe=cd['pppoe'],
                     temp_password=cd['password'],
-                    temp_local_ip=cd['local_ip'],
+                    temp_local_ip=local_ip,
                     temp_lat=cd['lat'],
                     temp_long=cd['long'],
                     gateway=Gateway.objects.get(id=cd['gateway_choice']) if cd.get('gateway_choice') else None
@@ -484,7 +321,7 @@ def addClient(request) :
                     cd['pppoe'],
                     cd['password'],
                     paket.name,
-                    cd['local_ip']
+                    local_ip
                 )
                 
                 client.save()
@@ -606,11 +443,12 @@ def edit_paket(request, pk):
 
     if request.method == 'POST':
         form = PaketForm(request.POST, instance=paket)
-
         if form.is_valid():
             limit = form.cleaned_data['limit']
             profile_name = form.cleaned_data['name']
             ip_pool = form.cleaned_data['id_ip_pool']
+            paket = form.save(commit=False)
+            paket.limit = form.cleaned_data['limit'] 
             if ip_pool == None:
                 error_message = "IP Pool tidak boleh Null"          
             else:
@@ -619,15 +457,16 @@ def edit_paket(request, pk):
                     error_message = "Tambahkan Server pada IP Pool Terlebih Dahulu!"
                 else:
                     try:
+                        
                         if current_server is None:
                             create_profile(new_server.host,new_server.username,new_server.password,profile_name,ip_pool.name,limit,)
-                            form.save()
+                            paket.save()
                             success = True
                         elif current_server != new_server:
                             error_message = "Tidak boleh mengganti IP Pool yang berbeda dengan server lama."
                         else:
                             edit_profile(new_server.host,new_server.username,new_server.password,profile_name,ip_pool.name,limit,current_profile)
-                            form.save()
+                            paket.save()
                             success = True 
                     except Exception as e:
                         error_message = str(e) 
@@ -717,20 +556,30 @@ def edit_client(request, pk):
     client = get_object_or_404(Client, pk=pk)
     success = False
     error_message = None
+    local_ip = None
 
 
     servers = Server.objects.all().values("id", 'name', 'lat', 'long')
     gateways = Gateway.objects.all().values("id", "name", "lat", "long", "parent_lat", "parent_long")
 
     if request.method == 'POST':
-    
+        paket_id = request.POST.get('id_paket')
         current_server = client.id_paket.id_ip_pool.id_server if client.id_paket else None       
-        form = ClientForm(request.POST, instance=client)
+        paket = Paket.objects.get(pk=paket_id) if paket_id else None
+        server = paket.id_ip_pool.id_server if paket else None
 
+        ip_range = paket.id_ip_pool.ip_range if paket and paket.id_ip_pool else None
+        if ip_range:
+            start_ip = ip_range.split("-")[0].strip()   # contoh "10.10.2.2"
+            parts = start_ip.split(".")
+            if len(parts) == 4:
+                local_ip = f"{parts[0]}.{parts[1]}.{parts[2]}.1"
+
+        form = ClientForm(request.POST, instance=client)
         if form.is_valid():
             cd = form.cleaned_data
             
-            client.refresh_from_db(fields=['id_paket', 'name', 'address', 'email', 'phone','pppoe', 'password', 'lat', 'long', 'local_ip'])
+            client.refresh_from_db(fields=['id_paket', 'name', 'address', 'email', 'phone','pppoe', 'password', 'lat', 'long'])
 
 
             new_paket = form.cleaned_data['id_paket']
@@ -749,7 +598,7 @@ def edit_client(request, pk):
                     client.temp_password = cd['password']
                     client.temp_lat = cd['lat']
                     client.temp_long = cd['long']
-                    client.temp_local_ip = cd['local_ip']
+                    client.temp_local_ip = local_ip
                     client.isApproved = False
                     client.isServerNull = True
                     client.temp_gateway = Gateway.objects.get(id=cd['gateway_choice']) if cd.get('gateway_choice') else None
@@ -772,7 +621,7 @@ def edit_client(request, pk):
                     client.temp_password = cd['password']
                     client.temp_lat = cd['lat']
                     client.temp_long = cd['long']
-                    client.temp_local_ip = cd['local_ip']
+                    client.temp_local_ip = local_ip
                     client.isApproved = False
                     client.temp_gateway = Gateway.objects.get(id=cd['gateway_choice']) if cd.get('gateway_choice') else None
                    
@@ -911,23 +760,9 @@ def detailServer(request, server_id) :
     gateway_list = Gateway.objects.filter(server=server)
     gateway_qs = gateway_list.values("id", "name", "lat", "long", "parent_lat", "parent_long" )
     data = json.dumps(list(gateway_qs), cls=DjangoJSONEncoder)
-
-    per_page = request.GET.get('per_page', 10)
-    try:
-        per_page = int(per_page)
-        if per_page <= 0:  # minimal 1
-            per_page = 10
-    except ValueError:
-        per_page = 10
-
-    paginator = Paginator(gateway_list, per_page) 
-    page_number = request.GET.get('page') 
-    gateway_data = paginator.get_page(page_number)
-
     context = {
         'server': server,
-        'gateway_list': gateway_data,
-        'page_number' : per_page,
+        'gateway_list': gateway_list,
         'data': data
         }
     return render(request, 'detail-pages/detail-server.html', context)
@@ -1023,7 +858,7 @@ def detailClient(request, client_id):
     client.device = "-"
 
 
-    acs_ip = client.id_paket.id_ip_pool.id_server.genieacs
+    acs_ip = client.id_paket.id_ip_pool.id_server.genieacs if client.id_paket else None
 
    
 
@@ -1059,7 +894,7 @@ def testPage(request):
 #=========================================================================
 def activasi_multi_client(request):
     if not request.user.is_authenticated:
-        return JsonResponse({"success": False, "message": "Anda harus login dahulu untuk melakukan verifikasi."}, status=401)
+        return JsonResponse({"success": False, "message": "Anda harus login dahulu untuk melakukan activasi."}, status=401)
 
     if request.method != "POST":
         return JsonResponse({"success": False, "message": "Method not allowed"}, status=405)
@@ -1106,12 +941,12 @@ def activasi_multi_client(request):
 
         return JsonResponse({"success": True, "message": "Proses aktivasi multi selesai", "results": final_results})
     except Exception as e:
-        return JsonResponse({"success": False, "message": str(e) or "Terjadi kesalahan saat memproses verifikasi."}, status=500)
+        return JsonResponse({"success": False, "message": str(e) or "Terjadi kesalahan saat memproses activasi."}, status=500)
 
 
 def toggle_activasi(request, client_id):
     if not request.user.is_authenticated:
-        return JsonResponse({"success": False, "message": "Anda harus login dahulu untuk melakukan verifikasi."}, status=401)
+        return JsonResponse({"success": False, "message": "Anda harus login dahulu untuk melakukan activasi."}, status=401)
 
     try:
         client = get_object_or_404(Client, id=client_id)
@@ -1149,7 +984,7 @@ def toggle_activasi(request, client_id):
 
         return JsonResponse({"success": True, "message": msg, "server_res": result})
     except Exception as e:
-        return JsonResponse({"success": False, "message": str(e) or "Terjadi kesalahan saat memproses verifikasi."}, status=500)
+        return JsonResponse({"success": False, "message": str(e) or "Terjadi kesalahan saat memproses activasi."}, status=500)
 
 
 

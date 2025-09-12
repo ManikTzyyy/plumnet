@@ -18,7 +18,7 @@ urlpatterns = [
     path('server-list/', views.server, name='server'),
     path('paket-list/', views.paket, name='paket'),
     path('client/', views.client, name='client'),
-    path('verifikasi/', views.verifikasi, name='verifikasi'),
+    path('activasi/', views.activasi, name='activasi'),
 
     #forms
     path('add-server/', views.addServer, name='add-server'),

@@ -24,12 +24,10 @@ function updateSelected() {
     activateBtn.disabled = true;
     activateBtn.classList.add("disbale-button");
     activateBtn.classList.remove("success-button");
-    selectedList.style.display = "none";
   } else {
     activateBtn.disabled = false;
     activateBtn.classList.remove("disbale-button");
     activateBtn.classList.add("success-button");
-    selectedList.style.display = "flex";
   }
 }
 
@@ -49,4 +47,20 @@ activateBtn.addEventListener("click", () => {
       local_address: cb.dataset.iplocal,
     }));
   toggleActivasiMultiClient(selectedIds);
+});
+
+
+document.addEventListener("DOMContentLoaded", function () {
+  const checkboxes = document.querySelectorAll(".client-checkbox");
+
+  checkboxes.forEach((checkbox) => {
+    checkbox.addEventListener("change", function () {
+      const row = this.closest("tr"); // ambil baris tabel
+      if (this.checked) {
+        row.classList.add("selected-row"); // kasih warna
+      } else {
+        row.classList.remove("selected-row"); // hapus warna
+      }
+    });
+  });
 });

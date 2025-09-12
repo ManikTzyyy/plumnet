@@ -11,7 +11,7 @@ class Server(models.Model):
     host = models.GenericIPAddressField()
     username = models.CharField(max_length=255)
     password = models.CharField(max_length=255) 
-    genieacs = models.CharField(max_length=255, blank=True, null=True)
+    genieacs = models.CharField(max_length=255, blank=True, null=True, default='127.0.0.1')
     lat = models.CharField(max_length=255, null=True, blank=True)
     long = models.CharField(max_length=255, null=True, blank=True)
 
@@ -21,7 +21,7 @@ class Server(models.Model):
 
 class Gateway(models.Model):
     name= models.CharField(max_length=255, null=True, blank=True)
-    server =  models.ForeignKey(Server, on_delete=models.SET_NULL, null=True, blank=True, related_name='gateways') 
+    server =  models.ForeignKey(Server, on_delete=models.CASCADE, null=True, blank=True, related_name='gateways') 
     lat = models.CharField(max_length=255, null=True, blank=True)
     long = models.CharField(max_length=255, null=True, blank=True)
     parent_lat = models.CharField(max_length=255, null=True, blank=True)
@@ -32,6 +32,7 @@ class IPPool(models.Model):
     id_server = models.ForeignKey(Server, on_delete=models.SET_NULL, null=True, blank=True, related_name='servers') 
     name = models.CharField(max_length=100)
     ip_range = models.CharField(max_length=100)
+    total_ips = models.IntegerField(default=0)
 
     def __str__(self):
         server_name = self.id_server.name if self.id_server else "No Server"
@@ -42,13 +43,25 @@ class Paket(models.Model):
     price = models.IntegerField()
     limit = models.CharField(max_length=255)
     id_ip_pool = models.ForeignKey(IPPool, on_delete=models.SET_NULL,null=True, blank=True, related_name='ip_pools')
+    used_ips = models.IntegerField(default=0)  
        
+
     def __str__(self):
         server_name = self.id_ip_pool.id_server.name if self.id_ip_pool and self.id_ip_pool.id_server else "No Server"
         pool_name = self.id_ip_pool.name if self.id_ip_pool else "No IP Pool"
         range = self.id_ip_pool.ip_range if self.id_ip_pool else "No Range"
-        return f"{format_rupiah(self.price)} | {self.limit} | {server_name}. ({range})"
-
+        return f"{self.name} | {pool_name} | {format_rupiah(self.price)} | {self.limit} | {server_name}. ({range})"
+    @property
+    def total_ips(self):
+        return self.id_ip_pool.total_ips if self.id_ip_pool else 0
+    
+    @property
+    def available_ips(self):
+        if not self.id_ip_pool:
+            return 0
+        pool = self.id_ip_pool
+        total_used = Client.objects.filter(id_paket__id_ip_pool=pool).count()
+        return max(0, pool.total_ips - total_used)
 
 class Client(models.Model):
     id_paket = models.ForeignKey(Paket, on_delete=models.SET_NULL, null=True, blank=True, related_name='pakets') 
@@ -75,7 +88,6 @@ class Client(models.Model):
     temp_long = models.CharField(max_length=255, null=True, blank=True)
     isServerNull = models.BooleanField(default=False)
     isPayed = models.BooleanField(default=True)
-    lastPayment = models.DateField(null=True, blank=True)
     gateway = models.ForeignKey(Gateway, on_delete=models.SET_NULL, null=True, blank=True, related_name='gateways') 
     temp_gateway = models.ForeignKey(Gateway, on_delete=models.SET_NULL, null=True, blank=True, related_name='temp_gateways') 
     
@@ -85,6 +97,18 @@ class Client(models.Model):
         return f"{client_name} ({paket_name})"
 
 
+
+class Transaction(models.Model):
+    id_client = models.ForeignKey(
+        Client,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='clients_transaction'
+    )
+    lastPayment = models.DateField(null=True, blank=True)
+    value = models.CharField(null=True, blank=True, max_length=255) 
+    create_at = models.DateTimeField(auto_now_add=True)
 
 class Redaman(models.Model):
     id_client = models.ForeignKey(

@@ -355,7 +355,7 @@ button:hover {
   text-align: left;
 }
 
-tr:hover{
+.t-d:hover{
   background-color: rgb(245, 245, 245);
 }
 
@@ -977,11 +977,11 @@ tr:hover{
   border-bottom: 1px solid var(--clr-second);
 }
 
-.form-wrapper select {
+/* .form-wrapper select {
   border: 1px solid var(--clr-second);
   outline: none;
   padding: 10px 10px 10px 2px;
-}
+} */
 
 .form-wrapper .info-server h2 {
   color: var(--clr-second);
@@ -1240,6 +1240,11 @@ tr:hover{
   -moz-border-radius: 10px;
   -ms-border-radius: 10px;
   -o-border-radius: 10px;
+}
+
+
+.table tr.selected-row {
+  background-color: #e0f7fa; /* biru muda */
 }
 
 *{
