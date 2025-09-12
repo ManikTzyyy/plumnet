@@ -23,8 +23,17 @@
         {{ form.name }}
       </div>
       <div class="column">
-        <label for="price">Ip Range</label>
-        {{ form.ip_range }}
+        <label for="prefix">Prefix</label>          
+        {{ form.prefix }}
+      </div>
+       <div class="column">
+        <label for="count">Jumlah Host</label>
+        {{ form.count }}
+      </div>
+      <div class="column">
+        <small id="ip-preview" style="color: #666; font-style: italic;">
+          Masukkan prefix dan jumlah host untuk melihat estimasi IP range
+        </small>
       </div>
       <div class="row button-wrapper">
         <button class="success-button" type="submit">Simpan</button>
@@ -65,5 +74,58 @@ Swal.fire({
 });
 </script>
 {% endif %}
+
+
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const prefixInput = document.querySelector("input[name='prefix']");
+  const countInput = document.querySelector("input[name='count']");
+  const preview = document.getElementById("ip-preview");
+
+  const USABLE_PER_24 = 253;
+  const MAX_16 = 256 * USABLE_PER_24; // 64768
+
+  function calculateIpRange(prefix, count) {
+    if (!prefix || !count) return "";
+    const parts = prefix.split('.').map(s => s.trim()).filter(Boolean);
+    const n = Number(count);
+    if (!Number.isInteger(n) || n <= 0) return "Jumlah host harus bilangan bulat positif.";
+
+    if (parts.length === 2) {
+      if (n > MAX_16) return `Jumlah host terlalu besar untuk prefix ${prefix} (maks ${MAX_16}).`;
+      const a = parts[0], b = parts[1];
+      const startIp = `${a}.${b}.0.2`;
+      const offset = n - 1; // offset dari start
+      const third = Math.floor(offset / USABLE_PER_24);
+      const fourth = (offset % USABLE_PER_24) + 2;
+      if (third > 255) {
+        return `Jumlah host terlalu besar untuk prefix ${prefix} (melebihi rentang /16).`;
+      }
+      const endIp = `${a}.${b}.${third}.${fourth}`;
+      return `${startIp} - ${endIp}`;
+    } else if (parts.length === 3) {
+      const a = parts[0], b = parts[1], c = parts[2];
+      if (n > USABLE_PER_24) return `Jumlah host terlalu besar untuk prefix ${prefix} (/24), maks ${USABLE_PER_24}.`;
+      const startIp = `${a}.${b}.${c}.2`;
+      const endIp = `${a}.${b}.${c}.${n + 1}`;
+      return `${startIp} - ${endIp}`;
+    } else {
+      return "Prefix harus 2 atau 3 oktet (contoh: 10.10 atau 10.10.10).";
+    }
+  }
+
+  function updatePreview() {
+    const prefix = prefixInput.value.trim();
+    const count = countInput.value.trim();
+    preview.textContent = calculateIpRange(prefix, count);
+  }
+
+  prefixInput.addEventListener("input", updatePreview);
+  countInput.addEventListener("input", updatePreview);
+});
+</script>
+
 
 {% endblock %}

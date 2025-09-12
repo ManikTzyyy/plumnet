@@ -33,6 +33,14 @@
         <label for="maxRate">Limit Upload/Download </label>
         {{ form.limit }}
       </div>
+      <div class="row gap-10">
+        <div class="row">
+          {{ form.download_rate }} {{ form.download_unit }}
+        </div>
+        <div class="row">
+          {{ form.upload_rate }} {{ form.upload_unit }}
+        </div>
+      </div>
       <div class="row button-wrapper">
         <button class="success-button" type="submit">Simpan</button>
         <button

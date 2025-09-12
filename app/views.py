@@ -371,13 +371,17 @@ def addProfile(request) :
     if request.method == "POST":
         form = PaketForm(request.POST)
         if form.is_valid():
+
             limit = form.cleaned_data['limit']
+            print(limit)
             profile_name = form.cleaned_data['name']
             ip_pool = form.cleaned_data['id_ip_pool']
             server = ip_pool.id_server
+            paket = form.save(commit=False)
+            paket.limit = form.cleaned_data['limit']  # pastikan terset
+            
             try:
-                # print(limit, profile_name, server.name, server.host)
-
+      
                 create_profile(
                     server.host,
                     server.username,
@@ -386,7 +390,7 @@ def addProfile(request) :
                     ip_pool.name,
                     limit
                 )
-                form.save()
+                paket.save()
                 success = True
             except Exception as e:
                 error_message = str(e) 
@@ -606,11 +610,12 @@ def edit_paket(request, pk):
 
     if request.method == 'POST':
         form = PaketForm(request.POST, instance=paket)
-
         if form.is_valid():
             limit = form.cleaned_data['limit']
             profile_name = form.cleaned_data['name']
             ip_pool = form.cleaned_data['id_ip_pool']
+            paket = form.save(commit=False)
+            paket.limit = form.cleaned_data['limit'] 
             if ip_pool == None:
                 error_message = "IP Pool tidak boleh Null"          
             else:
@@ -619,15 +624,16 @@ def edit_paket(request, pk):
                     error_message = "Tambahkan Server pada IP Pool Terlebih Dahulu!"
                 else:
                     try:
+                        
                         if current_server is None:
                             create_profile(new_server.host,new_server.username,new_server.password,profile_name,ip_pool.name,limit,)
-                            form.save()
+                            paket.save()
                             success = True
                         elif current_server != new_server:
                             error_message = "Tidak boleh mengganti IP Pool yang berbeda dengan server lama."
                         else:
                             edit_profile(new_server.host,new_server.username,new_server.password,profile_name,ip_pool.name,limit,current_profile)
-                            form.save()
+                            paket.save()
                             success = True 
                     except Exception as e:
                         error_message = str(e) 

@@ -43,15 +43,25 @@ class Paket(models.Model):
     price = models.IntegerField()
     limit = models.CharField(max_length=255)
     id_ip_pool = models.ForeignKey(IPPool, on_delete=models.SET_NULL,null=True, blank=True, related_name='ip_pools')
-    total_ips = models.IntegerField(default=0)
     used_ips = models.IntegerField(default=0)  
        
+
     def __str__(self):
         server_name = self.id_ip_pool.id_server.name if self.id_ip_pool and self.id_ip_pool.id_server else "No Server"
         pool_name = self.id_ip_pool.name if self.id_ip_pool else "No IP Pool"
         range = self.id_ip_pool.ip_range if self.id_ip_pool else "No Range"
-        return f"{format_rupiah(self.price)} | {self.limit} | {server_name}. ({range})"
-
+        return f"{pool_name} | {format_rupiah(self.price)} | {self.limit} | {server_name}. ({range})"
+    @property
+    def total_ips(self):
+        return self.id_ip_pool.total_ips if self.id_ip_pool else 0
+    
+    @property
+    def available_ips(self):
+        if not self.id_ip_pool:
+            return 0
+        pool = self.id_ip_pool
+        total_used = Client.objects.filter(id_paket__id_ip_pool=pool).count()
+        return max(0, pool.total_ips - total_used)
 
 class Client(models.Model):
     id_paket = models.ForeignKey(Paket, on_delete=models.SET_NULL, null=True, blank=True, related_name='pakets') 
