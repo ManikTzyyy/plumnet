@@ -50,7 +50,7 @@ class Paket(models.Model):
         server_name = self.id_ip_pool.id_server.name if self.id_ip_pool and self.id_ip_pool.id_server else "No Server"
         pool_name = self.id_ip_pool.name if self.id_ip_pool else "No IP Pool"
         range = self.id_ip_pool.ip_range if self.id_ip_pool else "No Range"
-        return f"{pool_name} | {format_rupiah(self.price)} | {self.limit} | {server_name}. ({range})"
+        return f"{self.name} | {pool_name} | {format_rupiah(self.price)} | {self.limit} | {server_name}. ({range})"
     @property
     def total_ips(self):
         return self.id_ip_pool.total_ips if self.id_ip_pool else 0

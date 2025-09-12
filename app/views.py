@@ -454,10 +454,21 @@ def addClient(request) :
         paket_id = request.POST.get('id_paket')
         paket = Paket.objects.get(pk=paket_id) if paket_id else None
         server = paket.id_ip_pool.id_server if paket else None
+        ip_range = paket.id_ip_pool.ip_range
 
+        if ip_range:
+            start_ip = ip_range.split("-")[0].strip()   # ambil "10.10.2.2"
+            parts = start_ip.split(".")
+        if len(parts) == 4:
+            local_ip = f"{parts[0]}.{parts[1]}.{parts[2]}.1"   # hasil "10.10.2.1"
+        else:
+            local_ip = None
+
+       
         form = ClientForm(request.POST)
         if form.is_valid():
             cd = form.cleaned_data
+
             client = Client(
                     id_paket=cd['id_paket'],
                     name=cd['name'],
@@ -468,14 +479,14 @@ def addClient(request) :
                     password=cd['password'],
                     lat=cd['lat'],
                     long=cd['long'],
-                    local_ip=cd['local_ip'],
+                    local_ip=local_ip,
                     temp_paket=cd['id_paket'],
                     temp_name=cd['name'],
                     temp_address=cd['address'],
                     temp_phone=cd['phone'],
                     temp_pppoe=cd['pppoe'],
                     temp_password=cd['password'],
-                    temp_local_ip=cd['local_ip'],
+                    temp_local_ip=local_ip,
                     temp_lat=cd['lat'],
                     temp_long=cd['long'],
                     gateway=Gateway.objects.get(id=cd['gateway_choice']) if cd.get('gateway_choice') else None
@@ -488,7 +499,7 @@ def addClient(request) :
                     cd['pppoe'],
                     cd['password'],
                     paket.name,
-                    cd['local_ip']
+                    local_ip
                 )
                 
                 client.save()
@@ -723,20 +734,30 @@ def edit_client(request, pk):
     client = get_object_or_404(Client, pk=pk)
     success = False
     error_message = None
+    local_ip = None
 
 
     servers = Server.objects.all().values("id", 'name', 'lat', 'long')
     gateways = Gateway.objects.all().values("id", "name", "lat", "long", "parent_lat", "parent_long")
 
     if request.method == 'POST':
-    
+        paket_id = request.POST.get('id_paket')
         current_server = client.id_paket.id_ip_pool.id_server if client.id_paket else None       
-        form = ClientForm(request.POST, instance=client)
+        paket = Paket.objects.get(pk=paket_id) if paket_id else None
+        server = paket.id_ip_pool.id_server if paket else None
 
+        ip_range = paket.id_ip_pool.ip_range if paket and paket.id_ip_pool else None
+        if ip_range:
+            start_ip = ip_range.split("-")[0].strip()   # contoh "10.10.2.2"
+            parts = start_ip.split(".")
+            if len(parts) == 4:
+                local_ip = f"{parts[0]}.{parts[1]}.{parts[2]}.1"
+
+        form = ClientForm(request.POST, instance=client)
         if form.is_valid():
             cd = form.cleaned_data
             
-            client.refresh_from_db(fields=['id_paket', 'name', 'address', 'email', 'phone','pppoe', 'password', 'lat', 'long', 'local_ip'])
+            client.refresh_from_db(fields=['id_paket', 'name', 'address', 'email', 'phone','pppoe', 'password', 'lat', 'long'])
 
 
             new_paket = form.cleaned_data['id_paket']
@@ -755,7 +776,7 @@ def edit_client(request, pk):
                     client.temp_password = cd['password']
                     client.temp_lat = cd['lat']
                     client.temp_long = cd['long']
-                    client.temp_local_ip = cd['local_ip']
+                    client.temp_local_ip = local_ip
                     client.isApproved = False
                     client.isServerNull = True
                     client.temp_gateway = Gateway.objects.get(id=cd['gateway_choice']) if cd.get('gateway_choice') else None
@@ -778,7 +799,7 @@ def edit_client(request, pk):
                     client.temp_password = cd['password']
                     client.temp_lat = cd['lat']
                     client.temp_long = cd['long']
-                    client.temp_local_ip = cd['local_ip']
+                    client.temp_local_ip = local_ip
                     client.isApproved = False
                     client.temp_gateway = Gateway.objects.get(id=cd['gateway_choice']) if cd.get('gateway_choice') else None
                    

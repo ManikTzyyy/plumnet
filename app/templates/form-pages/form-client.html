@@ -43,10 +43,7 @@
         <label for="pppoePass">Password PPPoE</label>
         {{ form.password }}
       </div>
-      <div class="column">
-        <label for="pppoePass">Local IP</label>
-        {{ form.local_ip }}
-      </div>
+      
 
        
 
@@ -111,6 +108,45 @@
   });
 </script>
 {% endif %}
+
+
+
+
+<script>
+// fungsi buat generate password random
+function generatePassword(length = 10) {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let pass = "";
+  for (let i = 0; i < length; i++) {
+    pass += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return pass;
+}
+
+// ambil elemen input
+const nameInput = document.getElementById("id_name");       // dari form.name
+const pppoeInput = document.getElementById("id_pppoe");     // dari form.pppoe
+const passwordInput = document.getElementById("id_password"); // dari form.password
+
+// generate otomatis PPPoE saat user isi nama
+nameInput.addEventListener("input", () => {
+  let base = nameInput.value.trim().replace(/\s+/g, "").toLowerCase();
+  if (base.length > 0) {
+    // tambahin random 3 digit biar unik
+    const rand = Math.floor(Math.random() * 1000);
+    pppoeInput.value = base + rand;
+  } else {
+    pppoeInput.value = "";
+  }
+});
+
+// generate password otomatis saat pertama kali user isi nama
+nameInput.addEventListener("blur", () => {
+  if (!passwordInput.value) {
+    passwordInput.value = generatePassword(10);
+  }
+});
+</script>
 
 
 <script>
