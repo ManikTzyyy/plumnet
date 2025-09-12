@@ -1,6 +1,7 @@
 from django import forms
 import ipaddress
 from .models import Gateway, Server, Paket, IPPool, Client
+import re
 
 
 #server
@@ -280,6 +281,19 @@ class ClientForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         choices = [(gw.id, f"{gw.name}") for gw in Gateway.objects.all()]
         self.fields['gateway_choice'].choices = choices
+
+    def clean_phone(self):
+        phone = self.cleaned_data.get('phone')
+        if not phone:
+            raise forms.ValidationError("Nomor HP wajib diisi.")
+
+        # Hanya angka, bisa ditambah tanda +
+        if not re.fullmatch(r'\+?\d{9,15}', phone):
+            raise forms.ValidationError(
+                "Nomor HP tidak valid. Gunakan 9-15 digit, bisa diawali +."
+            )
+        return phone
+
 
     def clean_pppoe(self):
         pppoe = self.cleaned_data.get('pppoe')
