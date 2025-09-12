@@ -18,36 +18,14 @@
           <button id="activate-all" class="disbale-button " disabled >Aktivasi Terpilih</button>
       </div>
 
-      <form method="GET" class="form-search row">
-       <div class="column">
-         <label for="per_page" class="text-sm">Search:</label>
-        <input class="search-box" type="search" placeholder="Search" name="s" value="{{ query }}"/>
-       </div>
-       
-       <div class="column">
-        <label for="per_page" class="text-sm">Show:</label>
-        <input class="search-box w-md" type="number" placeholder="{{page_number}}" name="per_page" id="per_page" value="{{ per_page }}" min="1" />
-       </div>
-
-       
-
-       <div class="column">
-        <label for="filter" class="text-sm">Payment</label>
-        <select name="filter" id="filter" onchange="this.form.submit()" class="search-box w-fit">
-          <option value="" {% if filter == "" %}selected{% endif %}>All</option>
-          <option value="done" {% if filter == "done" %}selected{% endif %}>Done</option>
-          <option value="waiting" {% if filter == "waiting" %}selected{% endif %}>Waiting</option>
-        </select>
-       </div>
-        <input style="display:none" type="submit" />
-      </form>
     </div>
 
     
 
     <div class="table-container">
-      <table class="table">
-        <tr class="t-head">
+      <table class="table" id="table">
+       <thead> 
+          <tr class="t-head">
           <th></th>
           <th>#</th>
           <th>Nama</th>
@@ -57,9 +35,10 @@
           <th>Payment</th>
 
           <th class="center-th">Action</th>
-        </tr>
+        </tr></thead>
 
-        {% for client in clients %}
+        <tbody>
+          {% for client in clients %}
 
         <tr class="t-d">
           <td>
@@ -98,35 +77,29 @@
             </div>
           </td>
         </tr>
-        {% empty %}
-        <tr>
-          <td colspan="7" class="center text-sm">Tidak ada data yang ditemukan</td>
-        </tr>
         {% endfor %}
+        </tbody>
       </table>
     </div>
-    <div class="pagination row text-sm">
-      {% if clients.has_previous %}
-      <a href="?page=1{% if query %}&s={{ query }}{% endif %}&per_page={{ page_number }}&filter={{filter}}" class="page-button">First</a>
-      <a href="?page={{ clients.previous_page_number }}{% if query %}&s={{ query }}{% endif %}&per_page={{ page_number }}&filter={{filter}}" class="page-button">
-        <i class="fa-solid fa-angle-left"></i>
-      </a>
-      {% endif %}
-      <span class="current-page">Page {{ clients.number }} of {{ clients.paginator.num_pages }}</span>
 
-      {% if clients.has_next %}
-      <a href="?page={{ clients.next_page_number }}{% if query %}&s={{ query }}{% endif %}&per_page={{ page_number }}&filter={{filter}}" class="page-button">
-        <i class="fa-solid fa-angle-right"></i>
-      </a>
-      <a href="?page={{ clients.paginator.num_pages }}{% if query %}&s={{ query }}{% endif %}&per_page={{ page_number
-       }}&filter={{filter}}" class="page-button">Last</a>
-      {% endif %}
-    </div>
   </div>
 </div>
 
 
 <script src="{% static 'js/scripts/checkbox.js' %}"></script>
 
+
+<script>
+  $(document).ready(function () {
+    $("#table").DataTable({
+      pageLength: 10,
+      searching: true,
+      stateSave: true,
+      columnDefs: [
+      { targets: [0,7], orderable: false, searchable: false }
+        ]
+    });
+  });
+</script>
 
 {% endblock %}

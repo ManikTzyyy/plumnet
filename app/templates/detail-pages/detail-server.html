@@ -71,28 +71,20 @@
           </div>
         </div>
 
-        <br />
-         <form method="GET" class="form-search row">
-      
        
-       <div class="column">
-         <label for="per_page" class="text-sm">Show:</label>
-        <input class="search-box w-md" type="number" placeholder="{{page_number}}" name="per_page" id="per_page" value="{{ per_page }}" min="1" />
-       </div>
-
-
-        <input style="display:none" type="submit" />
-      </form>
         <div class="table-container">
-          <table class="table">
-            <tr class="t-head">
+          <table class="table" id="table">
+            <thead>
+              <tr class="t-head">
               <th>#</th>
               <th>Gateway Name</th>
               <th>lat</th>
               <th>long</th>
               <th class="center-th"></th>
             </tr>
-            {% for gateway in gateway_list %}
+            </thead>
+            <tbody>
+              {% for gateway in gateway_list %}
             <tr class="t-d">
               <td>{{ gateway.id }}</td>
               <td>{{ gateway.name }}</td>
@@ -115,35 +107,29 @@
                 </div>
               </td>
             </tr>
-            {% empty %}
-            <tr>
-              <td colspan="7" class="center text-sm">
-                Tidak ada data yang ditemukan
-              </td>
-            </tr>
             {% endfor %}
+            </tbody>
           </table>
         </div>
-        <div class="pagination row text-sm">
-      {% if gateway_list.has_previous %}
-      <a href="?page=1&per_page={{ page_number }}" class="page-button">First</a>
-      <a href="?page={{ gateway_list.previous_page_number }}&per_page={{ page_number }}" class="page-button">
-        <i class="fa-solid fa-angle-left"></i>
-      </a>
-      {% endif %}
-      <span class="current-page">Page {{ gateway_list.number }} of {{ gateway_list.paginator.num_pages }}</span>
-
-      {% if gateway_list.has_next %}
-      <a href="?page={{ gateway_list.next_page_number }}&per_page={{ page_number }}" class="page-button">
-        <i class="fa-solid fa-angle-right"></i>
-      </a>
-      <a href="?page={{ gateway_list.paginator.num_pages }}&per_page={{ page_number }}" class="page-button">Last</a>
-      {% endif %}
-    </div>
       </div>
     </div>
   </div>
 </div>
+
+
+
+<script>
+  $(document).ready(function () {
+    $("#table").DataTable({
+      pageLength: 10,
+      searching: true,
+      stateSave: true,
+      columnDefs: [
+      { targets: [4], orderable: false, searchable: false }
+        ]
+    });
+  });
+</script>
 
 <script>
   function showLoaderForm() {

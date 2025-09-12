@@ -11,21 +11,13 @@
         <span class="title">Paket List</span>
       </div>
       <a href="{% url 'add-paket' %}" class="success-button">Add Paket +</a>
-      <form method="GET" class="form-search row">
-        <input
-          class="search-box"
-          type="search"
-          placeholder="Search"
-          name="search"
-          value="{{ query }}"
-        />
-        <input class="search-button" type="submit" />
-      </form>
+      
     </div>
 
     <div class="table-container">
-      <table class="table">
-        <tr class="t-head">
+      <table class="table" id="paket-table">
+        <thead>
+          <tr class="t-head">
           <th>#</th>
           <th>Nama Paket</th>
           <th>Price</th>
@@ -35,7 +27,9 @@
           <th>Used</th>
           <th class="center-th">Action</th>
         </tr>
-        {% for paket in pakets %}
+        </thead>
+        <tbody>
+          {% for paket in pakets %}
         <tr class="t-d">
           <td>{{ paket.id }}</td>
           <td>{{ paket.name }}</td>
@@ -58,45 +52,13 @@
             </div>
           </td>
         </tr>
-        {% empty %}
-        <tr>
-          <td colspan="7" class="center text-sm">Tidak ada data yang ditemukan</td>
-        </tr>
+       
         {% endfor %}
+        </tbody>
       </table>
     </div>
 
-    <div class="pagination row text-sm">
-      {% if pakets.has_previous %}
-      <a
-        href="?page=1{% if query %}&search={{ query }}{% endif %}"
-        class="page-button"
-        >First</a
-      >
-      <a
-        href="?page={{ pakets.previous_page_number }}{% if query %}&search={{ query }}{% endif %}"
-        class="page-button"
-        ><i class="fa-solid fa-angle-left"></i
-      ></a>
-      {% endif %}
-
-      <span class="current-page"
-        >Page {{ pakets.number }} of {{ pakets.paginator.num_pages }}</span
-      >
-
-      {% if pakets.has_next %}
-      <a
-        href="?page={{ pakets.next_page_number }}{% if query %}&search={{ query }}{% endif %}"
-        class="page-button"
-        ><i class="fa-solid fa-angle-right"></i
-      ></a>
-      <a
-        href="?page={{ pakets.paginator.num_pages }}{% if query %}&search={{ query }}{% endif %}"
-        class="page-button"
-        >Last</a
-      >
-      {% endif %}
-    </div>
+   
 
     <br />
 
@@ -112,15 +74,18 @@
     </div>
 
     <div class="table-container">
-      <table class="table">
-        <tr class="t-head">
+      <table class="table" id="ip-table">
+        <thead>
+          <tr class="t-head">
           <th>#</th>
           <th>Nama IP Pool</th>
           <th>IP Range</th>
           <th class="w-sm">Server</th>
           <th class="center-th">Action</th>
         </tr>
-        {% for ip in ip_pools %}
+        </thead>
+        <tbody>
+          {% for ip in ip_pools %}
         <tr class="t-d">
           <td>{{ ip.id }}</td>
           <td>{{ ip.name }}</td>
@@ -140,11 +105,8 @@
             </div>
           </td>
         </tr>
-        {% empty %}
-        <tr>
-          <td colspan="7" class="center text-sm">Tidak ada data yang ditemukan</td>
-        </tr>
         {% endfor %}
+        </tbody>
       </table>
     </div>
   </div>
@@ -153,5 +115,28 @@
 
 
 
+<script>
+  $(document).ready(function () {
+    $("#ip-table").DataTable({
+      pageLength: 10,
+      searching: true,
+      stateSave: true,
+      columnDefs: [
+      { targets: [4], orderable: false, searchable: false }
+        ]
+    });
+  });
+
+  $(document).ready(function () {
+    $("#paket-table").DataTable({
+      pageLength: 10,
+      searching: true,
+      stateSave: true,
+      columnDefs: [
+      { targets: [7], orderable: false, searchable: false }
+        ]
+    });
+  });
+</script>
 
 {% endblock %}

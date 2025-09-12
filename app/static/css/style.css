@@ -355,7 +355,7 @@ button:hover {
   text-align: left;
 }
 
-tr:hover{
+.t-d:hover{
   background-color: rgb(245, 245, 245);
 }
 

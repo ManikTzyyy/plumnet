@@ -12,21 +12,12 @@
       </div>
     <div class="row wrap gap-10">  <a href="{% url 'add-server' %}" class="success-button">Add Device +</a>
       <button class="main-button" onclick="addServerWithConfig()">Add Device + Config</button></div>
-      <form method="GET" class="form-search row">
-        <input
-          class="search-box"
-          type="search"
-          placeholder="Search"
-          name="search"
-          value="{{ query }}"
-        />
-        <input class="search-button" type="submit" />
-      </form>
     </div>
 
     <div class="table-container">
-      <table class="table">
-        <tr class="t-head">
+      <table class="table" id="table">
+       <thead>
+         <tr class="t-head">
           <th>#</th>
           <th>Nama Perangkat</th>
           <th>Host IP</th>
@@ -35,8 +26,9 @@
 
           <th class="center-th">Action</th>
         </tr>
-
-        {% for server in servers %}
+       </thead>
+       <tbody>
+ {% for server in servers %}
         <tr class="t-d">
           <td>{{ server.id }}</td>
           <td>{{ server.name }}</td>
@@ -58,51 +50,28 @@
               </button>
             </div>
           </td>
-        </tr>
-        {% empty %}
-        <tr>
-          <td colspan="7" class="center text-sm">Tidak ada data yang ditemukan</td>
-        </tr>
         {% endfor %}
+       </tbody>
+       
       </table>
-    </div>
-
-    <div class="pagination row text-sm">
-      {% if servers.has_previous %}
-      <a
-        href="?page=1{% if query %}&search={{ query }}{% endif %}"
-        class="page-button"
-        >First</a
-      >
-      <a
-        href="?page={{ servers.previous_page_number }}{% if query %}&search={{ query }}{% endif %}"
-        class="page-button"
-        ><i class="fa-solid fa-angle-left"></i
-      ></a>
-      {% endif %}
-
-      <span class="current-page"
-        >Page {{ servers.number }} of {{ servers.paginator.num_pages }}</span
-      >
-
-      {% if servers.has_next %}
-      <a
-        href="?page={{ servers.next_page_number }}{% if query %}&search={{ query }}{% endif %}"
-        class="page-button"
-        ><i class="fa-solid fa-angle-right"></i
-      ></a>
-      <a
-        href="?page={{ servers.paginator.num_pages }}{% if query %}&search={{ query }}{% endif %}"
-        class="page-button"
-        >Last</a
-      >
-      {% endif %}
     </div>
   </div>
 </div>
 
 
 
+<script>
+  $(document).ready(function () {
+    $("#table").DataTable({
+      pageLength: 10,
+      searching: true,
+      stateSave: true,
+      columnDefs: [
+      { targets: [5], orderable: false, searchable: false }
+        ]
+    });
+  });
+</script>
 
 
 {% endblock %}

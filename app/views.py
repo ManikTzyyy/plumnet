@@ -63,83 +63,12 @@ def get_server_info(request, server_id):
 def dashboard(request) : 
     servers = Server.objects.all()
     clients = Client.objects.all()
-    query = request.GET.get('s', '')
-
-    filter_value = request.GET.get('filter', '')
-    per_page = request.GET.get('per_page', 10)
-    try:
-        per_page = int(per_page)
-        if per_page <= 0: 
-            per_page = 10
-    except ValueError:
-        per_page = 10
+    
 
     total_servers = Server.objects.count() 
     total_pakets = Paket.objects.count() 
     total_clients = Client.objects.count() 
     inactive_count = Client.objects.filter(isActive=0).count()
-
-    query_lower = query.strip().lower()
-
-    status_filter = Q()
-    if query_lower == "online":
-        status_filter = Q(isActive=True)
-    elif query_lower == "offline":
-        status_filter = Q(isActive=False)
-
-    if query:
-        clients = clients.filter(
-            Q(name__icontains=query)| 
-            Q(address__icontains=query)| 
-            Q(phone__icontains=query)| 
-            Q(pppoe__icontains=query)| 
-            Q(id_paket__name__icontains=query)|
-            Q(id_paket__id_ip_pool__id_server__name__icontains=query)|
-            status_filter
-        )
-
-    if filter_value == "online":
-        clients = clients.filter(isActive=True)
-    elif filter_value == "offline":
-        clients = clients.filter(isActive=False)
-    elif filter_value == "done":
-        clients = clients.filter(isPayed=True)
-    elif filter_value == "waiting":
-        clients = clients.filter(isPayed=False)
-
-    paginator = Paginator(clients, per_page) 
-    page_number = request.GET.get('page') 
-    clients = paginator.get_page(page_number)
-
-    # try:
-    #     response = requests.get("http://localhost:8000/api/")
-    #     response.raise_for_status()
-    #     acs_json = response.json()
-    # except Exception as e:
-    #     print("Error fetch ACS API:", e)
-    #     acs_json = []
-    # if isinstance(acs_json, list):
-    #     acs_data_map = {
-    #         item["VirtualParameters"]["IDPPPoE"]["_value"].strip(): item["VirtualParameters"]
-    #         for item in acs_json
-    #     }
-    # elif isinstance(acs_json, dict):
-    #     acs_data_map = {k.strip(): v for k, v in acs_json.items()}
-    # else:
-    #     acs_data_map = {}
-
-    # for client in clients:
-    #     vp = acs_data_map.get(client.pppoe.strip())
-    #     # print(client.pppoe, "=>", vp)
-    #     if vp:
-    #         client.rxpower = vp["RXpower"]["_value"]
-    #         client.host_active = vp["hostActive"]["_value"]
-    #         client.ip_tr069 = vp["ipTR069"]["_value"]
-    #     else:
-    #         client.rxpower = "-"
-    #         client.host_active = "-"
-    #         client.ip_tr069 = "-"
-
 
     context = {
         'total_servers' : total_servers,
@@ -147,10 +76,7 @@ def dashboard(request) :
         'total_clients' : total_clients,
         'inactive_clients' : inactive_count,
         'servers' : servers,
-        'query' : query,
         'clients' : clients,
-        'page_number':per_page,
-        'filter': filter_value
     }
     
     return render(request, 'pages/dashboard.html', context)
@@ -158,92 +84,20 @@ def dashboard(request) :
 
 
 def server(request):
-    query = request.GET.get('search', '')  # Ambil query pencarian
     servers_list = Server.objects.all()
-
-    if query:
-        servers_list = servers_list.filter(
-            Q(name__icontains=query) | 
-            Q(host__icontains=query) | 
-            Q(username__icontains=query) | 
-            Q(genieacs__icontains=query)
-        ) # Jika tidak ada pencarian, tampilkan semua data
-
-    paginator = Paginator(servers_list, 10)  # Menampilkan 5 data per halaman
-    page_number = request.GET.get('page')  # Ambil nomor halaman dari URL
-    servers = paginator.get_page(page_number)  # Ambil objek halaman
-
-    return render(request, 'pages/server.html', {'servers': servers, 'query': query})
+    return render(request, 'pages/server.html', {'servers': servers_list})
 
 def paket(request) : 
-    query = request.GET.get('search', '')  # Ambil query pencarian
+   
     paket_list = Paket.objects.all()
     ip_pools = IPPool.objects.all()
-
-
-    if query:
-        paket_list = paket_list.filter(
-            Q(name__icontains=query) | 
-            Q(price__icontains=query) | 
-            Q(limit__icontains=query)
-        ) # Jika tidak ada pencarian, tampilkan semua data
-
-    paginator = Paginator(paket_list, 10) 
-    page_number = request.GET.get('page') 
-    pakets = paginator.get_page(page_number) 
-
-    return render(request, 'pages/paket.html', {'pakets': pakets, 'ip_pools':ip_pools, 'query': query})
+    return render(request, 'pages/paket.html', {'pakets': paket_list, 'ip_pools':ip_pools,})
 
 def client(request) : 
-    query = request.GET.get('s', '')
-    filter_value = request.GET.get('filter', '')
-    per_page = request.GET.get('per_page', 10)
-    try:
-        per_page = int(per_page)
-        if per_page <= 0:  # minimal 1
-            per_page = 10
-    except ValueError:
-        per_page = 10
-
     client_list = Client.objects.all()
-    query_lower = query.strip().lower()
-    status_filter = Q()
-    if query_lower == "online":
-        status_filter = Q(isActive=True)
-    elif query_lower == "offline":
-        status_filter = Q(isActive=False)
-
-    if query:
-        client_list = client_list.filter(
-            Q(name__icontains=query)| 
-            Q(address__icontains=query)| 
-            Q(phone__icontains=query)| 
-            Q(pppoe__icontains=query)| 
-            Q(id_paket__name__icontains=query) | 
-            Q(id_paket__id_ip_pool__id_server__name__icontains=query) |
-            status_filter
-        )
-
-    if filter_value == "online":
-        client_list = client_list.filter(isActive=True)
-    elif filter_value == "offline":
-        client_list = client_list.filter(isActive=False)
-    elif filter_value == "done":
-        client_list = client_list.filter(isPayed=True)
-    elif filter_value == "waiting":
-        client_list = client_list.filter(isPayed=False)
-
-    paginator = Paginator(client_list, per_page) 
-    page_number = request.GET.get('page') 
-    clients = paginator.get_page(page_number)
-
     context = {
-        'clients': clients, 
-        'query': query,
-        'page_number' : per_page,
-        'filter':filter_value
+        'clients': client_list, 
         }
-
 
     return render(request, 'pages/client.html', context )
 
@@ -251,40 +105,8 @@ def client(request) :
 
 def activasi(request) : 
     inactiveClient = Client.objects.filter(isActive=0)
-    query = request.GET.get('s', '')
-    filter_value = request.GET.get('filter', '')
-    per_page = request.GET.get('per_page', 10)
-    try:
-        per_page = int(per_page)
-        if per_page <= 0:  # minimal 1
-            per_page = 10
-    except ValueError:
-        per_page = 10
-
-    if query:
-        inactiveClient = inactiveClient.filter(
-            Q(name__icontains=query)| 
-            Q(address__icontains=query)| 
-            Q(phone__icontains=query)| 
-            Q(pppoe__icontains=query)| 
-            Q(id_paket__name__icontains=query)
-        ) 
-    
-    
-    if filter_value == "done":
-        inactiveClient = inactiveClient.filter(isPayed=True)
-    elif filter_value == "waiting":
-        inactiveClient = inactiveClient.filter(isPayed=False)
-
-    paginator = Paginator(inactiveClient, per_page) 
-    page_number = request.GET.get('page') 
-    inactiveClient = paginator.get_page(page_number)
-
     context = {
-        'query' : query,
         'clients' : inactiveClient,
-        'page_number' : per_page,
-        'filter':filter_value
     }
 
     return render(request, 'pages/activasi.html',context)
@@ -938,23 +760,9 @@ def detailServer(request, server_id) :
     gateway_list = Gateway.objects.filter(server=server)
     gateway_qs = gateway_list.values("id", "name", "lat", "long", "parent_lat", "parent_long" )
     data = json.dumps(list(gateway_qs), cls=DjangoJSONEncoder)
-
-    per_page = request.GET.get('per_page', 10)
-    try:
-        per_page = int(per_page)
-        if per_page <= 0:  # minimal 1
-            per_page = 10
-    except ValueError:
-        per_page = 10
-
-    paginator = Paginator(gateway_list, per_page) 
-    page_number = request.GET.get('page') 
-    gateway_data = paginator.get_page(page_number)
-
     context = {
         'server': server,
-        'gateway_list': gateway_data,
-        'page_number' : per_page,
+        'gateway_list': gateway_list,
         'data': data
         }
     return render(request, 'detail-pages/detail-server.html', context)

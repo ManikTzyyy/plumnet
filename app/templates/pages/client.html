@@ -11,7 +11,7 @@
         <span class="title">Client List</span>
       </div>
       <a href="{% url 'add-client' %}" class="success-button">Add CLient +</a>
-      <form method="GET" class="form-search row">
+      <!-- <form method="GET" class="form-search row">
        <div class="column">
          <label for="per_page" class="text-sm">Search:</label>
         <input class="search-box" type="search" placeholder="Search" name="s" value="{{ query }}"/>
@@ -34,95 +34,86 @@
        </div>
 
         <input style="display:none" type="submit" />
-      </form>
+      </form> -->
     </div>
 
     <div class="table-container">
-      <table class="table">
-        <tr class="t-head">
-          <th>#</th>
-          <th>Nama</th>
-          <th>Alamat</th>
-          <th>No Hp</th>
-          <th>Email</th>
-          <th>Paket</th>
-          <th>Server</th>
-          <th>Status</th>
-          <th>Payment</th>
-          <th></th>
-          {% if user.is_authenticated %}<th></th>{% else %}{% endif %}
-          
-        </tr>
-        {% for client in clients %}
-        <tr class="t-d">
-          <td>{{ client.id }}</td>
-          <td>{{ client.name }}</td>
-          <td>{{ client.address }}</td>
-          <td>{{ client.phone }}</td>
-          <td>{{ client.email }}</td>
-          <td>{{ client.id_paket.price|rupiah }} - {{ client.id_paket.limit }}</td>
-          <td>{{ client.id_paket.id_ip_pool.id_server.name }}</td>
-      
+      <table class="table" id="table">
+  <thead>
+    <tr class="t-head">
+      <th>#</th>
+      <th>Nama</th>
+      <th>Alamat</th>
+      <th>Paket</th>
+      <th>Server</th>
+      <th>Status</th>
+      <th>Payment</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for client in clients %}
+    <tr class="t-d">
+      <td>{{ client.id }}</td>
+      <td>{{ client.name }}</td>
+      <td>{{ client.address }}</td>
+      <td>{{ client.id_paket.price|rupiah }} - {{ client.id_paket.limit }}</td>
+      <td>{{ client.id_paket.id_ip_pool.id_server.name }}</td>
 
-          <td class="">
-            <div
-              class="{% if client.isActive %}enable-t{% else %}disable-t{% endif %}"
-            >
-              {% if client.isActive %}Online{% else %}Offline{% endif %}
-            </div>
-          </td>
+      <td>
+        <div class="{% if client.isActive %}enable-t{% else %}disable-t{% endif %}">
+          {% if client.isActive %}Online{% else %}Offline{% endif %}
+        </div>
+      </td>
 
-          <td class="">
-            <div
-              class="{% if client.isPayed %}enable-t{% else %}waiting-t{% endif %}"
-            >
-              {% if client.isPayed %}Done{% else %}Waiting{% endif %}
-            </div>
-          </td>
-          <td>
-            <div class="row button-wrapper">
-              <a href="{% url 'detail-client' client.id %}" class="main-button">view</a>
-            </div>
-          </td >
-          {% if user.is_authenticated %}<td>
-            <button
-              onclick="cekModifyClientData('{{ client.id }}','{{client.temp_name}}','{{client.temp_address}}','{{client.temp_phone}}', '{{client.temp_paket.id_ip_pool.id_server.name}}', '{{ client.temp_paket.name }} - {{ client.temp_paket.price|rupiah }} - {{ client.temp_paket.limit }}', '{{client.temp_pppoe}}', '{{client.temp_lat}}', '{{client.temp_long}}', '{{client.temp_local_ip}}', '{{client.temp_email}}')"
-              class="icon-button {% if client.isApproved %}disbale-button{% else %}main-button {% endif %}"
-              {% if client.isApproved %}disbale{% else %}{% endif %}
-            >
-              <i class="fa-solid fa-check"></i>
-            </button>
-          </td>{% else %}{% endif %}
-        </tr>
-        {% empty %}
-        <tr>
-          <td colspan="7" class="center text-sm">Tidak ada data yang ditemukan</td>
-        </tr>
-        {% endfor %}
-      </table>
-    </div>
-    <div class="pagination row text-sm">
-      {% if clients.has_previous %}
-      <a href="?page=1{% if query %}&s={{ query }}{% endif %}&per_page={{ page_number }}&filter={{filter}}" class="page-button">First</a>
-      <a href="?page={{ clients.previous_page_number }}{% if query %}&s={{ query }}{% endif %}&per_page={{ page_number }}&filter={{filter}}" class="page-button">
-        <i class="fa-solid fa-angle-left"></i>
-      </a>
-      {% endif %}
-      <span class="current-page">Page {{ clients.number }} of {{ clients.paginator.num_pages }}</span>
+      <td>
+        <div class="{% if client.isPayed %}enable-t{% else %}waiting-t{% endif %}">
+          {% if client.isPayed %}Done{% else %}Waiting{% endif %}
+        </div>
+      </td>
+      <td>
+        {% if user.is_authenticated %}
+        <button
+          onclick="cekModifyClientData('{{ client.id }}','{{client.temp_name}}','{{client.temp_address}}','{{client.temp_phone}}', '{{client.temp_paket.id_ip_pool.id_server.name}}', '{{ client.temp_paket.name }} - {{ client.temp_paket.price|rupiah }} - {{ client.temp_paket.limit }}', '{{client.temp_pppoe}}', '{{client.temp_lat}}', '{{client.temp_long}}', '{{client.temp_local_ip}}', '{{client.temp_email}}')"
+          class="icon-button {% if client.isApproved %}disbale-button{% else %}main-button {% endif %}"
+          {% if client.isApproved %}disabled{% endif %}
+        >
+          <i class="fa-solid fa-check"></i>
+        </button>
+        {% else %}
+          &nbsp;
+        {% endif %}
+      </td>
 
-      {% if clients.has_next %}
-      <a href="?page={{ clients.next_page_number }}{% if query %}&s={{ query }}{% endif %}&per_page={{ page_number }}&filter={{filter}}" class="page-button">
-        <i class="fa-solid fa-angle-right"></i>
-      </a>
-      <a href="?page={{ clients.paginator.num_pages }}{% if query %}&s={{ query }}{% endif %}&per_page={{ page_number }}&filter={{filter}}" class="page-button">Last</a>
-      {% endif %}
+      <td>
+        <div class="row button-wrapper">
+          <a href="{% url 'detail-client' client.id %}" class="main-button">view</a>
+        </div>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
     </div>
   </div>
 </div>
 
 
 
-
+<script>
+  $(document).ready(function () {
+    $("#table").DataTable({
+      pageLength: 10,
+      searching: true,
+      stateSave: true,
+      columnDefs: [
+      { targets: [8], orderable: false, searchable: false }
+        ]
+    });
+  });
+</script>
 
 
 
