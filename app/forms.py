@@ -20,7 +20,7 @@ class ServerForm(forms.ModelForm):
 class GatewayForm(forms.ModelForm):
     parent_choice = forms.ChoiceField(
         choices=[],
-        widget=forms.Select(attrs={'class': 'form-control'}),
+        widget=forms.Select(attrs={'class': 'form-control', 'id':'gw-select'}),
         required=False
     )
 

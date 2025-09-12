@@ -109,7 +109,14 @@
 </script>
 {% endif %}
 
-
+<script>
+  $(document).ready(function() {
+    $('#id_id_paket').select2({
+      placeholder: "Pilih server...",
+      allowClear: true
+    });
+  });
+</script>
 
 
 <script>

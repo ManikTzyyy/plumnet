@@ -80,4 +80,14 @@ Swal.fire({
 </script>
 {% endif %}
 
+
+<script>
+  $(document).ready(function() {
+    $('#id_id_ip_pool').select2({
+      placeholder: "Pilih server...",
+      allowClear: true
+    });
+  });
+</script>
+
 {% endblock %}

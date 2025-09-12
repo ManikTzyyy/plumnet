@@ -977,11 +977,11 @@ tr:hover{
   border-bottom: 1px solid var(--clr-second);
 }
 
-.form-wrapper select {
+/* .form-wrapper select {
   border: 1px solid var(--clr-second);
   outline: none;
   padding: 10px 10px 10px 2px;
-}
+} */
 
 .form-wrapper .info-server h2 {
   color: var(--clr-second);
