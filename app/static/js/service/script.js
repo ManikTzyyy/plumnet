@@ -213,7 +213,7 @@ function toggleActivasiClient(clientId, name, status, url) {
               confirmButtonText: "OK",
             }).then(() => {
               if (url === "activation") {
-                location.href = "/verifikasi";
+                location.href = "/activasi";
               } else if (url === "detail-client") {
                 location.href = `/client/id=${clientId}`;
               }
@@ -291,7 +291,7 @@ function toggleActivasiMultiClient(clientList) {
               icon: "warning",
               confirmButtonText: "Ok",
             }).then(() => {
-              location.href = "/verifikasi";
+              location.href = "/activasi";
             });
           } else {
             Swal.fire("Gagal!", data.message, "error");

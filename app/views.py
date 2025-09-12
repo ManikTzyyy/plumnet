@@ -249,7 +249,7 @@ def client(request) :
 
 
 
-def verifikasi(request) : 
+def activasi(request) : 
     inactiveClient = Client.objects.filter(isActive=0)
     query = request.GET.get('s', '')
     filter_value = request.GET.get('filter', '')
@@ -287,7 +287,7 @@ def verifikasi(request) :
         'filter':filter_value
     }
 
-    return render(request, 'pages/verifikasi.html',context)
+    return render(request, 'pages/activasi.html',context)
 
 
 #forms
@@ -1086,7 +1086,7 @@ def testPage(request):
 #=========================================================================
 def activasi_multi_client(request):
     if not request.user.is_authenticated:
-        return JsonResponse({"success": False, "message": "Anda harus login dahulu untuk melakukan verifikasi."}, status=401)
+        return JsonResponse({"success": False, "message": "Anda harus login dahulu untuk melakukan activasi."}, status=401)
 
     if request.method != "POST":
         return JsonResponse({"success": False, "message": "Method not allowed"}, status=405)
@@ -1133,12 +1133,12 @@ def activasi_multi_client(request):
 
         return JsonResponse({"success": True, "message": "Proses aktivasi multi selesai", "results": final_results})
     except Exception as e:
-        return JsonResponse({"success": False, "message": str(e) or "Terjadi kesalahan saat memproses verifikasi."}, status=500)
+        return JsonResponse({"success": False, "message": str(e) or "Terjadi kesalahan saat memproses activasi."}, status=500)
 
 
 def toggle_activasi(request, client_id):
     if not request.user.is_authenticated:
-        return JsonResponse({"success": False, "message": "Anda harus login dahulu untuk melakukan verifikasi."}, status=401)
+        return JsonResponse({"success": False, "message": "Anda harus login dahulu untuk melakukan activasi."}, status=401)
 
     try:
         client = get_object_or_404(Client, id=client_id)
@@ -1176,7 +1176,7 @@ def toggle_activasi(request, client_id):
 
         return JsonResponse({"success": True, "message": msg, "server_res": result})
     except Exception as e:
-        return JsonResponse({"success": False, "message": str(e) or "Terjadi kesalahan saat memproses verifikasi."}, status=500)
+        return JsonResponse({"success": False, "message": str(e) or "Terjadi kesalahan saat memproses activasi."}, status=500)
 
 
 
