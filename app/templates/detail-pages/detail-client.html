@@ -127,14 +127,61 @@
             </div>
         </div>
       </div>
-      
+    </div>
+
+    <br>
+    
+
+    <div class="table-container">
+      <p class="text-center strong">History Transaction</p>
+          <table class="table" id="table">
+            <thead>
+            <tr class="t-head">
+              <th>#</th>
+              <th>Value</th>
+              <th>Date</th>
+              <th></th>
+            </tr>
+            </thead>
+            <tbody>
+              {% for ts in transaction %}
+            <tr class="t-d">
+              <td>{{ ts.id }}</td>
+              <td>{{ ts.value|rupiah }}</td>
+              <td>{{ ts.create_at }}</td>
+              <td>
+                <div class="row button-wrapper">
+                  <button
+                    onclick="deleteData('{{ ts.id }}', 'transaction', 'client/id={{client.id}}')"
+                    class="danger-button">
+                    Delete
+                  </button>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+    <details>
+      <summary>Map</summary>
       <div class="container-map relative" style="width: 100%; height: 300px;" >
         <div id="map-client" style="height: 100%; width: 100%;"></div>
       </div>
-    </div>
+    </details>
+
+    <details>
+      <summary>Chart</summary>
+      <canvas id="redamanChart"></canvas>
+    </details>
+
+
     
 
-     <canvas id="redamanChart"></canvas>
+    
+
+    
  </div>
 
  <script src="{% static 'js/library/chart.umd.js' %}"></script>
@@ -144,6 +191,23 @@
 <script>
   const deleteForm = document.getElementById("delete-form");
 </script>
+
+
+
+<script>
+  $(document).ready(function () {
+    $("#table").DataTable({
+      pageLength: 10,
+      searching: true,
+      stateSave: true,
+      columnDefs: [
+      { targets: [3], orderable: false, searchable: false }
+        ]
+    });
+  });
+</script>
+
+
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
