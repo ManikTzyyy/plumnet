@@ -2,45 +2,46 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from django.core.mail import send_mail
 from django.utils.timezone import now, timedelta
 import requests
+from django.utils import timezone
 
 from app.templates.network.netmiko_service import cut_network
 
 from .models import Client, Server, Redaman
 from decouple import config
 
-def set_status_false_and_notify():
-    # Set semua pelanggan jadi belum bayar
-    Client.objects.update(isPayed=False)
+# def set_status_false_and_notify():
+#     # Set semua pelanggan jadi belum bayar
+#     Client.objects.update(isPayed=False)
 
-    # Kirim email notifikasi
-    for p in Client.objects.all():
-        send_mail(
-            subject="Tagihan Internet Anda",
-            message=f"Halo {p.name}, tagihan Anda sudah jatuh tempo. Mohon segera membayar sebelum tanggal {config('CUT_NETWORK_DATE')}.",
-            from_email=config("DEFAULT_FROM_EMAIL"),
-            recipient_list=[p.email],
-        )
-    print("Job tanggal", config("GIVE_NOTIF_DATE"), "dijalankan:", now())
+#     # Kirim email notifikasi
+#     for p in Client.objects.all():
+#         send_mail(
+#             subject="Tagihan Internet Anda",
+#             message=f"Halo {p.name}, tagihan Anda sudah jatuh tempo. Mohon segera membayar sebelum tanggal {config('CUT_NETWORK_DATE')}.",
+#             from_email=config("DEFAULT_FROM_EMAIL"),
+#             recipient_list=[p.email],
+#         )
+#     print("Job tanggal", config("GIVE_NOTIF_DATE"), "dijalankan:", now())
 
-def cut_connection_unpaid():
-    unpaid = Client.objects.filter(isPayed=False)
-    unpaid.update(isActive=False)
-    data_client = []
-    for p in unpaid:
-        data_client.append({
-            "pppoe": p.pppoe,        
-            "host": p.id_paket.id_ip_pool.id_server.host,   
-            "username": p.id_paket.id_ip_pool.id_server.username,  
-            "password": p.id_paket.id_ip_pool.id_server.password,  
-        })
+# def cut_connection_unpaid():
+#     unpaid = Client.objects.filter(isPayed=False)
+#     unpaid.update(isActive=False)
+#     data_client = []
+#     for p in unpaid:
+#         data_client.append({
+#             "pppoe": p.pppoe,        
+#             "host": p.id_paket.id_ip_pool.id_server.host,   
+#             "username": p.id_paket.id_ip_pool.id_server.username,  
+#             "password": p.id_paket.id_ip_pool.id_server.password,  
+#         })
     
-    if data_client:
-        results = cut_network(data_client)
-        print("Cut connection results:", results)
-    else:
-        print("Tidak ada client yang belum bayar.")
+#     if data_client:
+#         results = cut_network(data_client)
+#         print("Cut connection results:", results)
+#     else:
+#         print("Tidak ada client yang belum bayar.")
 
-    print("Job tanggal", config("CUT_NETWORK_DATE"), "dijalankan:", now())
+#     print("Job tanggal", config("CUT_NETWORK_DATE"), "dijalankan:", now())
 
 
 
@@ -79,10 +80,59 @@ def fetch_and_store_redaman():
             print(f"[ERROR] Failed fetching from {srv.name} ({srv.genieacs}): {e}")
 
 
+def process_billing_cycle():
+    today = timezone.localdate()
+    cut_after = int(config("CUT_NETWORK_AFTER", default=10))
+
+    for client in Client.objects.all():
+        next_bill = client.get_next_bill_date()
+        cut_date = next_bill + timedelta(days=cut_after)
+
+        print(f"[DEBUG] {client.name} - today={today}, next_bill={next_bill}, cut_date={cut_date}, isPayed={client.isPayed}, isActive={client.isActive}")
+
+        # === Hari jatuh tempo: kasih notif ===
+        if today == next_bill and client.isPayed:
+            client.isPayed = False
+            client.save()
+            send_mail(
+                subject="Tagihan Internet Anda",
+                message=(
+                    f"Halo {client.name}, tagihan Anda sudah jatuh tempo ({next_bill}). "
+                    f"Mohon segera membayar sebelum {cut_date} agar layanan tidak diputus."
+                ),
+                from_email=config("DEFAULT_FROM_EMAIL"),
+                recipient_list=[client.email],
+            )
+            print(f"[NOTIF] {client.name} - tagihan jatuh tempo {next_bill}, notif terkirim.")
+
+        # === Hari cut: lakukan pemutusan ===
+        if not client.isPayed and today >= cut_date and client.isActive:
+            
+
+            # siapkan data buat cut_network
+            data_client = [{
+                "pppoe": client.pppoe,
+                "host": client.id_paket.id_ip_pool.id_server.host,
+                "username": client.id_paket.id_ip_pool.id_server.username,
+                "password": client.id_paket.id_ip_pool.id_server.password,
+            }]
+            results = cut_network(data_client)
+            client.isActive = False
+            client.save()
+            status = results[0].get("status", "failed") if results else "failed"
+            print(f"[CUT] {client.name} - diputus pada {today}, results={status}")
+
+
+
+
+
 def start():
     scheduler = BackgroundScheduler()
-    scheduler.add_job(set_status_false_and_notify, 'cron', day=int(config("GIVE_NOTIF_DATE")), hour=0, minute=0)
-    scheduler.add_job(cut_connection_unpaid, 'cron', day=int(config("CUT_NETWORK_DATE")), hour=0, minute=0)
+    # scheduler.add_job(set_status_false_and_notify, 'cron', day=int(config("GIVE_NOTIF_DATE")), hour=0, minute=0)
+    # scheduler.add_job(cut_connection_unpaid, 'cron', day=int(config("CUT_NETWORK_DATE")), hour=0, minute=0)
+
+
+    scheduler.add_job(process_billing_cycle, 'cron', hour=0, minute=0)
 
     scheduler.add_job(fetch_and_store_redaman, 'cron', hour=0, minute=0)
 
@@ -92,6 +142,7 @@ def start():
     run_time = now() + timedelta(seconds=5)
     # scheduler.add_job(set_status_false_and_notify, 'date', run_date=run_time)
     # scheduler.add_job(cut_connection_unpaid, 'date', run_date=run_time)
+    scheduler.add_job(process_billing_cycle, 'date', run_date=run_time)
 
     # scheduler.add_job(fetch_and_store_redaman, 'date', run_date=run_time)
 

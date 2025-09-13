@@ -1,5 +1,5 @@
 # Standard library
-from datetime import timedelta
+from datetime import date, timedelta
 import random
 import json
 import urllib.parse
@@ -42,7 +42,7 @@ from app.templates.network.netmiko_service import (
     test_conn,
 )
 from .templates.network.routeros_service import get_mikrotik_info
-from .models import Gateway, Paket, Redaman, Server, IPPool, Client
+from .models import Gateway, Paket, Redaman, Server, IPPool, Client, Transaction
 
 
 
@@ -824,7 +824,7 @@ def get_genieacs_data(request, client_id):
                     "device": device.get("_id", "-")
                 }
         except Exception as e:
-            print("Error fetch ACS API:", e)
+            print("Error fetch ACS API",)
 
     return JsonResponse(data)
 
@@ -832,8 +832,9 @@ def get_genieacs_data(request, client_id):
 
 def detailClient(request, client_id): 
     client = get_object_or_404(Client, id=client_id)
-    
-    # Ambil data redaman dari DB (7 hari terakhir)
+
+    transaction = Transaction.objects.filter(id_client=client).order_by('-create_at')
+
     today = timezone.now().date()
     seven_days_ago = today - timedelta(days=6)
 
@@ -858,6 +859,12 @@ def detailClient(request, client_id):
     client.device = "-"
 
 
+      # ambil transaksi terakhir
+    last_tx = transaction.first()
+    last_payment = last_tx.create_at.date() if last_tx else None
+    next_bill = client.get_next_bill_date()
+
+
     acs_ip = client.id_paket.id_ip_pool.id_server.genieacs if client.id_paket else None
 
    
@@ -866,7 +873,10 @@ def detailClient(request, client_id):
         "client": client,
         "labels": labels,
         "redaman_data": data_redaman,
-        'acs_ip':acs_ip
+        'acs_ip':acs_ip,
+        'transaction':transaction,
+        "last_payment": last_payment,
+        "next_bill": next_bill,
     }
     return render(request, "detail-pages/detail-client.html", context)
 
@@ -1098,12 +1108,18 @@ def toggle_pembayaran(request, client_id):
     try:
         client = get_object_or_404(Client, id=client_id)
         client.isPayed = not client.isPayed
-
+        price = getattr(client.id_paket, "price", 0) or 0
         if client.isPayed:
-            client.lastPayment = timezone.now().date()
-            message = f"Pembayaran untuk {client.name} dikonfirmasi pada {client.lastPayment}."
-        else:
             
+    
+            # create data on history table
+            Transaction.objects.create(
+                id_client=client,
+                value=price
+            )
+
+            message = f"Pembayaran untuk {client.name} berhasil dikonfirmasi!"
+        else:
             message = f"Tagihan untuk {client.name} berhasil dibuat."
 
         client.save()

@@ -89,21 +89,32 @@
         {% endif %}
       </div>
       <div class="wrapper column">
-        <h2>Status Pembayaran</h2>
+        <h2>Status Langganan</h2>
+        
         <div class="column">
-          <div class="title strong">Status</div>
-          <div class=" {% if client.isPayed %}enable-t{% else %}waiting-t{% endif %}">
+          <div class="title strong">Tanggal Mulai Langganan</div>
+          <div class="text">{{client.activated_at}}</div>
+        </div>
+        <div class="column">
+          <div class="title strong">Status Pembayaran</div>
+           <div class=" {% if client.isPayed %}enable-t{% else %}waiting-t{% endif %}">
               {% if client.isPayed %}Done{% else %}Waiting{% endif %}
           </div>
         </div>
         <div class="row wrap gap-20">
           <div class="column">
           <div class="title strong">Pembayaran Terakhir</div>
-          <div class="text">{{ client.lastPayment }}</div>
+          <div class="text">
+            {% if last_payment %}
+              {{ last_payment }}
+            {% else %}
+              Belum Ada
+            {% endif %}
+          </div>
         </div>
         <div class="column">
           <div class="title strong">Tagihan Berikutnya</div>
-          <div class="text">Sept. 20, 2025</div>
+          <div class="text"> {{ next_bill }}</div>
         </div>
         </div>
         
