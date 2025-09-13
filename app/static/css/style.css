@@ -612,6 +612,12 @@ button:hover {
   
 }
 
+
+.action-dropdown{
+  padding: 5px 0;
+  height: fit-content!important;
+}
+
 /* ============dashboard================= */
 .dashboard .number {
   color: var(--clr-main);
