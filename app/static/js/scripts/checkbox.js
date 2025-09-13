@@ -1,6 +1,7 @@
 const checkboxes = document.querySelectorAll(".client-checkbox");
 const selectedList = document.getElementById("selected-list");
 const activateBtn = document.getElementById("activate-all");
+const selectAll = document.getElementById("select-all-checkbox");
 
 function updateSelected() {
   selectedList.innerHTML = ""; // kosongin list
@@ -49,6 +50,21 @@ activateBtn.addEventListener("click", () => {
   toggleActivasiMultiClient(selectedIds);
 });
 
+if (selectAll) {
+  selectAll.addEventListener("change", function () {
+    const checked = this.checked;
+    checkboxes.forEach((cb) => {
+      cb.checked = checked;
+      const row = cb.closest("tr");
+      if (checked) {
+        row.classList.add("selected-row");
+      } else {
+        row.classList.remove("selected-row");
+      }
+    });
+    updateSelected();
+  });
+}
 
 document.addEventListener("DOMContentLoaded", function () {
   const checkboxes = document.querySelectorAll(".client-checkbox");
