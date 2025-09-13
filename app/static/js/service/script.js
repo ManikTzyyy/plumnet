@@ -199,9 +199,9 @@ function toggleActivasiClient(clientId, name, status, url) {
               title: `Gagal ${msg} !`,
               text: data.message || `Server error: ${res.status}`,
               confirmButtonText: "OK",
-            }).then(()=>{
+            }).then(() => {
               hideLoader();
-            })
+            });
             return;
           }
 
@@ -224,23 +224,20 @@ function toggleActivasiClient(clientId, name, status, url) {
               title: `Client Gagal di ${msg} !`,
               text: data.message || "Terjadi kesalahan.",
               confirmButtonText: "OK",
-            }).then(()=>{
+            }).then(() => {
               hideLoader();
-            })
+            });
           }
         })
         .catch((err) => {
           hideLoader();
           Swal.fire("Gagal!", err.message, "error");
         });
-      
     }
   });
 }
 
 function toggleActivasiMultiClient(clientList) {
-
-
   // tampilkan daftar client di modal konfirmasi
   const clientNames = clientList.map((c) => `${c.name}`).join(", ");
 
@@ -536,7 +533,79 @@ function addServerWithConfig() {
   });
 }
 
+function deleteMultiple(data, object, url) {
+  Swal.fire({
+    title: "Hapus data ini?",
+    text: "Aksi ini tidak dapat dibatalkan!",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#d33",
+    cancelButtonColor: "#aaa",
+    confirmButtonText: "Ya, hapus!",
+    cancelButtonText: "Batal",
+  }).then((result) => {
+    if (!result.isConfirmed) return;
 
+    showMyLoader();
+
+    fetch(`/${object}/delete-multiple/`, {
+      method: "POST",
+      headers: {
+        "X-CSRFToken": getCSRFToken(),
+        Accept: "application/json",
+      },
+      body: JSON.stringify(data),
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error(`Server error: ${res.status}`);
+        return res.json();
+      })
+      .then((data) => {
+        hideLoader();
+
+        if (!data.success)
+          throw new Error(data.message || "Gagal menghapus data");
+
+        // Buat pesan per client
+
+        const container = document.createElement("div");
+        container.style.maxHeight = "300px"; // tinggi maksimal
+        container.style.overflowY = "auto"; // scroll vertical
+        container.style.textAlign = "left";
+        container.style.fontSize = "0.8em";
+
+        // const messages = response.results
+        //   .map((item) => {
+        //     if (item.deleted_on_mikrotik) {
+        //       return `${item.name} - Delete with server action`;
+        //     } else {
+        //       return `${item.name} - Delete without server action`;
+        //     }
+        //   })
+        //   .join("<br>");
+
+        container.innerHTML = data.results
+          .map(
+            (item) =>
+              `${item.name} - ${item.status}`
+          )
+          .join("<br>");
+
+        Swal.fire({
+          title: "Task Success",
+          html: container,
+          icon: "success",
+        }).then(() => {
+          // reload halaman
+          location.href = `/${url}`;
+        });
+      })
+      .catch((err) => {
+        hideLoader();
+        Swal.fire("Gagal!", err.message, "error");
+      });
+  });
+}
 
 function rebootDevice(name, device, genieacs) {
   Swal.fire({
@@ -551,7 +620,7 @@ function rebootDevice(name, device, genieacs) {
   }).then((result) => {
     if (!result.isConfirmed) return;
 
-    showMyLoader();  // pastikan kamu punya fungsi showMyLoader
+    showMyLoader(); // pastikan kamu punya fungsi showMyLoader
     fetch(`/client/reboot/`, {
       method: "POST",
       headers: {
@@ -559,9 +628,9 @@ function rebootDevice(name, device, genieacs) {
         Accept: "application/json",
       },
       body: JSON.stringify({
-        device : device,
-        genieacs : genieacs
-      })
+        device: device,
+        genieacs: genieacs,
+      }),
     })
       .then(async (res) => {
         const data = await res.json();

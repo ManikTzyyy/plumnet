@@ -924,7 +924,7 @@ def map(request):
 def testPage(request):
     return render(request, "pages/testttt.html",)
 
-#=========================================================================
+#=================================Multiple task========================================
 def activasi_multi_client(request):
     if not request.user.is_authenticated:
         return JsonResponse({"success": False, "message": "Anda harus login dahulu untuk melakukan activasi."}, status=401)
@@ -977,6 +977,41 @@ def activasi_multi_client(request):
         return JsonResponse({"success": False, "message": str(e) or "Terjadi kesalahan saat memproses activasi."}, status=500)
 
 
+def delete_multiple_client(request):
+    data = json.loads(request.body.decode('utf-8'))
+    results = []
+
+    for client_data in data:
+        client_id = client_data.get('id')
+        name = client_data.get('name')
+        host = client_data.get('host')
+        username = client_data.get('username')
+        password = client_data.get('password')
+        pppoe = client_data.get('pppoe')
+
+        try:
+            client_obj = Client.objects.get(id=client_id)
+
+            if host:
+                try:
+                    output = delete_pppoe(host, username, password, pppoe)
+                    results.append({"name": name, "status": "success", "deleted_on_mikrotik": True})
+                except Exception as e:
+                    results.append({"name": name, "status": "failed", "error": str(e)})
+                    continue 
+            client_obj.delete()
+            if not host: 
+                results.append({"name": name, "status": "success", "deleted_on_mikrotik": False})
+
+        except Client.DoesNotExist:
+            results.append({"name": name, "status": "failed", "error": "Client tidak ditemukan"})
+
+    return JsonResponse({"success": True, "results": results})
+
+    
+
+
+# =========================other===================================
 def toggle_activasi(request, client_id):
     if not request.user.is_authenticated:
         return JsonResponse({"success": False, "message": "Anda harus login dahulu untuk melakukan activasi."}, status=401)

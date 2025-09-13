@@ -1,4 +1,4 @@
-{% extends 'index.html' %} {% block content %} {% load custom_filters%}
+{% extends 'index.html' %} {% block content %} {% load custom_filters%}{% load static %}
 
 <div class="content-page client">
   <div class="table-wrapper column">
@@ -11,36 +11,23 @@
         <span class="title">Client List</span>
       </div>
       <a href="{% url 'add-client' %}" class="success-button">Add CLient +</a>
-      <!-- <form method="GET" class="form-search row">
-       <div class="column">
-         <label for="per_page" class="text-sm">Search:</label>
-        <input class="search-box" type="search" placeholder="Search" name="s" value="{{ query }}"/>
-       </div>
-       
-       <div class="column">
-         <label for="per_page" class="text-sm">Show:</label>
-        <input class="search-box w-md" type="number" placeholder="{{page_number}}" name="per_page" id="per_page" value="{{ per_page }}" min="1" />
-       </div>
-
-       <div class="column">
-        <label for="filter" class="text-sm">filter</label>
-        <select name="filter" id="filter" onchange="this.form.submit()" class="search-box w-fit">
-          <option value="" {% if filter == "" %}selected{% endif %}>All</option>
-          <option value="online" {% if filter == "online" %}selected{% endif %}>Online</option>
-          <option value="offline" {% if filter == "offline" %}selected{% endif %}>Offline</option>
-          <option value="done" {% if filter == "done" %}selected{% endif %}>Done</option>
-          <option value="waiting" {% if filter == "waiting" %}selected{% endif %}>Waiting</option>
-        </select>
-       </div>
-
-        <input style="display:none" type="submit" />
-      </form> -->
     </div>
+
+    <div class="row gap-10 align-center">
+      <p>Action:</p>
+      <select name="" id="action-dropdown" class="action-dropdown">
+        <option value="" selected>Select Action</option>
+        <option value="delete">Delete Selected Data</option>
+        <option value="payment">Change Payment Status</option>
+      </select>
+      <button class="button success-button" id="go-action">Go</button>
+    </div>    
 
     <div class="table-container">
       <table class="table" id="table">
   <thead>
     <tr class="t-head">
+      <th><input type="checkbox" id="select-all-checkbox"></th>
       <th>#</th>
       <th>Nama</th>
       <th>Alamat</th>
@@ -55,6 +42,16 @@
   <tbody>
     {% for client in clients %}
     <tr class="t-d">
+      <td>
+        <input type="checkbox" class="client-checkbox" 
+        data-id="{{ client.id }}"
+        data-name="{{ client.name }}" 
+        data-pppoe="{{client.pppoe}}"
+        data-host="{{client.id_paket.id_ip_pool.id_server.host}}"
+        data-username="{{client.id_paket.id_ip_pool.id_server.username}}"
+        data-password="{{client.id_paket.id_ip_pool.id_server.password}}"
+        >
+      </td>
       <td>{{ client.id }}</td>
       <td>{{ client.name }}</td>
       <td>{{ client.address }}</td>
@@ -101,6 +98,9 @@
 </div>
 
 
+<script src="{% static 'js/scripts/checkboxClient.js' %}"></script>
+
+
 
 <script>
   $(document).ready(function () {
@@ -109,7 +109,7 @@
       searching: true,
       stateSave: true,
       columnDefs: [
-      { targets: [8], orderable: false, searchable: false }
+      { targets: [0,9], orderable: false, searchable: false }
         ]
     });
   });

@@ -50,8 +50,14 @@ urlpatterns = [
     path('client/<int:client_id>/toggle/', views.toggle_activasi, name='toggle_activasi'),
     path('client/<int:client_id>/payment/', views.toggle_pembayaran, name='toggle_pembayaran'),
 
+    # ==========================multi task==================
     path('client/activasi/multi', views.activasi_multi_client, name="activasi_multi"),
 
+    path('client/delete-multiple/', views.delete_multiple_client, name='delete_multiple_client'),
+
+
+
+    #========================other==============
     path('client/<int:client_id>/verification/', views.toggle_verif, name='toggle_verif'),
    
     path("test-conn/", views.test_conn_view, name="test_conn"),
@@ -62,7 +68,7 @@ urlpatterns = [
 
     path("api/", views.random_devices),
 
-     path("api/client-remote/<int:client_id>/", views.get_client_remote, name="client-remote"),
+    path("api/client-remote/<int:client_id>/", views.get_client_remote, name="client-remote"),
 
     path("api/genieacs/<int:client_id>/", views.get_genieacs_data, name="get_genieacs_data"),
 
