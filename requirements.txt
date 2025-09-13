@@ -11,3 +11,4 @@ django-apscheduler==0.7.0
 gunicorn==23.0.0
 whitenoise==6.9.0
 waitress==3.0.2
+python-dateutil==2.9.0.post0
