@@ -1,6 +1,9 @@
 from django.db import models
-
+from datetime import date, timedelta
+from django.utils import timezone
+from decouple import config
 from .utils.utlis import format_rupiah
+from dateutil.relativedelta import relativedelta 
 
 
     
@@ -95,8 +98,78 @@ class Client(models.Model):
         client_name = self.name if self.name else "Unnamed Client"
         paket_name = self.id_paket.name if self.id_paket else "No Paket"
         return f"{client_name} ({paket_name})"
+from datetime import date, timedelta
+from django.utils import timezone
+from decouple import config
+from django.db import models
 
 
+class Client(models.Model):
+    id_paket = models.ForeignKey(
+        "Paket",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="pakets"
+    )
+    name = models.CharField(max_length=255)
+    address = models.CharField(max_length=255)
+    email = models.EmailField(null=True, blank=True)
+    phone = models.CharField(max_length=255)
+    pppoe = models.CharField(max_length=255)
+    password = models.CharField(max_length=255)
+    isActive = models.BooleanField(default=True)
+    isApproved = models.BooleanField(default=True)
+    local_ip = models.GenericIPAddressField(blank=True, null=True)
+    lat = models.CharField(max_length=255, null=True, blank=True)
+    long = models.CharField(max_length=255, null=True, blank=True)
+    temp_paket = models.ForeignKey(
+        "Paket",
+        on_delete=models.SET_NULL,
+        related_name="temp_paket",
+        null=True,
+        blank=True
+    )
+    temp_name = models.CharField(max_length=255, null=True, blank=True)
+    temp_address = models.CharField(max_length=255, null=True, blank=True)
+    temp_phone = models.CharField(max_length=255, null=True, blank=True)
+    temp_email = models.EmailField(null=True, blank=True)
+    temp_pppoe = models.CharField(max_length=255, null=True, blank=True)
+    temp_password = models.CharField(max_length=255, null=True, blank=True)
+    temp_local_ip = models.GenericIPAddressField(blank=True, null=True)
+    temp_lat = models.CharField(max_length=255, null=True, blank=True)
+    temp_long = models.CharField(max_length=255, null=True, blank=True)
+    isServerNull = models.BooleanField(default=False)
+    isPayed = models.BooleanField(default=True)
+    gateway = models.ForeignKey(
+        "Gateway",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="gateways"
+    )
+    temp_gateway = models.ForeignKey(
+        "Gateway",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="temp_gateways"
+    )
+    activated_at = models.DateField(auto_now_add=True)
+
+    def __str__(self):
+        client_name = self.name if self.name else "Unnamed Client"
+        paket_name = self.id_paket.name if self.id_paket else "No Paket"
+        return f"{client_name} ({paket_name})"
+
+    def get_next_bill_date(self):
+        last_tx = self.clients_transaction.order_by("-create_at").first()
+        base_date = last_tx.create_at.date() if last_tx else self.activated_at
+        return base_date + relativedelta(months=1)
+
+    def should_cut_network(self):
+        cut_after = int(config("CUT_NETWORK_AFTER", default=10))
+        return timezone.now().date() >= self.get_next_bill_date() + timedelta(days=cut_after)
 
 class Transaction(models.Model):
     id_client = models.ForeignKey(
@@ -106,7 +179,6 @@ class Transaction(models.Model):
         blank=True,
         related_name='clients_transaction'
     )
-    lastPayment = models.DateField(null=True, blank=True)
     value = models.CharField(null=True, blank=True, max_length=255) 
     create_at = models.DateTimeField(auto_now_add=True)
 
