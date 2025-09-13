@@ -159,15 +159,6 @@ def delete_pppoe(host, username, password, current_pppoe):
 
         
 
-def set_disabled_pppoe(host, username, password, pppoe, status):
-    try:
-        conn = get_mikrotik_conn(host, username, password)
-        command = f"/ppp secret set {pppoe} disabled={status}"
-        output = conn.send_command(command)
-        conn.disconnect()
-        return output
-    except Exception as e:
-        raise Exception(f"Gagal activasi PPPoE: {e}")
     
 
 def cut_network(data_client):
@@ -231,6 +222,7 @@ def connect_network(data_client):
                 raise Exception("Koneksi Mikrotik gagal")
 
             commands = [
+                f'/ppp active remove [find name="{pppoe}"]',
                 f'/ppp secret set [find name="{pppoe}"] profile={profile}',
                 f'/ppp secret set [find name="{pppoe}"] local-address={local_address}'
             ]
