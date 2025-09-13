@@ -36,6 +36,7 @@ urlpatterns = [
     #delete
     path('server/<int:pk>/delete/', views.delete_server, name='delete-server'),
     path('gateway/<int:pk>/delete/', views.delete_gateway, name='delete-gateway'),
+    path('transaction/<int:pk>/delete/', views.delete_transaction, name='delete-tx'),
     path('paket/<int:pk>/delete/', views.delete_paket, name='delete-paket'),
     path('ip/<int:pk>/delete/', views.delete_ip, name='delete-ip'),
     path('client/<int:pk>/delete/', views.delete_client, name='delete-client'),

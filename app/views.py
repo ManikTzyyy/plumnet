@@ -135,6 +135,10 @@ def addServer(request):
 # views.py
 def addGateway(request, server_id):
     server = get_object_or_404(Server, pk=server_id)
+    gateway_list = Gateway.objects.filter(server=server)
+    gateway_qs = gateway_list.values("id", "name", "lat", "long", "parent_lat", "parent_long" )
+    data = json.dumps(list(gateway_qs), cls=DjangoJSONEncoder)
+    
 
     if request.method == "POST":
         form = GatewayForm(request.POST, server=server)
@@ -182,7 +186,8 @@ def addGateway(request, server_id):
 
     context = {
         "form": form,
-        "server": server
+        "server": server,
+        'data': data
     }
     return render(request, "form-pages/form-gateway.html", context)
 
@@ -378,6 +383,9 @@ def edit_gateway(request, server_id, pk):
     error_message = None
     server = get_object_or_404(Server, pk=server_id)
     gateway = get_object_or_404(Gateway, pk=pk)
+    gateway_list = Gateway.objects.filter(server=server)
+    gateway_qs = gateway_list.values("id", "name", "lat", "long", "parent_lat", "parent_long" )
+    data = json.dumps(list(gateway_qs), cls=DjangoJSONEncoder)
 
     if request.method == 'POST':
         form = GatewayForm(request.POST, instance=gateway, server=server)
@@ -431,6 +439,7 @@ def edit_gateway(request, server_id, pk):
         'success': success,
         'server': server,
         'error_message': error_message,
+        'data': data
     }
     return render(request, 'form-pages/form-gateway.html', context)
 
@@ -753,6 +762,20 @@ def delete_client(request, pk):
     
     return JsonResponse({'success': False, 'message': error_message}, status=400)
 
+
+def delete_transaction(request, pk):
+    tx = get_object_or_404(Transaction, pk=pk)
+    if request.method == "POST":
+        try:
+            res = 'Transaction Deleted'
+            tx.delete()
+            return JsonResponse({
+                'success': True, 'message':res
+            })
+        except Exception as e:
+            error_message = str(e)
+            
+    return JsonResponse({'success': False, 'message': error_message}, status=400) 
 #detail
 
 def detailServer(request, server_id) : 
