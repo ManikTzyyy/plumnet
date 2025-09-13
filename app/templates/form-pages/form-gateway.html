@@ -98,6 +98,8 @@ Swal.fire({
   var map = L.map("map-client").setView([0, 0], 2);
   const latitude = '{{ server.lat|default:"0" }}';
   const longitude = '{{ server.long|default:"0" }}';
+  const gatewayList = {{ data | safe }}
+  
 
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: "&copy; OpenStreetMap contributors",
@@ -107,6 +109,17 @@ Swal.fire({
    L.marker([latitude, longitude], { icon: serverIcon })
     .addTo(map)
     .bindPopup("{{server.name}}")
+
+    gatewayList.forEach((item)=>{
+      const itemMarker = L.marker([item.lat, item.long], { icon: odpIcon }, 
+      {title: item.name})
+      .bindTooltip(`<b>${item.name}</b>`).addTo(map)
+
+      L.polyline([
+        [item.parent_lat, item.parent_long],
+        [item.lat, item.long]
+      ],{ color: "blue" }).addTo(map)
+    })
 
   var marker = L.marker([0, 0], { draggable: true }).addTo(map);
 
