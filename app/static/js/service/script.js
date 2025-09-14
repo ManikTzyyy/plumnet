@@ -587,7 +587,7 @@ function deleteMultiple(data, object, url) {
         container.innerHTML = data.results
           .map(
             (item) =>
-              `${item.name} - ${item.status}`
+              `${item.name} - ${item.message}`
           )
           .join("<br>");
 
