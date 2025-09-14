@@ -62,7 +62,7 @@
           <div class="title strong">Status</div>
           <div class=" {% if client.isActive %}enable-t{% else %}disable-t{% endif %}"> {% if client.isActive %}Online{% else %}Offline{% endif %} </div>
         </div>
-        <button onclick="toggleActivasiClient('{{ client.id }}', '{{ client.name }}',`{{ client.isActive|yesno:'true,false' }}`, 'detail-client')" class="{% if user.is_authenticated %}main-button{% else %}disable-button{% endif %}" {% if not user.is_authenticated %}disabled{% endif %} >{% if client.isActive %}Nonaktifkan{% else %}Activasi{% endif %}</button>
+        <button onclick="toggleActivasiClient('{{ client.id }}', '{{ client.name }}',`{{ client.isActive|yesno:'true,false' }}`, 'detail-client')" class="main-button">{% if client.isActive %}Nonaktifkan{% else %}Activasi{% endif %}</button>
       </div>
       <div class="wrapper column">
         <h2>Device</h2>
@@ -123,7 +123,7 @@
           {% csrf_token %}
           </form>
             <div class="row wrap gap-10">
-              <button onclick="togglePembayaran('{{ client.id }}', '{{ client.name }}',`{{ client.isPayed|yesno:'true,false' }}`, 'detail-client')" class="{% if user.is_authenticated %}main-button{% else %}disable-button{% endif %}" {% if not user.is_authenticated %}disabled{% endif %} >{% if client.isPayed %}Buat Tagihan{% else %}Konfirmasi Pembayaran{% endif %}</button>
+              <button onclick="togglePembayaran('{{ client.id }}', '{{ client.name }}',`{{ client.isPayed|yesno:'true,false' }}`, 'detail-client')" class="main-button">{% if client.isPayed %}Buat Tagihan{% else %}Konfirmasi Pembayaran{% endif %}</button>
             </div>
         </div>
       </div>

@@ -908,9 +908,6 @@ def testPage(request):
 
 #=================================Multiple task========================================
 def activasi_multi_client(request):
-    if not request.user.is_authenticated:
-        return JsonResponse({"success": False, "message": "Anda harus login dahulu untuk melakukan activasi."}, status=401)
-
     if request.method != "POST":
         return JsonResponse({"success": False, "message": "Method not allowed"}, status=405)
 
@@ -959,11 +956,6 @@ def activasi_multi_client(request):
         return JsonResponse({"success": False, "message": str(e) or "Terjadi kesalahan saat memproses activasi."}, status=500)
 
 def payment_multiple_client(request):
-    if not request.user.is_authenticated:
-        return JsonResponse({
-            "success": False,
-            "message": "Anda harus login dahulu."
-        }, status=401)
 
     datas = json.loads(request.body.decode("utf-8"))
     results = []
@@ -998,9 +990,7 @@ def verif_multiple_client(request):
 
 
 def toggle_verif_internal(client_id, user):
-    if not user.is_authenticated:
-        raise Exception("Anda harus login dahulu untuk melakukan verifikasi.")
-
+    
     client = get_object_or_404(Client, id=client_id)
     old_pppoe = client.pppoe
     paket = client.id_paket
@@ -1229,8 +1219,6 @@ def delete_paket_internal(paket_id):
 
 # =========================other===================================
 def toggle_activasi(request, client_id):
-    if not request.user.is_authenticated:
-        return JsonResponse({"success": False, "message": "Anda harus login dahulu untuk melakukan activasi."}, status=401)
 
     try:
         client = get_object_or_404(Client, id=client_id)
@@ -1301,12 +1289,6 @@ def toggle_pembayaran_internal(client_id):
 
 
 def toggle_pembayaran(request, client_id):
-    if not request.user.is_authenticated:
-        return JsonResponse({
-            "success": False,
-            "message": "Anda harus login dahulu."
-        }, status=401)
-
     try:
         message = toggle_pembayaran_internal(client_id)
         return JsonResponse({"success": True, "message": message})

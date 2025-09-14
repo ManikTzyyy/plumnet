@@ -604,9 +604,9 @@ function handleMultiple(data, object, url, action) {
           .join("<br>");
 
         Swal.fire({
-          title: "Task Success",
+          title: "Task Done",
           html: container,
-          icon: "success",
+          icon: "info",
         }).then(() => {
           // reload halaman
           location.href = `/${url}`;

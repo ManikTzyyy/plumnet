@@ -121,7 +121,7 @@
             {% if user.is_authenticated %}
             <div class="row gap-20">
               <div class="column">
-                <div class="main-text">Halo Admin!</div>
+                <div class="main-text">Halo {{user.username}}!</div>
                 <div class="text-grey">{% now "d F Y" %}</div>
               </div>
               <a
