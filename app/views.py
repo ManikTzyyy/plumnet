@@ -994,12 +994,12 @@ def delete_multiple_client(request):
 
             if host:
                 try:
-                    output = delete_pppoe(host, username, password, pppoe)
+                    # output = delete_pppoe(host, username, password, pppoe)
                     results.append({"name": name, "status": "success", "deleted_on_mikrotik": True})
                 except Exception as e:
                     results.append({"name": name, "status": "failed", "error": str(e)})
                     continue 
-            client_obj.delete()
+            # client_obj.delete()
             if not host: 
                 results.append({"name": name, "status": "success", "deleted_on_mikrotik": False})
 
