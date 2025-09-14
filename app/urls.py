@@ -56,6 +56,9 @@ urlpatterns = [
     path('client/delete-multiple/', views.delete_multiple_client, name='delete_multiple_client'),
 
     path('gateway/delete-multiple/', views.delete_multiple_gateway, name='delete_multiple_gateway'),
+    path('trans/delete-multiple/', views.delete_multiple_transaction, name='delete_multiple_ts'),
+    path('ip/delete-multiple/', views.delete_multiple_ip, name='delete_multiple_ip'),
+    path('paket/delete-multiple/', views.delete_multiple_paket, name='delete_multiple_paket'),
 
 
 
