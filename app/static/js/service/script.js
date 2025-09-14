@@ -533,22 +533,30 @@ function addServerWithConfig() {
   });
 }
 
-function deleteMultiple(data, object, url) {
+function handleMultiple(data, object, url, action) {
+  let title
+
+  if (action == 'delete'){
+    title = 'Hapus Data Terpilih?'
+  } else if(action == 'verif'){
+    title = 'Verifikasi Perubahan Data Terpilih?'
+  }
+
+
   Swal.fire({
-    title: "Hapus data ini?",
-    text: "Aksi ini tidak dapat dibatalkan!",
+    title: title,
     icon: "warning",
     showCancelButton: true,
-    confirmButtonColor: "#d33",
+    confirmButtonColor: "#13542d",
     cancelButtonColor: "#aaa",
-    confirmButtonText: "Ya, hapus!",
+    confirmButtonText: "Ya!",
     cancelButtonText: "Batal",
   }).then((result) => {
     if (!result.isConfirmed) return;
 
     showMyLoader();
 
-    fetch(`/${object}/delete-multiple/`, {
+    fetch(`/${object}/handle-multiple/${action}/`, {
       method: "POST",
       headers: {
         "X-CSRFToken": getCSRFToken(),
@@ -564,7 +572,7 @@ function deleteMultiple(data, object, url) {
         hideLoader();
 
         if (!data.success)
-          throw new Error(data.message || "Gagal menghapus data");
+          throw new Error(data.message || "Gagal melakukan action");
 
         // Buat pesan per client
 

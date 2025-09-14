@@ -979,6 +979,95 @@ def activasi_multi_client(request):
         return JsonResponse({"success": False, "message": str(e) or "Terjadi kesalahan saat memproses activasi."}, status=500)
 
 
+
+def verif_multiple_client(request):
+    datas = json.loads(request.body.decode("utf-8"))
+    results = []
+
+    for data in datas:
+        client_id = data.get("id")
+        name = data.get('name')
+
+        try:
+            message = toggle_verif_internal(client_id, request.user)
+            results.append({"name": name, "success": True, "message": message})
+        except Exception as e:
+            results.append({"name": name, "success": False, "message": str(e)})
+
+    return JsonResponse({"success": True, "results": results})
+
+
+def toggle_verif_internal(client_id, user):
+    if not user.is_authenticated:
+        raise Exception("Anda harus login dahulu untuk melakukan verifikasi.")
+
+    client = get_object_or_404(Client, id=client_id)
+    old_pppoe = client.pppoe
+    paket = client.id_paket
+    statusVerif = client.isApproved
+
+    if statusVerif:
+        raise Exception("Client sudah terverifikasi perubahannya")
+
+    if not client.temp_paket:
+        raise Exception("Client belum memilih paket sementara.")
+
+    new_server = client.temp_paket.id_ip_pool.id_server
+    new_paket = client.temp_paket
+
+    # cek kalau pppoe sudah dipakai
+    if not client.isApproved:
+        if Client.objects.filter(Q(pppoe=client.temp_pppoe) & ~Q(id=client.id)).exists():
+            raise Exception(f"ID PPPoE '{client.temp_pppoe}' sudah digunakan oleh client lain.")
+
+    if paket is None:
+        # create baru
+        create_pppoe(
+            new_server.host,
+            new_server.username,
+            new_server.password,
+            client.temp_pppoe,
+            client.temp_password,
+            new_paket.name,
+            client.temp_local_ip
+        )
+    else:
+        # edit existing
+        edit_pppoe(
+            new_server.host,
+            new_server.username,
+            new_server.password,
+            client.temp_pppoe,
+            client.temp_password,
+            new_paket.name,
+            client.temp_local_ip,
+            old_pppoe
+        )
+
+    # update data client
+    client.id_paket = new_paket
+    client.name = client.temp_name
+    client.address = client.temp_address
+    client.email = client.temp_email
+    client.phone = client.temp_phone
+    client.pppoe = client.temp_pppoe
+    client.password = client.temp_password
+    client.local_ip = client.temp_local_ip
+    client.lat = client.temp_lat
+    client.long = client.temp_long
+    client.gateway = client.temp_gateway
+
+    # toggle verif
+    client.isServerNull = not client.isServerNull
+    client.isApproved = not client.isApproved
+    client.save()
+
+    return (
+        f"Client berhasil diverifikasi."
+        if client.isApproved else
+        f"Verifikasi untuk dibatalkan."
+    )
+
 def delete_multiple_client(request):
     data = json.loads(request.body.decode('utf-8'))
     results = []
@@ -996,7 +1085,7 @@ def delete_multiple_client(request):
 
             if host:
                 try:
-                    output = delete_pppoe(host, username, password, pppoe)
+                    delete_pppoe(host, username, password, pppoe)
                     results.append({"name": name, "status": "success", "deleted_on_mikrotik": True, 'message': "Deleted with server Action"})
                 except Exception as e:
                     results.append({"name": name, "status": "failed", "message": str(e)})
@@ -1151,103 +1240,11 @@ def toggle_activasi(request, client_id):
 
 
 def toggle_verif(request, client_id):
-    if not request.user.is_authenticated:
-        return JsonResponse({
-            "success": False,
-            "message": "Anda harus login dahulu untuk melakukan verifikasi."
-        }, status=401)
-
     try:
-        client = get_object_or_404(Client, id=client_id)
-        old_pppoe = client.pppoe
-        paket = client.id_paket
-
-        # pastikan temp_paket ada
-        if not client.temp_paket:
-            return JsonResponse({
-                "success": False,
-                "message": "Client belum memilih paket sementara."
-            }, status=400)
-
-        new_server = client.temp_paket.id_ip_pool.id_server
-        new_paket = client.temp_paket
-
-        # cek kalau pppoe sudah dipakai
-        if not client.isApproved:
-            if Client.objects.filter(Q(pppoe=client.temp_pppoe) & ~Q(id=client.id)).exists():
-                return JsonResponse({
-                    "success": False,
-                    "message": f"ID PPPoE '{client.temp_pppoe}' sudah digunakan oleh client lain."
-                })
-
-        if paket is None:
-            # create baru
-            create_pppoe(
-                new_server.host,
-                new_server.username,
-                new_server.password,
-                client.temp_pppoe,
-                client.temp_password,
-                new_paket.name,
-                client.temp_local_ip
-            )
-            client.id_paket = new_paket
-            client.name = client.temp_name
-            client.address = client.temp_address
-            client.email = client.temp_email
-            client.phone = client.temp_phone
-            client.pppoe = client.temp_pppoe
-            client.password = client.temp_password
-            client.local_ip = client.temp_local_ip
-            client.lat = client.temp_lat
-            client.long = client.temp_long
-            client.gateway = client.temp_gateway
-            
-        else:
-            # edit existing
-            edit_pppoe(
-                new_server.host,
-                new_server.username,
-                new_server.password,
-                client.temp_pppoe,
-                client.temp_password,
-                new_paket.name,
-                client.temp_local_ip,
-                old_pppoe
-            )
-
-            # update data client
-            client.id_paket = new_paket
-            client.name = client.temp_name
-            client.address = client.temp_address
-            client.email = client.temp_email
-            client.phone = client.temp_phone
-            client.pppoe = client.temp_pppoe
-            client.password = client.temp_password
-            client.local_ip = client.temp_local_ip
-            client.lat = client.temp_lat
-            client.long = client.temp_long
-            client.gateway = client.temp_gateway
-
-        # toggle verif
-        client.isServerNull = not client.isServerNull
-        client.isApproved = not client.isApproved
-        client.save()
-
-        return JsonResponse({
-            "success": True,
-            "message": (
-                f"Client {client.name} berhasil diverifikasi."
-                if client.isApproved else
-                f"Verifikasi untuk {client.name} dibatalkan."
-            )
-        })
-
+        message = toggle_verif_internal(client_id, request.user)
+        return JsonResponse({"success": True, "message": message})
     except Exception as e:
-        return JsonResponse({
-            "success": False,
-            "message": f"Error internal: {str(e)}"
-        }, status=500)
+        return JsonResponse({"success": False, "message": str(e)}, status=400)
 
 
 def toggle_pembayaran(request, client_id):

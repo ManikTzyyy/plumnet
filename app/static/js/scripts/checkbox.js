@@ -94,15 +94,17 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       if (actionValue === "delete") {
-        deleteMultiple(selectedIds, "client", "client");
+        handleMultiple(selectedIds, "client", "client", 'delete');
       } else if (actionValue === "payment") {
         // functionChangeStatusPaymentMultiple();
       } else if (actionValue === "delete-gw") {
-        deleteMultiple(selectedIds, "gateway", "server-list");
+        handleMultiple(selectedIds, "gateway", "server-list", 'delete');
       } else if (actionValue === "delete-paket") {
-        deleteMultiple(selectedIds, "paket", "paket-list");
+        handleMultiple(selectedIds, "paket", "paket-list", 'delete');
       } else if (actionValue === "delete-ts") {
-        deleteMultiple(selectedIds, "trans", "client");
+        handleMultiple(selectedIds, "trans", "client", 'delete');
+      } else if (actionValue === "verifikasi") {
+        handleMultiple(selectedIds, "verification", "client", 'verif');
       }
       else {
         Swal.fire({
@@ -167,7 +169,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       if (actionValueIP === "delete-ip") {
-        deleteMultiple(selectedIdsIP, "ip", "paket-list");
+        handleMultiple(selectedIdsIP, "ip", "paket-list", 'delete');
         // alert("delete ip" + selectedIdsIP);
       } else {
         Swal.fire({
