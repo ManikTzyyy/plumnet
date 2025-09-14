@@ -741,6 +741,8 @@ def delete_ip(request, pk):
                 error_message = str(e) 
     return JsonResponse({'success': False, 'message': error_message}, status=400)
 
+
+
 def delete_client(request, pk):
     client = get_object_or_404(Client, pk=pk)
     
@@ -994,17 +996,17 @@ def delete_multiple_client(request):
 
             if host:
                 try:
-                    # output = delete_pppoe(host, username, password, pppoe)
-                    results.append({"name": name, "status": "success", "deleted_on_mikrotik": True})
+                    output = delete_pppoe(host, username, password, pppoe)
+                    results.append({"name": name, "status": "success", "deleted_on_mikrotik": True, 'message': "Deleted with server Action"})
                 except Exception as e:
-                    results.append({"name": name, "status": "failed", "error": str(e)})
+                    results.append({"name": name, "status": "failed", "message": str(e)})
                     continue 
-            # client_obj.delete()
+            client_obj.delete()
             if not host: 
-                results.append({"name": name, "status": "success", "deleted_on_mikrotik": False})
+                results.append({"name": name, "status": "success", "deleted_on_mikrotik": False, 'message': "Deleted without server Action"})
 
         except Client.DoesNotExist:
-            results.append({"name": name, "status": "failed", "error": "Client tidak ditemukan"})
+            results.append({"name": name, "status": "failed", "message": "Client tidak ditemukan"})
 
     return JsonResponse({"success": True, "results": results})
 
@@ -1020,16 +1022,89 @@ def delete_multiple_gateway(request):
 
         try:
             gw_object = Gateway.objects.get(id=data_id)
-            results.append({"name": name, "status": "success"})
+            results.append({"name": name, "status": "success", 'message': "Deleted"})
             gw_object.delete()
 
         except Gateway.DoesNotExist:
-            results.append({"name": name, "status": "failed", "error": "Data tidak ditemukan"})
+            results.append({"name": name, "status": "failed", "message": "Data tidak ditemukan"})
 
     return JsonResponse({"success": True, "results": results})
-    
+
+def delete_multiple_transaction(request):
+    datas = json.loads(request.body.decode('utf-8'))
+    results = []
+
+    for data in datas:
+        data_id = data.get('id')
+        name = data.get('name')
+
+        try:
+            ts = Transaction.objects.get(id=data_id)
+            results.append({"name": name, "status": "success", 'message': "Deleted"})
+            ts.delete()
+
+        except Gateway.DoesNotExist:
+            results.append({"name": name, "status": "failed", "message": "Data tidak ditemukan"})
+
+    return JsonResponse({"success": True, "results": results})
 
 
+def delete_multiple_ip(request):
+    datas = json.loads(request.body.decode("utf-8"))
+    results = []
+
+    for data in datas:
+        ip_id = data.get("id")
+        name = data.get('name')
+        try:
+            # panggil delete_ip internal function tanpa HTTP request
+            res = delete_ip_internal(ip_id)
+            results.append({"name": name, "success": True, "message": res})
+        except Exception as e:
+            results.append({"name": name, "success": False, "message": str(e)})
+
+    return JsonResponse({"success": True, "results": results})
+
+def delete_ip_internal(ip_id):
+    ip_pool = get_object_or_404(IPPool, pk=ip_id)
+    server = ip_pool.id_server
+    ip_data = list(Paket.objects.filter(id_ip_pool_id=ip_pool).values_list('name', flat=True))
+    if server:
+        delete_pool(server.host, server.username, server.password, ip_pool.name, ip_data)
+        
+    ip_pool.delete()
+    return "IP Pool deleted" if server else "Pool deleted without server action"
+
+
+
+
+def delete_multiple_paket(request):
+    datas = json.loads(request.body.decode("utf-8"))
+    results = []
+
+    for data in datas:
+        paket_id = data.get("id")
+        name = data.get('name')
+        try:
+            # panggil delete_ip internal function tanpa HTTP request
+            res = delete_paket_internal(paket_id)
+            results.append({"name": name, "success": True, "message": res})
+        except Exception as e:
+            results.append({"name": name, "success": False, "message": str(e)})
+
+    return JsonResponse({"success": True, "results": results})
+
+def delete_paket_internal(paket_id):
+    paket = get_object_or_404(Paket, pk=paket_id)
+    ip_pool = paket.id_ip_pool
+    server = ip_pool.id_server if ip_pool else None
+    client_data = list(Client.objects.filter(id_paket_id=paket.id).values_list('pppoe', flat=True))
+    if server:
+        delete_profile(server.host, server.username, server.password,paket.name,client_data)
+        # print('delete on mikrotik too')
+    paket.delete()
+    # print('delete without mikro')
+    return "IP Pool deleted" if server else "Profile deleted without server action"
 # =========================other===================================
 def toggle_activasi(request, client_id):
     if not request.user.is_authenticated:
