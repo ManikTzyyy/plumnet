@@ -73,7 +73,7 @@
         {% if user.is_authenticated %}
         <button
           onclick="cekModifyClientData('{{ client.id }}','{{client.temp_name}}','{{client.temp_address}}','{{client.temp_phone}}', '{{client.temp_paket.id_ip_pool.id_server.name}}', '{{ client.temp_paket.name }} - {{ client.temp_paket.price|rupiah }} - {{ client.temp_paket.limit }}', '{{client.temp_pppoe}}', '{{client.temp_lat}}', '{{client.temp_long}}', '{{client.temp_local_ip}}', '{{client.temp_email}}')"
-          class="icon-button {% if client.isApproved %}disbale-button{% else %}main-button {% endif %}"
+          class="icon-button {% if client.isApproved %}disable-button{% else %}main-button {% endif %}"
           {% if client.isApproved %}disabled{% endif %}
         >
           <i class="fa-solid fa-check"></i>
@@ -98,7 +98,7 @@
 </div>
 
 
-<script src="{% static 'js/scripts/checkboxClient.js' %}"></script>
+<script src="{% static 'js/scripts/checkbox.js' %}"></script>
 
 
 
