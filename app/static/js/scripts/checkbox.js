@@ -111,7 +111,12 @@ document.addEventListener("DOMContentLoaded", function () {
         deleteMultiple(selectedIds, "client", "client");
       } else if (actionValue === "payment") {
         // functionChangeStatusPaymentMultiple();
-      } else {
+      } else if (actionValue === "delete-gw"){
+        deleteMultiple(selectedIds, 'gateway', 'server-list')
+      }
+      
+      
+      else {
         Swal.fire({
           title: "Pilih Action terlebih dahulu!",
           icon: "warning",

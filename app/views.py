@@ -1008,6 +1008,25 @@ def delete_multiple_client(request):
 
     return JsonResponse({"success": True, "results": results})
 
+
+
+def delete_multiple_gateway(request):
+    datas = json.loads(request.body.decode('utf-8'))
+    results = []
+
+    for data in datas:
+        data_id = data.get('id')
+        name = data.get('name')
+
+        try:
+            gw_object = Gateway.objects.get(id=data_id)
+            results.append({"name": name, "status": "success"})
+            gw_object.delete()
+
+        except Gateway.DoesNotExist:
+            results.append({"name": name, "status": "failed", "error": "Data tidak ditemukan"})
+
+    return JsonResponse({"success": True, "results": results})
     
 
 
