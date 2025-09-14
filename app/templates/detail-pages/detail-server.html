@@ -73,13 +73,13 @@
 
 
         <div class="row gap-10 align-center">
-      <p>Action:</p>
-      <select name="" id="action-dropdown" class="action-dropdown">
-        <option value="" selected>Select Action</option>
-        <option value="delete-gw">Delete Selected Data</option>
-      </select>
-      <button class="button success-button" id="go-action">Go</button>
-    </div>  
+          <p>Action:</p>
+          <select name="" id="action-dropdown" class="action-dropdown">
+            <option value="" selected>Select Action</option>
+            <option value="delete-gw">Delete Selected Data</option>
+          </select>
+          <button class="button success-button" id="go-action">Go</button>
+        </div>  
 
        
         <div class="table-container">
@@ -100,7 +100,9 @@
               <td>
                  <input type="checkbox" class="client-checkbox" 
                   data-id="{{ gateway.id }}"
-                  data-name="{{ gateway.name }}" >
+                  data-name="{{ gateway.name }}" > 
+                
+              </td>
               <td>{{ gateway.id }}</td>
               <td>{{ gateway.name }}</td>
               <td>{{ gateway.lat }}</td>
