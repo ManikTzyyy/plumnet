@@ -19,7 +19,8 @@
         <option value="" selected>Select Action</option>
         <option value="delete">Delete Selected Data</option>
         <option value="verifikasi">Verifikasi perubahan</option>
-        <option value="payment">Change Payment Status</option>
+        <option value="payment">Toggle Payment Status</option>
+        <option value="network-status">Toggle Network Status</option>
       </select>
       <button class="button success-button" id="go-action">Go</button>
     </div>    
@@ -50,6 +51,8 @@
         data-host="{{client.id_paket.id_ip_pool.id_server.host}}"
         data-username="{{client.id_paket.id_ip_pool.id_server.username}}"
         data-password="{{client.id_paket.id_ip_pool.id_server.password}}"
+        data-paket="{{ client.id_paket.name }}"
+        data-iplocal="{{client.local_ip}}"
         >
       </td>
       <td>{{ client.id }}</td>

@@ -903,8 +903,6 @@ def map(request):
     return render(request, "pages/maps.html", context)
 
 
-def testPage(request):
-    return render(request, "pages/testttt.html",)
 
 #=================================Multiple task========================================
 def activasi_multi_client(request):
@@ -988,9 +986,48 @@ def verif_multiple_client(request):
 
     return JsonResponse({"success": True, "results": results})
 
+def net_multiple_client(request):
+    if request.method != "POST":
+        return JsonResponse({"success": False, "message": "Method not allowed"}, status=405)
+
+    try:
+        datas = json.loads(request.body.decode("utf-8"))
+        results = []
+
+        for data in datas:
+            client_id = data.get("id")
+            name = data.get("name")
+
+            try:
+                message = toggle_activasi_internal(client_id)
+                results.append({"name": name, "success": True, "message": message})
+            except Exception as e:
+                results.append({"name": name, "success": False, "message": str(e)})
+
+        return JsonResponse({"success": True, "results": results})
+    except Exception as e:
+        return JsonResponse({"success": False, "message": str(e) or "Terjadi kesalahan."}, status=500)
+
+def toggle_pembayaran_internal(client_id):
+    client = get_object_or_404(Client, id=client_id)
+    client.isPayed = not client.isPayed
+    price = getattr(client.id_paket, "price", 0) or 0
+
+    if client.isPayed:
+        # buat record transaksi
+        Transaction.objects.create(
+            id_client=client,
+            value=price
+        )
+        message = f"Pembayaran  berhasil dikonfirmasi!"
+    else:
+        message = f"Tagihan berhasil dibuat."
+
+    client.save()
+    return message
 
 def toggle_verif_internal(client_id, user):
-    
+
     client = get_object_or_404(Client, id=client_id)
     old_pppoe = client.pppoe
     paket = client.id_paket
@@ -1058,6 +1095,65 @@ def toggle_verif_internal(client_id, user):
         f"Verifikasi untuk dibatalkan."
     )
 
+def delete_ip_internal(ip_id):
+    ip_pool = get_object_or_404(IPPool, pk=ip_id)
+    server = ip_pool.id_server
+    profile_data = list(
+        Paket.objects.filter(id_ip_pool_id=ip_pool).values_list("name", flat=True)
+    )
+
+    if server:
+        delete_pool(
+            server.host,
+            server.username,
+            server.password,
+            ip_pool.name,
+            profile_data,
+        )
+        ip_pool.delete()
+        return "IP Pool deleted (with server action)"
+    else:
+        ip_pool.delete()
+        return "IP Pool deleted without server action"
+
+def toggle_activasi_internal(client_id):
+    client = get_object_or_404(Client, id=client_id)
+    paket = client.id_paket
+    server = paket.id_ip_pool.id_server
+
+    if client.isActive:
+        # Nonaktifkan client
+        result = cut_network([{
+            "host": server.host,
+            "username": server.username,
+            "password": server.password,
+            "pppoe": client.pppoe,
+        }])
+        if result[0].get("status") == "success":
+            client.isActive = False
+            client.save()
+            return "Client berhasil dinonaktifkan"
+        else:
+            raise Exception(f"Gagal nonaktifkan: {result[0].get('error')}")
+    else:
+        # Aktifkan client
+        result = connect_network([{
+            "host": server.host,
+            "username": server.username,
+            "password": server.password,
+            "pppoe": client.pppoe,
+            "profile": paket.name,
+            "local_address": client.local_ip,
+        }])
+        if result[0].get("status") == "success":
+            client.isActive = True
+            client.save()
+            return "Client berhasil diaktifkan"
+        else:
+            raise Exception(f"Gagal aktifkan: {result[0].get('error')}")
+
+
+
 def delete_multiple_client(request):
     data = json.loads(request.body.decode('utf-8'))
     results = []
@@ -1088,7 +1184,6 @@ def delete_multiple_client(request):
             results.append({"name": name, "status": "failed", "message": "Client tidak ditemukan"})
 
     return JsonResponse({"success": True, "results": results})
-
 
 
 def delete_multiple_gateway(request):
@@ -1144,27 +1239,6 @@ def delete_multiple_ip(request):
 
     return JsonResponse({"success": True, "results": results})
 
-def delete_ip_internal(ip_id):
-    ip_pool = get_object_or_404(IPPool, pk=ip_id)
-    server = ip_pool.id_server
-    profile_data = list(
-        Paket.objects.filter(id_ip_pool_id=ip_pool).values_list("name", flat=True)
-    )
-
-    if server:
-        delete_pool(
-            server.host,
-            server.username,
-            server.password,
-            ip_pool.name,
-            profile_data,
-        )
-        ip_pool.delete()
-        return "IP Pool deleted (with server action)"
-    else:
-        ip_pool.delete()
-        return "IP Pool deleted without server action"
-
 
 
 
@@ -1219,44 +1293,17 @@ def delete_paket_internal(paket_id):
 
 # =========================other===================================
 def toggle_activasi(request, client_id):
+    if request.method != "POST":
+        return JsonResponse({"success": False, "message": "Method not allowed"}, status=405)
 
     try:
-        client = get_object_or_404(Client, id=client_id)
-        paket = client.id_paket
-        server = paket.id_ip_pool.id_server
-
-        if client.isActive:
-            result = cut_network([{
-                "host": server.host,
-                "username": server.username,
-                "password": server.password,
-                "pppoe": client.pppoe,
-            }])
-            if result[0].get("status") == "success":
-                client.isActive = False
-                client.save()
-                msg = "Client berhasil dinonaktifkan"
-            else:
-                return JsonResponse({"success": False, "message": f"Gagal nonaktifkan: {result[0].get('error')}"})
-        else:
-            result = connect_network([{
-                "host": server.host,
-                "username": server.username,
-                "password": server.password,
-                "pppoe": client.pppoe,
-                "profile": paket.name,
-                "local_address": client.local_ip,
-            }])
-            if result[0].get("status") == "success":
-                client.isActive = True
-                client.save()
-                msg = "Client berhasil diaktifkan"
-            else:
-                return JsonResponse({"success": False, "message": f"Gagal aktifkan: {result[0].get('error')}"})
-
-        return JsonResponse({"success": True, "message": msg, "server_res": result})
+        message = toggle_activasi_internal(client_id)
+        return JsonResponse({"success": True, "message": message})
     except Exception as e:
-        return JsonResponse({"success": False, "message": str(e) or "Terjadi kesalahan saat memproses activasi."}, status=500)
+        return JsonResponse({
+            "success": False,
+            "message": str(e) or "Terjadi kesalahan saat memproses activasi."
+        }, status=500)
 
 
 
@@ -1269,23 +1316,7 @@ def toggle_verif(request, client_id):
 
 
 
-def toggle_pembayaran_internal(client_id):
-    client = get_object_or_404(Client, id=client_id)
-    client.isPayed = not client.isPayed
-    price = getattr(client.id_paket, "price", 0) or 0
 
-    if client.isPayed:
-        # buat record transaksi
-        Transaction.objects.create(
-            id_client=client,
-            value=price
-        )
-        message = f"Pembayaran  berhasil dikonfirmasi!"
-    else:
-        message = f"Tagihan berhasil dibuat."
-
-    client.save()
-    return message
 
 
 def toggle_pembayaran(request, client_id):
