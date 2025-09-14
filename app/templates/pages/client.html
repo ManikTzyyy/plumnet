@@ -36,7 +36,7 @@
       <th>Server</th>
       <th>Status</th>
       <th>Payment</th>
-      <th></th>
+      <!-- <th></th> -->
       <th></th>
     </tr>
   </thead>
@@ -70,7 +70,7 @@
           {% if client.isPayed %}Done{% else %}Waiting{% endif %}
         </div>
       </td>
-      <td>
+      <!-- <td>
         {% if user.is_authenticated %}
         <button
           onclick="cekModifyClientData('{{ client.id }}','{{client.temp_name}}','{{client.temp_address}}','{{client.temp_phone}}', '{{client.temp_paket.id_ip_pool.id_server.name}}', '{{ client.temp_paket.name }} - {{ client.temp_paket.price|rupiah }} - {{ client.temp_paket.limit }}', '{{client.temp_pppoe}}', '{{client.temp_lat}}', '{{client.temp_long}}', '{{client.temp_local_ip}}', '{{client.temp_email}}')"
@@ -82,7 +82,7 @@
         {% else %}
           &nbsp;
         {% endif %}
-      </td>
+      </td> -->
 
       <td>
         <div class="row button-wrapper">
@@ -110,7 +110,7 @@
       searching: true,
       stateSave: true,
       columnDefs: [
-      { targets: [0,9], orderable: false, searchable: false }
+      { targets: [0,8], orderable: false, searchable: false }
         ]
     });
   });
