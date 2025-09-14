@@ -1,31 +1,16 @@
 document.addEventListener("DOMContentLoaded", function () {
   const checkboxes = document.querySelectorAll(".client-checkbox");
-  const selectedList = document.getElementById("selected-list");
   const activateBtn = document.getElementById("activate-all");
   const selectAll = document.getElementById("select-all-checkbox");
   const btnGO = document.getElementById("go-action");
   const action = document.getElementById("action-dropdown");
 
-  // Update selected list & tombol aktivasi
-  function updateSelected() {
-    selectedList.innerHTML = ""; // kosongin list
 
-    const selected = Array.from(checkboxes)
-      .filter((cb) => cb.checked)
-      .map((cb) => ({
-        id: cb.dataset.id,
-        name: cb.dataset.name,
-        paket: cb.dataset.paket,
-      }));
+  function updateActivateBtn() {
+    if (!activateBtn) return;
+    const selectedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
 
-    selected.forEach((client) => {
-      const item = document.createElement("div");
-      item.classList.add("item-selected");
-      item.textContent = `${client.name} (${client.paket})`;
-      selectedList.appendChild(item);
-    });
-
-    if (selected.length === 0) {
+    if (selectedCount === 0) {
       activateBtn.disabled = true;
       activateBtn.classList.add("disable-button");
       activateBtn.classList.remove("success-button");
@@ -35,6 +20,7 @@ document.addEventListener("DOMContentLoaded", function () {
       activateBtn.classList.add("success-button");
     }
   }
+
 
   // Toggle row highlight
   function toggleRowHighlight(cb) {
@@ -50,7 +36,7 @@ document.addEventListener("DOMContentLoaded", function () {
   checkboxes.forEach((cb) => {
     cb.addEventListener("change", () => {
       toggleRowHighlight(cb);
-      updateSelected();
+      updateActivateBtn()
     });
   });
 
@@ -62,7 +48,7 @@ document.addEventListener("DOMContentLoaded", function () {
         cb.checked = checked;
         toggleRowHighlight(cb);
       });
-      updateSelected();
+      updateActivateBtn()
     });
   }
 
@@ -111,12 +97,79 @@ document.addEventListener("DOMContentLoaded", function () {
         deleteMultiple(selectedIds, "client", "client");
       } else if (actionValue === "payment") {
         // functionChangeStatusPaymentMultiple();
-      } else if (actionValue === "delete-gw"){
-        deleteMultiple(selectedIds, 'gateway', 'server-list')
+      } else if (actionValue === "delete-gw") {
+        deleteMultiple(selectedIds, "gateway", "server-list");
+      } else if (actionValue === "delete-paket") {
+        deleteMultiple(selectedIds, "paket", "paket-list");
+      } else if (actionValue === "delete-ts") {
+        deleteMultiple(selectedIds, "trans", "client");
       }
-      
-      
       else {
+        Swal.fire({
+          title: "Pilih Action terlebih dahulu!",
+          icon: "warning",
+        });
+      }
+    });
+  }
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+  const checkboxesIP = document.querySelectorAll(".ip-checkbox");
+  const selectAllIP = document.getElementById("select-all-checkbox-IP");
+  const btnGOIP = document.getElementById("go-action-ip");
+  const actionIP = document.getElementById("action-dropdown-ip");
+
+  // Toggle row highlight
+  function toggleRowHighlightIP(cb) {
+    const row = cb.closest("tr");
+    if (cb.checked) {
+      row.classList.add("selected-row");
+    } else {
+      row.classList.remove("selected-row");
+    }
+  }
+
+  // Event listener untuk setiap checkbox
+  checkboxesIP.forEach((cb) => {
+    cb.addEventListener("change", () => {
+      toggleRowHighlightIP(cb);
+    });
+  });
+
+  // Event listener untuk selectAll
+  if (selectAllIP) {
+    selectAllIP.addEventListener("change", function () {
+      const checked = this.checked;
+      checkboxesIP.forEach((cb) => {
+        cb.checked = checked;
+        toggleRowHighlightIP(cb);
+      });
+    });
+  }
+
+  if (btnGOIP && actionIP) {
+    btnGOIP.addEventListener("click", () => {
+      const actionValueIP = actionIP.value;
+      const selectedIdsIP = Array.from(checkboxesIP)
+        .filter((cb) => cb.checked)
+        .map((cb) => ({
+          id: cb.dataset.id,
+          name: cb.dataset.name,
+        }));
+
+      if (selectedIdsIP.length === 0) {
+        Swal.fire({
+          title: "Pilih Data terlebih dahulu!",
+          icon: "warning",
+        });
+        return;
+      }
+
+      if (actionValueIP === "delete-ip") {
+        deleteMultiple(selectedIdsIP, "ip", "paket-list");
+        // alert("delete ip" + selectedIdsIP);
+      } else {
         Swal.fire({
           title: "Pilih Action terlebih dahulu!",
           icon: "warning",
