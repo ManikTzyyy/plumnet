@@ -78,7 +78,6 @@ def delete_pool(host, username, password, current_pool, profiles):
             for profile_item in profiles:
                 command = f'/ppp profile remove [find name="{profile_item}"]'
                 conn.send_command(command)
-        
         command_pool = f"/ip pool remove {current_pool}"
         output = conn.send_command(command_pool)
 
