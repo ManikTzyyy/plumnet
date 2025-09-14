@@ -53,7 +53,8 @@ urlpatterns = [
     # ==========================multi task==================
     path('client/activasi/multi', views.activasi_multi_client, name="activasi_multi"),
 
-    path('verification/handle-multiple/verif/', views.verif_multiple_client, name='verif_multiple'),
+    path('client/handle-multiple/verif/', views.verif_multiple_client, name='verif_multiple'),
+    path('client/handle-multiple/payment/', views.payment_multiple_client, name='payment_multiple'),
 
     path('client/handle-multiple/delete/', views.delete_multiple_client, name='delete_multiple_client'),
     path('gateway/handle-multiple/delete/', views.delete_multiple_gateway, name='delete_multiple_gateway'),

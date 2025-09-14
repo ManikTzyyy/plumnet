@@ -96,7 +96,7 @@ document.addEventListener("DOMContentLoaded", function () {
       if (actionValue === "delete") {
         handleMultiple(selectedIds, "client", "client", 'delete');
       } else if (actionValue === "payment") {
-        // functionChangeStatusPaymentMultiple();
+        handleMultiple(selectedIds, "client", "client", 'payment');
       } else if (actionValue === "delete-gw") {
         handleMultiple(selectedIds, "gateway", "server-list", 'delete');
       } else if (actionValue === "delete-paket") {
@@ -104,7 +104,7 @@ document.addEventListener("DOMContentLoaded", function () {
       } else if (actionValue === "delete-ts") {
         handleMultiple(selectedIds, "trans", "client", 'delete');
       } else if (actionValue === "verifikasi") {
-        handleMultiple(selectedIds, "verification", "client", 'verif');
+        handleMultiple(selectedIds, "client", "client", 'verif');
       }
       else {
         Swal.fire({

@@ -958,7 +958,27 @@ def activasi_multi_client(request):
     except Exception as e:
         return JsonResponse({"success": False, "message": str(e) or "Terjadi kesalahan saat memproses activasi."}, status=500)
 
+def payment_multiple_client(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({
+            "success": False,
+            "message": "Anda harus login dahulu."
+        }, status=401)
 
+    datas = json.loads(request.body.decode("utf-8"))
+    results = []
+
+    for data in datas:
+        client_id = data.get("id")
+        name = data.get("name")
+
+        try:
+            message = toggle_pembayaran_internal(client_id)
+            results.append({"name": name, "success": True, "message": message})
+        except Exception as e:
+            results.append({"name": name, "success": False, "message": str(e)})
+
+    return JsonResponse({"success": True, "results": results})
 
 def verif_multiple_client(request):
     datas = json.loads(request.body.decode("utf-8"))
@@ -1260,6 +1280,26 @@ def toggle_verif(request, client_id):
         return JsonResponse({"success": False, "message": str(e)}, status=400)
 
 
+
+def toggle_pembayaran_internal(client_id):
+    client = get_object_or_404(Client, id=client_id)
+    client.isPayed = not client.isPayed
+    price = getattr(client.id_paket, "price", 0) or 0
+
+    if client.isPayed:
+        # buat record transaksi
+        Transaction.objects.create(
+            id_client=client,
+            value=price
+        )
+        message = f"Pembayaran  berhasil dikonfirmasi!"
+    else:
+        message = f"Tagihan berhasil dibuat."
+
+    client.save()
+    return message
+
+
 def toggle_pembayaran(request, client_id):
     if not request.user.is_authenticated:
         return JsonResponse({
@@ -1268,27 +1308,8 @@ def toggle_pembayaran(request, client_id):
         }, status=401)
 
     try:
-        client = get_object_or_404(Client, id=client_id)
-        client.isPayed = not client.isPayed
-        price = getattr(client.id_paket, "price", 0) or 0
-        if client.isPayed:
-            
-    
-            # create data on history table
-            Transaction.objects.create(
-                id_client=client,
-                value=price
-            )
-
-            message = f"Pembayaran untuk {client.name} berhasil dikonfirmasi!"
-        else:
-            message = f"Tagihan untuk {client.name} berhasil dibuat."
-
-        client.save()
-        return JsonResponse({
-            "success": True,
-            "message": message
-        })
+        message = toggle_pembayaran_internal(client_id)
+        return JsonResponse({"success": True, "message": message})
     except Exception as e:
         return JsonResponse({
             "success": False,

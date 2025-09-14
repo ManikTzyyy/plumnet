@@ -540,6 +540,10 @@ function handleMultiple(data, object, url, action) {
     title = 'Hapus Data Terpilih?'
   } else if(action == 'verif'){
     title = 'Verifikasi Perubahan Data Terpilih?'
+  } else if(action == 'payment'){
+    title = 'Toggle Status Pembayaran Terpilih?'
+  } else{
+    title = 'Confirm The Action?'
   }
 
 
