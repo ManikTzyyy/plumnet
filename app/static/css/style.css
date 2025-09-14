@@ -442,7 +442,7 @@ button:hover {
 .danger-button,
 .grey-button,
 .info-button,
-.disbale-button {
+.disable-button {
   border-radius: 5px;
   padding: 5px 10px;
   width: fit-content;
@@ -513,13 +513,13 @@ button:hover {
   background-color: var(--clr-b);
 }
 
-.disbale-button {
+.disable-button {
   background-color: rgb(203, 203, 203);
   color: var(--clr-grey2);
   opacity: 0.5;
 }
 
-.disbale-button:hover {
+.disable-button:hover {
   cursor: default;
 }
 
@@ -610,6 +610,12 @@ button:hover {
 .menu-text.hidden {
   display: none;
   
+}
+
+
+.action-dropdown{
+  padding: 5px 0;
+  height: fit-content!important;
 }
 
 /* ============dashboard================= */

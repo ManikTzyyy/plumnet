@@ -62,7 +62,7 @@
           <div class="title strong">Status</div>
           <div class=" {% if client.isActive %}enable-t{% else %}disable-t{% endif %}"> {% if client.isActive %}Online{% else %}Offline{% endif %} </div>
         </div>
-        <button onclick="toggleActivasiClient('{{ client.id }}', '{{ client.name }}',`{{ client.isActive|yesno:'true,false' }}`, 'detail-client')" class="{% if user.is_authenticated %}main-button{% else %}disbale-button{% endif %}" {% if not user.is_authenticated %}disabled{% endif %} >{% if client.isActive %}Nonaktifkan{% else %}Activasi{% endif %}</button>
+        <button onclick="toggleActivasiClient('{{ client.id }}', '{{ client.name }}',`{{ client.isActive|yesno:'true,false' }}`, 'detail-client')" class="{% if user.is_authenticated %}main-button{% else %}disable-button{% endif %}" {% if not user.is_authenticated %}disabled{% endif %} >{% if client.isActive %}Nonaktifkan{% else %}Activasi{% endif %}</button>
       </div>
       <div class="wrapper column">
         <h2>Device</h2>
@@ -89,21 +89,32 @@
         {% endif %}
       </div>
       <div class="wrapper column">
-        <h2>Status Pembayaran</h2>
+        <h2>Status Langganan</h2>
+        
         <div class="column">
-          <div class="title strong">Status</div>
-          <div class=" {% if client.isPayed %}enable-t{% else %}waiting-t{% endif %}">
+          <div class="title strong">Tanggal Mulai Langganan</div>
+          <div class="text">{{client.activated_at}}</div>
+        </div>
+        <div class="column">
+          <div class="title strong">Status Pembayaran</div>
+           <div class=" {% if client.isPayed %}enable-t{% else %}waiting-t{% endif %}">
               {% if client.isPayed %}Done{% else %}Waiting{% endif %}
           </div>
         </div>
         <div class="row wrap gap-20">
           <div class="column">
           <div class="title strong">Pembayaran Terakhir</div>
-          <div class="text">{{ client.lastPayment }}</div>
+          <div class="text">
+            {% if last_payment %}
+              {{ last_payment }}
+            {% else %}
+              Belum Ada
+            {% endif %}
+          </div>
         </div>
         <div class="column">
           <div class="title strong">Tagihan Berikutnya</div>
-          <div class="text">Sept. 20, 2025</div>
+          <div class="text"> {{ next_bill }}</div>
         </div>
         </div>
         
@@ -112,27 +123,107 @@
           {% csrf_token %}
           </form>
             <div class="row wrap gap-10">
-              <button onclick="togglePembayaran('{{ client.id }}', '{{ client.name }}',`{{ client.isPayed|yesno:'true,false' }}`, 'detail-client')" class="{% if user.is_authenticated %}main-button{% else %}disbale-button{% endif %}" {% if not user.is_authenticated %}disabled{% endif %} >{% if client.isPayed %}Buat Tagihan{% else %}Konfirmasi Pembayaran{% endif %}</button>
+              <button onclick="togglePembayaran('{{ client.id }}', '{{ client.name }}',`{{ client.isPayed|yesno:'true,false' }}`, 'detail-client')" class="{% if user.is_authenticated %}main-button{% else %}disable-button{% endif %}" {% if not user.is_authenticated %}disabled{% endif %} >{% if client.isPayed %}Buat Tagihan{% else %}Konfirmasi Pembayaran{% endif %}</button>
             </div>
         </div>
       </div>
-      
+    </div>
+
+    <br>
+    
+
+    <div class="row gap-10 align-center">
+      <p>Action:</p>
+      <select name="" id="action-dropdown" class="action-dropdown">
+        <option value="" selected>Select Action</option>
+        <option value="delete-ts">Delete Selected Data</option>
+      </select>
+      <button class="button success-button" id="go-action">Go</button>
+    </div>  
+
+    <div class="table-container">
+      <p class="text-center strong">History Transaction</p>
+          <table class="table" id="table">
+            <thead>
+            <tr class="t-head">
+              <th><input type="checkbox" id="select-all-checkbox"></th>
+              <th>#</th>
+              <th>Value</th>
+              <th>Date</th>
+              <th></th>
+            </tr>
+            </thead>
+            <tbody>
+              {% for ts in transaction %}
+            <tr class="t-d">
+              <td>
+                 <input type="checkbox" class="client-checkbox" 
+                  data-id="{{ ts.id }}"
+                  data-name="{{ ts.create_at }}" > 
+                
+              </td>
+              <td>{{ ts.id }}</td>
+              <td>{{ ts.value|rupiah }}</td>
+              <td>{{ ts.create_at }}</td>
+              <td>
+                <div class="row button-wrapper">
+                  <button
+                    onclick="deleteData('{{ ts.id }}', 'transaction', 'client/id={{client.id}}')"
+                    class="danger-button">
+                    Delete
+                  </button>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+    <details>
+      <summary>Map</summary>
       <div class="container-map relative" style="width: 100%; height: 300px;" >
         <div id="map-client" style="height: 100%; width: 100%;"></div>
       </div>
-    </div>
+    </details>
+
+    <details>
+      <summary>Chart</summary>
+      <canvas id="redamanChart"></canvas>
+    </details>
+
+
     
 
-     <canvas id="redamanChart"></canvas>
+    
+
+    
  </div>
 
  <script src="{% static 'js/library/chart.umd.js' %}"></script>
 
-
+<script src="{% static 'js/scripts/checkbox.js' %}"></script>
 
 <script>
   const deleteForm = document.getElementById("delete-form");
 </script>
+
+
+
+<script>
+  $(document).ready(function () {
+    $("#table").DataTable({
+      pageLength: 10,
+      searching: true,
+      // stateSave: true,
+      columnDefs: [
+      { targets: [0,4], orderable: false, searchable: false }
+        ]
+    });
+  });
+</script>
+
+
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
@@ -144,7 +235,7 @@ document.addEventListener("DOMContentLoaded", function () {
       document.getElementById("temperature").textContent = data.temperature + " °C";
       document.getElementById("active").textContent = data.active;
 
-      console.log(data)
+      // console.log(data)
 
       const remoteLink = document.getElementById("remote");
       if (data.remote && data.remote !== "-") {

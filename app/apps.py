@@ -7,5 +7,5 @@ class appConfig(AppConfig):
 
     def ready(self):
         import app.signals
-        # from . import jobs
-        # jobs.start()
+        from . import jobs
+        jobs.start()

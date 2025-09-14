@@ -1,5 +1,5 @@
 # Standard library
-from datetime import timedelta
+from datetime import date, timedelta
 import random
 import json
 import urllib.parse
@@ -42,7 +42,7 @@ from app.templates.network.netmiko_service import (
     test_conn,
 )
 from .templates.network.routeros_service import get_mikrotik_info
-from .models import Gateway, Paket, Redaman, Server, IPPool, Client
+from .models import Gateway, Paket, Redaman, Server, IPPool, Client, Transaction
 
 
 
@@ -135,6 +135,10 @@ def addServer(request):
 # views.py
 def addGateway(request, server_id):
     server = get_object_or_404(Server, pk=server_id)
+    gateway_list = Gateway.objects.filter(server=server)
+    gateway_qs = gateway_list.values("id", "name", "lat", "long", "parent_lat", "parent_long" )
+    data = json.dumps(list(gateway_qs), cls=DjangoJSONEncoder)
+    
 
     if request.method == "POST":
         form = GatewayForm(request.POST, server=server)
@@ -182,7 +186,8 @@ def addGateway(request, server_id):
 
     context = {
         "form": form,
-        "server": server
+        "server": server,
+        'data': data
     }
     return render(request, "form-pages/form-gateway.html", context)
 
@@ -378,6 +383,9 @@ def edit_gateway(request, server_id, pk):
     error_message = None
     server = get_object_or_404(Server, pk=server_id)
     gateway = get_object_or_404(Gateway, pk=pk)
+    gateway_list = Gateway.objects.filter(server=server)
+    gateway_qs = gateway_list.values("id", "name", "lat", "long", "parent_lat", "parent_long" )
+    data = json.dumps(list(gateway_qs), cls=DjangoJSONEncoder)
 
     if request.method == 'POST':
         form = GatewayForm(request.POST, instance=gateway, server=server)
@@ -431,6 +439,7 @@ def edit_gateway(request, server_id, pk):
         'success': success,
         'server': server,
         'error_message': error_message,
+        'data': data
     }
     return render(request, 'form-pages/form-gateway.html', context)
 
@@ -691,46 +700,28 @@ def delete_gateway(request, pk):
 
 
 def delete_paket(request, pk):
-    res = None
-    paket = get_object_or_404(Paket, pk=pk)
-    current_profile = paket.name
-    ip_pool = paket.id_ip_pool
-    server = ip_pool.id_server if ip_pool else None
-    client_data = list(Client.objects.filter(id_paket_id=paket.id).values_list('pppoe', flat=True))
-    # print(client_data)
-    if request.method == "POST":
-        try:
-            # print(server)
-            if server != None:
-                res = 'Paket deleted'
-                delete_profile(server.host, server.username, server.password,current_profile,client_data)
-                paket.delete()
-            else:
-                res = 'Paket deleted without server action'
-                paket.delete()
-            return JsonResponse({'success': True, 'message': res }) 
-        except Exception as e:
-                error_message = str(e) 
-    return JsonResponse({'success': False, 'message': error_message}, status=400)
+    if request.method != "POST":
+        return JsonResponse({"success": False, "message": "Invalid request method"}, status=405)
+
+    try:
+        res = delete_paket_internal(pk)
+        return JsonResponse({"success": True, "message": res})
+    except Exception as e:
+        return JsonResponse({"success": False, "message": str(e)}, status=400)
+
 
 def delete_ip(request, pk):
-    ip_pool = get_object_or_404(IPPool, pk=pk)
-    server = ip_pool.id_server
-    current_pool = ip_pool.name
-    profile_data = list(Paket.objects.filter(id_ip_pool_id=ip_pool).values_list('name', flat=True))
-    if request.method == "POST":
-        try:
-            if server != None:
-                res = 'IP Pool deleted'
-                delete_pool(server.host, server.username, server.password, current_pool, profile_data)
-                ip_pool.delete()
-            else:
-                res = 'Pool deleted without server action'
-                ip_pool.delete()
-            return JsonResponse({'success': True, 'message': res})
-        except Exception as e:
-                error_message = str(e) 
-    return JsonResponse({'success': False, 'message': error_message}, status=400)
+    if request.method != "POST":
+        return JsonResponse({"success": False, "message": "Invalid request method"}, status=405)
+
+    try:
+        res = delete_ip_internal(pk)
+        return JsonResponse({"success": True, "message": res})
+    except Exception as e:
+        return JsonResponse({"success": False, "message": str(e)}, status=400)
+
+
+
 
 def delete_client(request, pk):
     client = get_object_or_404(Client, pk=pk)
@@ -753,6 +744,20 @@ def delete_client(request, pk):
     
     return JsonResponse({'success': False, 'message': error_message}, status=400)
 
+
+def delete_transaction(request, pk):
+    tx = get_object_or_404(Transaction, pk=pk)
+    if request.method == "POST":
+        try:
+            res = 'Transaction Deleted'
+            tx.delete()
+            return JsonResponse({
+                'success': True, 'message':res
+            })
+        except Exception as e:
+            error_message = str(e)
+            
+    return JsonResponse({'success': False, 'message': error_message}, status=400) 
 #detail
 
 def detailServer(request, server_id) : 
@@ -824,7 +829,7 @@ def get_genieacs_data(request, client_id):
                     "device": device.get("_id", "-")
                 }
         except Exception as e:
-            print("Error fetch ACS API:", e)
+            print("Error fetch ACS API",)
 
     return JsonResponse(data)
 
@@ -832,8 +837,9 @@ def get_genieacs_data(request, client_id):
 
 def detailClient(request, client_id): 
     client = get_object_or_404(Client, id=client_id)
-    
-    # Ambil data redaman dari DB (7 hari terakhir)
+
+    transaction = Transaction.objects.filter(id_client=client).order_by('-create_at')
+
     today = timezone.now().date()
     seven_days_ago = today - timedelta(days=6)
 
@@ -858,6 +864,12 @@ def detailClient(request, client_id):
     client.device = "-"
 
 
+      # ambil transaksi terakhir
+    last_tx = transaction.first()
+    last_payment = last_tx.create_at.date() if last_tx else None
+    next_bill = client.get_next_bill_date()
+
+
     acs_ip = client.id_paket.id_ip_pool.id_server.genieacs if client.id_paket else None
 
    
@@ -866,7 +878,10 @@ def detailClient(request, client_id):
         "client": client,
         "labels": labels,
         "redaman_data": data_redaman,
-        'acs_ip':acs_ip
+        'acs_ip':acs_ip,
+        'transaction':transaction,
+        "last_payment": last_payment,
+        "next_bill": next_bill,
     }
     return render(request, "detail-pages/detail-client.html", context)
 
@@ -891,7 +906,7 @@ def map(request):
 def testPage(request):
     return render(request, "pages/testttt.html",)
 
-#=========================================================================
+#=================================Multiple task========================================
 def activasi_multi_client(request):
     if not request.user.is_authenticated:
         return JsonResponse({"success": False, "message": "Anda harus login dahulu untuk melakukan activasi."}, status=401)
@@ -943,7 +958,276 @@ def activasi_multi_client(request):
     except Exception as e:
         return JsonResponse({"success": False, "message": str(e) or "Terjadi kesalahan saat memproses activasi."}, status=500)
 
+def payment_multiple_client(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({
+            "success": False,
+            "message": "Anda harus login dahulu."
+        }, status=401)
 
+    datas = json.loads(request.body.decode("utf-8"))
+    results = []
+
+    for data in datas:
+        client_id = data.get("id")
+        name = data.get("name")
+
+        try:
+            message = toggle_pembayaran_internal(client_id)
+            results.append({"name": name, "success": True, "message": message})
+        except Exception as e:
+            results.append({"name": name, "success": False, "message": str(e)})
+
+    return JsonResponse({"success": True, "results": results})
+
+def verif_multiple_client(request):
+    datas = json.loads(request.body.decode("utf-8"))
+    results = []
+
+    for data in datas:
+        client_id = data.get("id")
+        name = data.get('name')
+
+        try:
+            message = toggle_verif_internal(client_id, request.user)
+            results.append({"name": name, "success": True, "message": message})
+        except Exception as e:
+            results.append({"name": name, "success": False, "message": str(e)})
+
+    return JsonResponse({"success": True, "results": results})
+
+
+def toggle_verif_internal(client_id, user):
+    if not user.is_authenticated:
+        raise Exception("Anda harus login dahulu untuk melakukan verifikasi.")
+
+    client = get_object_or_404(Client, id=client_id)
+    old_pppoe = client.pppoe
+    paket = client.id_paket
+    statusVerif = client.isApproved
+
+    if statusVerif:
+        raise Exception("Client sudah terverifikasi perubahannya")
+
+    if not client.temp_paket:
+        raise Exception("Client belum memilih paket sementara.")
+
+    new_server = client.temp_paket.id_ip_pool.id_server
+    new_paket = client.temp_paket
+
+    # cek kalau pppoe sudah dipakai
+    if not client.isApproved:
+        if Client.objects.filter(Q(pppoe=client.temp_pppoe) & ~Q(id=client.id)).exists():
+            raise Exception(f"ID PPPoE '{client.temp_pppoe}' sudah digunakan oleh client lain.")
+
+    if paket is None:
+        # create baru
+        create_pppoe(
+            new_server.host,
+            new_server.username,
+            new_server.password,
+            client.temp_pppoe,
+            client.temp_password,
+            new_paket.name,
+            client.temp_local_ip
+        )
+    else:
+        # edit existing
+        edit_pppoe(
+            new_server.host,
+            new_server.username,
+            new_server.password,
+            client.temp_pppoe,
+            client.temp_password,
+            new_paket.name,
+            client.temp_local_ip,
+            old_pppoe
+        )
+
+    # update data client
+    client.id_paket = new_paket
+    client.name = client.temp_name
+    client.address = client.temp_address
+    client.email = client.temp_email
+    client.phone = client.temp_phone
+    client.pppoe = client.temp_pppoe
+    client.password = client.temp_password
+    client.local_ip = client.temp_local_ip
+    client.lat = client.temp_lat
+    client.long = client.temp_long
+    client.gateway = client.temp_gateway
+
+    # toggle verif
+    client.isServerNull = not client.isServerNull
+    client.isApproved = not client.isApproved
+    client.save()
+
+    return (
+        f"Client berhasil diverifikasi."
+        if client.isApproved else
+        f"Verifikasi untuk dibatalkan."
+    )
+
+def delete_multiple_client(request):
+    data = json.loads(request.body.decode('utf-8'))
+    results = []
+
+    for client_data in data:
+        client_id = client_data.get('id')
+        name = client_data.get('name')
+        host = client_data.get('host')
+        username = client_data.get('username')
+        password = client_data.get('password')
+        pppoe = client_data.get('pppoe')
+
+        try:
+            client_obj = Client.objects.get(id=client_id)
+
+            if host:
+                try:
+                    delete_pppoe(host, username, password, pppoe)
+                    results.append({"name": name, "status": "success", "deleted_on_mikrotik": True, 'message': "Deleted with server Action"})
+                except Exception as e:
+                    results.append({"name": name, "status": "failed", "message": str(e)})
+                    continue 
+            client_obj.delete()
+            if not host: 
+                results.append({"name": name, "status": "success", "deleted_on_mikrotik": False, 'message': "Deleted without server Action"})
+
+        except Client.DoesNotExist:
+            results.append({"name": name, "status": "failed", "message": "Client tidak ditemukan"})
+
+    return JsonResponse({"success": True, "results": results})
+
+
+
+def delete_multiple_gateway(request):
+    datas = json.loads(request.body.decode('utf-8'))
+    results = []
+
+    for data in datas:
+        data_id = data.get('id')
+        name = data.get('name')
+
+        try:
+            gw_object = Gateway.objects.get(id=data_id)
+            results.append({"name": name, "status": "success", 'message': "Deleted"})
+            gw_object.delete()
+
+        except Gateway.DoesNotExist:
+            results.append({"name": name, "status": "failed", "message": "Data tidak ditemukan"})
+
+    return JsonResponse({"success": True, "results": results})
+
+def delete_multiple_transaction(request):
+    datas = json.loads(request.body.decode('utf-8'))
+    results = []
+
+    for data in datas:
+        data_id = data.get('id')
+        name = data.get('name')
+
+        try:
+            ts = Transaction.objects.get(id=data_id)
+            results.append({"name": name, "status": "success", 'message': "Deleted"})
+            ts.delete()
+
+        except Gateway.DoesNotExist:
+            results.append({"name": name, "status": "failed", "message": "Data tidak ditemukan"})
+
+    return JsonResponse({"success": True, "results": results})
+
+
+def delete_multiple_ip(request):
+    datas = json.loads(request.body.decode("utf-8"))
+    results = []
+
+    for data in datas:
+        ip_id = data.get("id")
+        name = data.get('name')
+        try:
+            # panggil delete_ip internal function tanpa HTTP request
+            res = delete_ip_internal(ip_id)
+            results.append({"name": name, "success": True, "message": res})
+        except Exception as e:
+            results.append({"name": name, "success": False, "message": str(e)})
+
+    return JsonResponse({"success": True, "results": results})
+
+def delete_ip_internal(ip_id):
+    ip_pool = get_object_or_404(IPPool, pk=ip_id)
+    server = ip_pool.id_server
+    profile_data = list(
+        Paket.objects.filter(id_ip_pool_id=ip_pool).values_list("name", flat=True)
+    )
+
+    if server:
+        delete_pool(
+            server.host,
+            server.username,
+            server.password,
+            ip_pool.name,
+            profile_data,
+        )
+        ip_pool.delete()
+        return "IP Pool deleted (with server action)"
+    else:
+        ip_pool.delete()
+        return "IP Pool deleted without server action"
+
+
+
+
+def delete_multiple_paket(request):
+    datas = json.loads(request.body.decode("utf-8"))
+    results = []
+
+    for data in datas:
+        paket_id = data.get("id")
+        name = data.get('name')
+        try:
+            # panggil delete_ip internal function tanpa HTTP request
+            res = delete_paket_internal(paket_id)
+            results.append({"name": name, "success": True, "message": res})
+        except Exception as e:
+            results.append({"name": name, "success": False, "message": str(e)})
+
+    return JsonResponse({"success": True, "results": results})
+
+def delete_paket(request, pk):
+    if request.method != "POST":
+        return JsonResponse({"success": False, "message": "Invalid request method"}, status=405)
+
+    try:
+        res = delete_paket_internal(pk)
+        return JsonResponse({"success": True, "message": res})
+    except Exception as e:
+        return JsonResponse({"success": False, "message": str(e)}, status=400)
+
+
+def delete_paket_internal(paket_id):
+    paket = get_object_or_404(Paket, pk=paket_id)
+    ip_pool = paket.id_ip_pool
+    server = ip_pool.id_server if ip_pool else None
+    client_data = list(
+        Client.objects.filter(id_paket_id=paket.id).values_list("pppoe", flat=True)
+    )
+
+    if server:
+        delete_profile(
+            server.host,
+            server.username,
+            server.password,
+            paket.name,
+            client_data,
+        )
+        paket.delete()
+        return "Paket deleted (with server action)"
+    else:
+        paket.delete()
+        return "Paket deleted without server action"
+
+# =========================other===================================
 def toggle_activasi(request, client_id):
     if not request.user.is_authenticated:
         return JsonResponse({"success": False, "message": "Anda harus login dahulu untuk melakukan activasi."}, status=401)
@@ -989,103 +1273,31 @@ def toggle_activasi(request, client_id):
 
 
 def toggle_verif(request, client_id):
-    if not request.user.is_authenticated:
-        return JsonResponse({
-            "success": False,
-            "message": "Anda harus login dahulu untuk melakukan verifikasi."
-        }, status=401)
-
     try:
-        client = get_object_or_404(Client, id=client_id)
-        old_pppoe = client.pppoe
-        paket = client.id_paket
-
-        # pastikan temp_paket ada
-        if not client.temp_paket:
-            return JsonResponse({
-                "success": False,
-                "message": "Client belum memilih paket sementara."
-            }, status=400)
-
-        new_server = client.temp_paket.id_ip_pool.id_server
-        new_paket = client.temp_paket
-
-        # cek kalau pppoe sudah dipakai
-        if not client.isApproved:
-            if Client.objects.filter(Q(pppoe=client.temp_pppoe) & ~Q(id=client.id)).exists():
-                return JsonResponse({
-                    "success": False,
-                    "message": f"ID PPPoE '{client.temp_pppoe}' sudah digunakan oleh client lain."
-                })
-
-        if paket is None:
-            # create baru
-            create_pppoe(
-                new_server.host,
-                new_server.username,
-                new_server.password,
-                client.temp_pppoe,
-                client.temp_password,
-                new_paket.name,
-                client.temp_local_ip
-            )
-            client.id_paket = new_paket
-            client.name = client.temp_name
-            client.address = client.temp_address
-            client.email = client.temp_email
-            client.phone = client.temp_phone
-            client.pppoe = client.temp_pppoe
-            client.password = client.temp_password
-            client.local_ip = client.temp_local_ip
-            client.lat = client.temp_lat
-            client.long = client.temp_long
-            client.gateway = client.temp_gateway
-            
-        else:
-            # edit existing
-            edit_pppoe(
-                new_server.host,
-                new_server.username,
-                new_server.password,
-                client.temp_pppoe,
-                client.temp_password,
-                new_paket.name,
-                client.temp_local_ip,
-                old_pppoe
-            )
-
-            # update data client
-            client.id_paket = new_paket
-            client.name = client.temp_name
-            client.address = client.temp_address
-            client.email = client.temp_email
-            client.phone = client.temp_phone
-            client.pppoe = client.temp_pppoe
-            client.password = client.temp_password
-            client.local_ip = client.temp_local_ip
-            client.lat = client.temp_lat
-            client.long = client.temp_long
-            client.gateway = client.temp_gateway
-
-        # toggle verif
-        client.isServerNull = not client.isServerNull
-        client.isApproved = not client.isApproved
-        client.save()
-
-        return JsonResponse({
-            "success": True,
-            "message": (
-                f"Client {client.name} berhasil diverifikasi."
-                if client.isApproved else
-                f"Verifikasi untuk {client.name} dibatalkan."
-            )
-        })
-
+        message = toggle_verif_internal(client_id, request.user)
+        return JsonResponse({"success": True, "message": message})
     except Exception as e:
-        return JsonResponse({
-            "success": False,
-            "message": f"Error internal: {str(e)}"
-        }, status=500)
+        return JsonResponse({"success": False, "message": str(e)}, status=400)
+
+
+
+def toggle_pembayaran_internal(client_id):
+    client = get_object_or_404(Client, id=client_id)
+    client.isPayed = not client.isPayed
+    price = getattr(client.id_paket, "price", 0) or 0
+
+    if client.isPayed:
+        # buat record transaksi
+        Transaction.objects.create(
+            id_client=client,
+            value=price
+        )
+        message = f"Pembayaran  berhasil dikonfirmasi!"
+    else:
+        message = f"Tagihan berhasil dibuat."
+
+    client.save()
+    return message
 
 
 def toggle_pembayaran(request, client_id):
@@ -1096,21 +1308,8 @@ def toggle_pembayaran(request, client_id):
         }, status=401)
 
     try:
-        client = get_object_or_404(Client, id=client_id)
-        client.isPayed = not client.isPayed
-
-        if client.isPayed:
-            client.lastPayment = timezone.now().date()
-            message = f"Pembayaran untuk {client.name} dikonfirmasi pada {client.lastPayment}."
-        else:
-            
-            message = f"Tagihan untuk {client.name} berhasil dibuat."
-
-        client.save()
-        return JsonResponse({
-            "success": True,
-            "message": message
-        })
+        message = toggle_pembayaran_internal(client_id)
+        return JsonResponse({"success": True, "message": message})
     except Exception as e:
         return JsonResponse({
             "success": False,

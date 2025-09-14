@@ -78,7 +78,6 @@ def delete_pool(host, username, password, current_pool, profiles):
             for profile_item in profiles:
                 command = f'/ppp profile remove [find name="{profile_item}"]'
                 conn.send_command(command)
-        
         command_pool = f"/ip pool remove {current_pool}"
         output = conn.send_command(command_pool)
 
@@ -159,15 +158,6 @@ def delete_pppoe(host, username, password, current_pppoe):
 
         
 
-def set_disabled_pppoe(host, username, password, pppoe, status):
-    try:
-        conn = get_mikrotik_conn(host, username, password)
-        command = f"/ppp secret set {pppoe} disabled={status}"
-        output = conn.send_command(command)
-        conn.disconnect()
-        return output
-    except Exception as e:
-        raise Exception(f"Gagal activasi PPPoE: {e}")
     
 
 def cut_network(data_client):
@@ -231,6 +221,7 @@ def connect_network(data_client):
                 raise Exception("Koneksi Mikrotik gagal")
 
             commands = [
+                f'/ppp active remove [find name="{pppoe}"]',
                 f'/ppp secret set [find name="{pppoe}"] profile={profile}',
                 f'/ppp secret set [find name="{pppoe}"] local-address={local_address}'
             ]

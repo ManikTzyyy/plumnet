@@ -15,7 +15,7 @@
       <div id="selected-box" class="selected-box column">
         <div id="selected-list" style="display: none;"></div>
         <br>
-          <button id="activate-all" class="disbale-button " disabled >Aktivasi Terpilih</button>
+          <button id="activate-all" class="disable-button " disabled >Aktivasi Terpilih</button>
       </div>
 
     </div>
@@ -26,7 +26,7 @@
       <table class="table" id="table">
        <thead> 
           <tr class="t-head">
-          <th></th>
+          <th><input type="checkbox" id="select-all-checkbox"></th>
           <th>#</th>
           <th>Nama</th>
           <th>Alamat</th>
@@ -94,7 +94,7 @@
     $("#table").DataTable({
       pageLength: 10,
       searching: true,
-      stateSave: true,
+      // stateSave: true,
       columnDefs: [
       { targets: [0,7], orderable: false, searchable: false }
         ]
