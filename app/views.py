@@ -700,46 +700,26 @@ def delete_gateway(request, pk):
 
 
 def delete_paket(request, pk):
-    res = None
-    paket = get_object_or_404(Paket, pk=pk)
-    current_profile = paket.name
-    ip_pool = paket.id_ip_pool
-    server = ip_pool.id_server if ip_pool else None
-    client_data = list(Client.objects.filter(id_paket_id=paket.id).values_list('pppoe', flat=True))
-    # print(client_data)
-    if request.method == "POST":
-        try:
-            # print(server)
-            if server != None:
-                res = 'Paket deleted'
-                delete_profile(server.host, server.username, server.password,current_profile,client_data)
-                paket.delete()
-            else:
-                res = 'Paket deleted without server action'
-                paket.delete()
-            return JsonResponse({'success': True, 'message': res }) 
-        except Exception as e:
-                error_message = str(e) 
-    return JsonResponse({'success': False, 'message': error_message}, status=400)
+    if request.method != "POST":
+        return JsonResponse({"success": False, "message": "Invalid request method"}, status=405)
+
+    try:
+        res = delete_paket_internal(pk)
+        return JsonResponse({"success": True, "message": res})
+    except Exception as e:
+        return JsonResponse({"success": False, "message": str(e)}, status=400)
+
 
 def delete_ip(request, pk):
-    ip_pool = get_object_or_404(IPPool, pk=pk)
-    server = ip_pool.id_server
-    current_pool = ip_pool.name
-    profile_data = list(Paket.objects.filter(id_ip_pool_id=ip_pool).values_list('name', flat=True))
-    if request.method == "POST":
-        try:
-            if server != None:
-                res = 'IP Pool deleted'
-                delete_pool(server.host, server.username, server.password, current_pool, profile_data)
-                ip_pool.delete()
-            else:
-                res = 'Pool deleted without server action'
-                ip_pool.delete()
-            return JsonResponse({'success': True, 'message': res})
-        except Exception as e:
-                error_message = str(e) 
-    return JsonResponse({'success': False, 'message': error_message}, status=400)
+    if request.method != "POST":
+        return JsonResponse({"success": False, "message": "Invalid request method"}, status=405)
+
+    try:
+        res = delete_ip_internal(pk)
+        return JsonResponse({"success": True, "message": res})
+    except Exception as e:
+        return JsonResponse({"success": False, "message": str(e)}, status=400)
+
 
 
 
@@ -1157,12 +1137,23 @@ def delete_multiple_ip(request):
 def delete_ip_internal(ip_id):
     ip_pool = get_object_or_404(IPPool, pk=ip_id)
     server = ip_pool.id_server
-    ip_data = list(Paket.objects.filter(id_ip_pool_id=ip_pool).values_list('name', flat=True))
+    profile_data = list(
+        Paket.objects.filter(id_ip_pool_id=ip_pool).values_list("name", flat=True)
+    )
+
     if server:
-        delete_pool(server.host, server.username, server.password, ip_pool.name, ip_data)
-        
-    ip_pool.delete()
-    return "IP Pool deleted" if server else "Pool deleted without server action"
+        delete_pool(
+            server.host,
+            server.username,
+            server.password,
+            ip_pool.name,
+            profile_data,
+        )
+        ip_pool.delete()
+        return "IP Pool deleted (with server action)"
+    else:
+        ip_pool.delete()
+        return "IP Pool deleted without server action"
 
 
 
@@ -1183,17 +1174,39 @@ def delete_multiple_paket(request):
 
     return JsonResponse({"success": True, "results": results})
 
+def delete_paket(request, pk):
+    if request.method != "POST":
+        return JsonResponse({"success": False, "message": "Invalid request method"}, status=405)
+
+    try:
+        res = delete_paket_internal(pk)
+        return JsonResponse({"success": True, "message": res})
+    except Exception as e:
+        return JsonResponse({"success": False, "message": str(e)}, status=400)
+
+
 def delete_paket_internal(paket_id):
     paket = get_object_or_404(Paket, pk=paket_id)
     ip_pool = paket.id_ip_pool
     server = ip_pool.id_server if ip_pool else None
-    client_data = list(Client.objects.filter(id_paket_id=paket.id).values_list('pppoe', flat=True))
+    client_data = list(
+        Client.objects.filter(id_paket_id=paket.id).values_list("pppoe", flat=True)
+    )
+
     if server:
-        delete_profile(server.host, server.username, server.password,paket.name,client_data)
-        # print('delete on mikrotik too')
-    paket.delete()
-    # print('delete without mikro')
-    return "IP Pool deleted" if server else "Profile deleted without server action"
+        delete_profile(
+            server.host,
+            server.username,
+            server.password,
+            paket.name,
+            client_data,
+        )
+        paket.delete()
+        return "Paket deleted (with server action)"
+    else:
+        paket.delete()
+        return "Paket deleted without server action"
+
 # =========================other===================================
 def toggle_activasi(request, client_id):
     if not request.user.is_authenticated:
