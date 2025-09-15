@@ -1,22 +1,13 @@
 {% extends 'index.html' %} {% block content %} {% load static %}
-
+{% if perms.app.view_server %}
 <div class="content-page">
   <div class="form-wrapper column">
     <div class="form-header row">
       <div class="row title-head-td">
-        <i
-          class="fa-solid fa-server"
-          style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
-        ></i>
+        <i class="fa-solid fa-server" style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"></i>
         <span class="title">Server</span>
       </div>
-      <button
-        class="main-button no-loader"
-        type="button"
-        onclick="window.history.back();"
-      >
-        Kembali
-      </button>
+      <button class="main-button no-loader" type="button" onclick="window.history.back();">Kembali</button>
     </div>
     <div class="info-server">
       <div class="wrapper column">
@@ -43,35 +34,24 @@
               <div class="text">{{ server.genieacs|default:"-" }}</div>
             </div>
             <div class="row button-wrapper">
-              <button
-                onclick="test_connection('{{ server.host }}', '{{ server.username }}', '{{ server.password }}')"
-                class="main-button"
-              >
-                Test Connection
-              </button>
-              <a href="{% url 'add-gateway' server.id %}" class="success-button"
-                >Add Gateway</a
-              >
-              <a href="{% url 'edit-server' server.id %}" class="warning-button"
-                >Edit</a
-              >
-              <button
-                onclick="deleteData('{{ server.id }}', 'server', 'server-list')"
-                class="danger-button"
-              >
-                Delete
-              </button>
+              <button onclick="test_connection('{{ server.host }}', '{{ server.username }}', '{{ server.password }}')" class="main-button">Test Connection</button>
+              {% if perms.app.add_gateway %}
+              <a href="{% url 'add-gateway' server.id %}" class="success-button">Add Gateway</a>
+              {% endif %}
+              {% if perms.app.change_server %}
+              <a href="{% url 'edit-server' server.id %}" class="warning-button">Edit</a>
+              {% endif %}
+              {% if perms.app.delete_server %}
+              <button onclick="deleteData('{{ server.id }}', 'server', 'server-list')" class="danger-button"> Delete</button>
+              {% endif %}
             </div>
           </div>
-          <div
-            class="container-map relative"
-            style="width: 100%; height: 300px"
-          >
+          <div class="container-map relative" style="width: 100%; height: 300px">
             <div id="map-client" style="height: 100%; width: 100%"></div>
           </div>
         </div>
 
-
+        {% if perms.app.delete_gateway %}
         <div class="row gap-10 align-center">
           <p>Action:</p>
           <select name="" id="action-dropdown" class="action-dropdown">
@@ -80,13 +60,19 @@
           </select>
           <button class="button success-button" id="go-action">Go</button>
         </div>  
+        {% endif %}
 
-       
+        {% if perms.app.view_gateway %}
         <div class="table-container">
           <table class="table" id="table">
             <thead>
               <tr class="t-head">
-              <th><input type="checkbox" id="select-all-checkbox"></th>
+              
+              <th>
+                {% if perms.app.delete_gateway %}
+                <input type="checkbox" id="select-all-checkbox">
+                {% endif %}
+              </th>
               <th>#</th>
               <th>Gateway Name</th>
               <th>lat</th>
@@ -95,13 +81,12 @@
             </tr>
             </thead>
             <tbody>
-              {% for gateway in gateway_list %}
+            {% for gateway in gateway_list %}
             <tr class="t-d">
               <td>
-                 <input type="checkbox" class="client-checkbox" 
-                  data-id="{{ gateway.id }}"
-                  data-name="{{ gateway.name }}" > 
-                
+                {% if perms.app.delete_gateway %}
+                <input type="checkbox" class="client-checkbox" data-id="{{ gateway.id }}" data-name="{{ gateway.name }}" >  
+                {% endif %}   
               </td>
               <td>{{ gateway.id }}</td>
               <td>{{ gateway.name }}</td>
@@ -109,18 +94,12 @@
               <td>{{ gateway.long }}</td>
               <td>
                 <div class="row button-wrapper">
-                  <a
-                    href="{% url 'edit-gateway' server.id gateway.id %}"
-                    class="warning-button"
-                  >
-                    Edit
-                  </a>
-                  <button
-                    onclick="deleteData('{{ gateway.id }}', 'gateway', 'server/id={{server.id}}')"
-                    class="danger-button"
-                  >
-                    Delete
-                  </button>
+                  {% if perms.app.change_gateway %}
+                  <a href="{% url 'edit-gateway' server.id gateway.id %}" class="warning-button">Edit</a>
+                  {% endif %}
+                  {% if perms.app.delete_gateway %}
+                  <button onclick="deleteData('{{ gateway.id }}', 'gateway', 'server/id={{server.id}}')" class="danger-button">Delete</button>
+                  {% endif %}
                 </div>
               </td>
             </tr>
@@ -128,6 +107,7 @@
             </tbody>
           </table>
         </div>
+        {% endif %}
       </div>
     </div>
   </div>
@@ -188,5 +168,9 @@
 
   
 </script>
+
+{% else %}
+  <p class="text-danger">Kamu tidak punya izin untuk melihat data ini.</p>
+{% endif %}
 
 {% endblock %}

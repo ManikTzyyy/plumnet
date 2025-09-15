@@ -4,22 +4,17 @@
   <div class="form-wrapper column">
     <div class="form-header column">
       <div class="row title-head-td">
-        <i
-          class="fa-solid fa-coins"
-          style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
-        ></i>
+        <i class="fa-solid fa-coins" style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"></i>
         <span class="title">{{ form.instance.pk|yesno:"Edit Paket,Buat Paket Baru" }}</span>
       </div>
     </div>
 
     <form method="post" class="column">
       {% csrf_token %}
-
       <div class="column">
         <label for="ip_pool">IP Pool </label>
         {{ form.id_ip_pool }}
       </div>
-
       <div class="column">
         <label for="name">Name</label>
         {{ form.name }}
@@ -28,57 +23,27 @@
         <label for="price">Price</label>
         {{ form.price }}
       </div>
-      
       <div class="column">
         <label for="maxRate">Limit Upload/Download </label>
         {{ form.limit }}
       </div>
       <div class="row gap-10">
         <div class="row">
-          {{ form.download_rate }} {{ form.download_unit }}
+        {{ form.download_rate }} {{ form.download_unit }}
         </div>
         <div class="row">
-          {{ form.upload_rate }} {{ form.upload_unit }}
+        {{ form.upload_rate }} {{ form.upload_unit }}
         </div>
       </div>
       <div class="row button-wrapper">
         <button class="success-button" type="submit">Simpan</button>
-        <button
-          class="warning-button no-loader"
-          type="button"
-          onclick="window.history.back();"
-        >
-          Batal
-        </button>
+        <button class="warning-button no-loader" type="button" onclick="window.history.back();" > Batal</button>
       </div>
     </form>
   </div>
 </div>
 
-<!-- {% if success %}
-<script>
-Swal.fire({
-  icon: 'success',
-  title: 'Data berhasil disimpan!',
-  text: 'Anda akan dialihkan ke halaman Paket.',
-  timer: 2000,
-  showConfirmButton: false
-}).then(() => {
-  window.location.href = "{% url 'paket' %}";
-});
-</script>
-{% endif %}
 
-{% if error_message %}
-<script>
-Swal.fire({
-  icon: 'error',
-  title: 'Gagal menyimpan!',
-  text: '{{ error_message|escapejs }}',
-  confirmButtonText: 'OK'
-});
-</script>
-{% endif %} -->
 
 {% if info_message %}
 <script>

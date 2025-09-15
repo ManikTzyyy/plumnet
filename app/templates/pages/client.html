@@ -1,87 +1,83 @@
 {% extends 'index.html' %} {% block content %} {% load custom_filters%}{% load static %}
 
+{% if perms.app.view_client %}
 <div class="content-page client">
   <div class="table-wrapper column">
     <div class="header-table column">
       <div class="row title-head-td">
-        <i
-          class="fa-solid fa-user-group"
-          style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
-        ></i>
+        <i class="fa-solid fa-user-group" style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)" ></i>
         <span class="title">Client List</span>
       </div>
+      {% if perms.app.add_client %}
       <a href="{% url 'add-client' %}" class="success-button">Add CLient +</a>
+      {% endif %}
     </div>
 
     <div class="row gap-10 align-center">
       <p>Action:</p>
       <select name="" id="action-dropdown" class="action-dropdown">
         <option value="" selected>Select Action</option>
+        {% if perms.app.delete_client %}
         <option value="delete">Delete Selected Data</option>
+        {% endif %}
+        {% if perms.app.can_verif_edited %}
         <option value="verifikasi">Verifikasi perubahan</option>
+        {% endif %}
+        {% if perms.app.can_change_is_payed %}
         <option value="payment">Toggle Payment Status</option>
+        {% endif %}
+        {% if perms.app.can_change_is_active %}
         <option value="network-status">Toggle Network Status</option>
+        {% endif %}
       </select>
       <button class="button success-button" id="go-action">Go</button>
     </div>    
 
     <div class="table-container">
       <table class="table" id="table">
-  <thead>
-    <tr class="t-head">
-      <th><input type="checkbox" id="select-all-checkbox"></th>
-      <th>#</th>
-      <th>Nama</th>
-      <th>Alamat</th>
-      <th>Paket</th>
-      <th>Server</th>
-      <th>Status</th>
-      <th>Payment</th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for client in clients %}
-    <tr class="t-d">
-      <td>
-        <input type="checkbox" class="client-checkbox" 
-        data-id="{{ client.id }}"
-        data-name="{{ client.name }}" 
-        data-pppoe="{{client.pppoe}}"
-        data-host="{{client.id_paket.id_ip_pool.id_server.host}}"
-        data-username="{{client.id_paket.id_ip_pool.id_server.username}}"
-        data-password="{{client.id_paket.id_ip_pool.id_server.password}}"
-        data-paket="{{ client.id_paket.name }}"
-        data-iplocal="{{client.local_ip}}"
-        >
-      </td>
-      <td>{{ client.id }}</td>
-      <td>{{ client.name }}</td>
-      <td>{{ client.address }}</td>
-      <td>{{ client.id_paket.price|rupiah }} - {{ client.id_paket.limit }}</td>
-      <td>{{ client.id_paket.id_ip_pool.id_server.name }}</td>
-
-      <td>
-        <div class="{% if client.isActive %}enable-t{% else %}disable-t{% endif %}">
-          {% if client.isActive %}Online{% else %}Offline{% endif %}
-        </div>
-      </td>
-
-      <td>
-        <div class="{% if client.isPayed %}enable-t{% else %}waiting-t{% endif %}">
-          {% if client.isPayed %}Done{% else %}Waiting{% endif %}
-        </div>
-      </td>
-      <td>
-        <div class="row button-wrapper">
-          <a href="{% url 'detail-client' client.id %}" class="main-button">view</a>
-        </div>
-      </td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
-
+        <thead>
+          <tr class="t-head">
+            <th><input type="checkbox" id="select-all-checkbox"></th>
+            <th>#</th>
+            <th>Nama</th>
+            <th>Alamat</th>
+            <th>Paket</th>
+            <th>Server</th>
+            <th>Status</th>
+            <th>Payment</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for client in clients %}
+          <tr class="t-d {% if not client.isApproved %}edited{% endif %} ">
+            <td>
+              <input type="checkbox" class="client-checkbox" data-id="{{ client.id }}" data-name="{{ client.name }}" data-pppoe="{{client.pppoe}}" data-host="{{client.id_paket.id_ip_pool.id_server.host}}" data-username="{{client.id_paket.id_ip_pool.id_server.username}}" data-password="{{client.id_paket.id_ip_pool.id_server.password}}" data-paket="{{ client.id_paket.name }}" data-iplocal="{{client.local_ip}}" >
+            </td>
+            <td>{{ client.id }}</td>
+            <td>{{ client.name }}</td>
+            <td>{{ client.address }}</td>
+            <td>{{ client.id_paket.price|rupiah }} - {{ client.id_paket.limit }}</td>
+            <td>{{ client.id_paket.id_ip_pool.id_server.name }}</td>
+            <td>
+              <div class="{% if client.isActive %}enable-t{% else %}disable-t{% endif %}">
+                {% if client.isActive %}Online{% else %}Offline{% endif %}
+              </div>
+            </td>
+            <td>
+              <div class="{% if client.isPayed %}enable-t{% else %}waiting-t{% endif %}">
+                {% if client.isPayed %}Done{% else %}Waiting{% endif %}
+              </div>
+            </td>
+            <td>
+              <div class="row button-wrapper">
+                <a href="{% url 'detail-client' client.id %}" class="main-button">view</a>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
   </div>
 </div>
@@ -104,6 +100,7 @@
   });
 </script>
 
+{% endif %}
 
 
 

@@ -14,6 +14,7 @@
           ></i>
         </div>
         <div class="quick-link row">
+{% if perms.app.add_server %}
           <a href="{% url 'add-server' %}" class="row">
             <i
               class="fa-solid fa-plus"
@@ -21,6 +22,8 @@
             ></i>
             <b>Add Server</b>
           </a>
+{% endif %}
+{% if perms.app.add_paket %}
           <a href="{% url 'add-paket' %}" class="row">
             <i
               class="fa-solid fa-plus"
@@ -28,6 +31,8 @@
             ></i>
             <b>Add Paket</b>
           </a>
+{% endif %}
+{% if perms.app.add_ippool %}
           <a href="{% url 'add-ip' %}" class="row">
             <i
               class="fa-solid fa-plus"
@@ -35,6 +40,8 @@
             ></i>
             <b>Add IP Pool</b>
           </a>
+{% endif %}
+{% if perms.app.add_client %}
           <a href="{% url 'add-client' %}" class="row">
             <i
               class="fa-solid fa-plus"
@@ -42,6 +49,7 @@
             ></i>
             <b>Add Client</b>
           </a>
+{% endif %}
         </div>
       </div>
       <div class="item card-monitoring column">
@@ -120,6 +128,7 @@
       </div>
     </div>
   </div>
+{% if perms.app.view_client %}
   <div class="dashboard-table column">
     <div class="header-dashboard-table column">
       <div class="row title-head-td">
@@ -170,6 +179,7 @@
       </table>
     </div>
   </div>
+{% endif %}
 </div>
 
 <script>
