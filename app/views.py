@@ -46,6 +46,8 @@ from .models import Gateway, Paket, Redaman, Server, IPPool, Client, Transaction
 
 
 
+
+@login_required(login_url='/login/')
 def get_server_info(request, server_id):
     try:
         server = Server.objects.get(id=server_id)
@@ -60,6 +62,9 @@ def get_server_info(request, server_id):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
+
+
+@login_required(login_url='/login/')
 def dashboard(request) : 
     servers = Server.objects.all()
     clients = Client.objects.all()
@@ -82,17 +87,21 @@ def dashboard(request) :
     return render(request, 'pages/dashboard.html', context)
 
 
-
+@login_required(login_url='/login/')
 def server(request):
     servers_list = Server.objects.all()
     return render(request, 'pages/server.html', {'servers': servers_list})
 
+
+@login_required(login_url='/login/')
 def paket(request) : 
    
     paket_list = Paket.objects.all()
     ip_pools = IPPool.objects.all()
     return render(request, 'pages/paket.html', {'pakets': paket_list, 'ip_pools':ip_pools,})
 
+
+@login_required(login_url='/login/')
 def client(request) : 
     client_list = Client.objects.all()
     context = {
@@ -102,7 +111,7 @@ def client(request) :
     return render(request, 'pages/client.html', context )
 
 
-
+@login_required(login_url='/login/')
 def activasi(request) : 
     inactiveClient = Client.objects.filter(isActive=0)
     context = {
@@ -114,6 +123,8 @@ def activasi(request) :
 
 #forms
 
+
+@login_required(login_url='/login/')
 def addServer(request):
     success = False
     error_message = None
@@ -132,7 +143,10 @@ def addServer(request):
 
     return render(request, 'form-pages/form-server.html', {'form': form, 'success': success, 'error_message':error_message})
 
+
 # views.py
+
+@login_required(login_url='/login/')
 def addGateway(request, server_id):
     server = get_object_or_404(Server, pk=server_id)
     gateway_list = Gateway.objects.filter(server=server)
@@ -191,6 +205,8 @@ def addGateway(request, server_id):
     }
     return render(request, "form-pages/form-gateway.html", context)
 
+
+@login_required(login_url='/login/')
 def addProfile(request):
     success = False
     error_message = None
@@ -273,9 +289,7 @@ def addProfile(request):
     })
 
 
-
-
-
+@login_required(login_url='/login/')
 def addIp(request) : 
     success = False
     error_message = None 
@@ -310,6 +324,8 @@ def addIp(request) :
         'error_message':error_message
         })
 
+
+@login_required(login_url='/login/')
 def addClient(request) : 
 
     servers = Server.objects.all().values("id", 'name', 'lat', 'long')
@@ -398,6 +414,7 @@ def addClient(request) :
 
 
 #edit data
+@login_required(login_url='/login/')
 def edit_server(request, pk):
     success = False
     error_message = None
@@ -423,6 +440,7 @@ def edit_server(request, pk):
         })
 
 
+@login_required(login_url='/login/')
 def edit_gateway(request, server_id, pk):
     success = False
     error_message = None
@@ -488,11 +506,12 @@ def edit_gateway(request, server_id, pk):
     }
     return render(request, 'form-pages/form-gateway.html', context)
 
+
+@login_required(login_url='/login/')
 def edit_paket(request, pk):
     paket = get_object_or_404(Paket, pk=pk)
     info_message = ""
     success_flag = False
-    print('data old name di database', paket.name)
     old_name = paket.name
 
     if request.method == 'POST':
@@ -543,6 +562,7 @@ def edit_paket(request, pk):
 
         return render(request, 'form-pages/form-profile.html', {
             'form': form,
+            'paket': paket,
             'success': success_flag,
             'info_message': info_message,
             'is_edit': True
@@ -557,6 +577,7 @@ def edit_paket(request, pk):
     })
 
 
+@login_required(login_url='/login/')
 def edit_ip(request, pk):
     success = False
     error_message = None
@@ -624,6 +645,7 @@ def edit_ip(request, pk):
     })
 
 
+@login_required(login_url='/login/')
 def edit_client(request, pk):
     client = get_object_or_404(Client, pk=pk)
     success = False
@@ -718,10 +740,8 @@ def edit_client(request, pk):
     })
 
 
-
-
-
 #delete data
+
 
 def delete_server(request, pk):
     server = get_object_or_404(Server, pk=pk)
@@ -762,6 +782,7 @@ def delete_gateway(request, pk):
     return JsonResponse({'success': False, 'message': error_message}, status=400)
 
 
+
 def delete_paket(request, pk):
     if request.method != "POST":
         return JsonResponse({"success": False, "message": "Invalid request method"}, status=405)
@@ -773,6 +794,7 @@ def delete_paket(request, pk):
         return JsonResponse({"success": False, "message": str(e)}, status=400)
 
 
+
 def delete_ip(request, pk):
     if request.method != "POST":
         return JsonResponse({"success": False, "message": "Invalid request method"}, status=405)
@@ -782,7 +804,6 @@ def delete_ip(request, pk):
         return JsonResponse({"success": True, "message": res})
     except Exception as e:
         return JsonResponse({"success": False, "message": str(e)}, status=400)
-
 
 
 
@@ -808,6 +829,7 @@ def delete_client(request, pk):
     return JsonResponse({'success': False, 'message': error_message}, status=400)
 
 
+
 def delete_transaction(request, pk):
     tx = get_object_or_404(Transaction, pk=pk)
     if request.method == "POST":
@@ -823,6 +845,9 @@ def delete_transaction(request, pk):
     return JsonResponse({'success': False, 'message': error_message}, status=400) 
 #detail
 
+
+
+@login_required(login_url='/login/')
 def detailServer(request, server_id) : 
     server = get_object_or_404(Server, id=server_id)
     gateway_list = Gateway.objects.filter(server=server)
@@ -834,6 +859,7 @@ def detailServer(request, server_id) :
         'data': data
         }
     return render(request, 'detail-pages/detail-server.html', context)
+
 
 
 def get_client_remote(request, client_id):
@@ -898,6 +924,7 @@ def get_genieacs_data(request, client_id):
 
 
 
+@login_required(login_url='/login/')
 def detailClient(request, client_id): 
     client = get_object_or_404(Client, id=client_id)
 
@@ -949,7 +976,7 @@ def detailClient(request, client_id):
     return render(request, "detail-pages/detail-client.html", context)
 
 
-
+@login_required(login_url='/login/')
 def map(request):
     servers = Server.objects.all().values("id", 'name', 'lat', 'long')
     gateways = Gateway.objects.all().values("id", "name", "lat", "long", "parent_lat", "parent_long")
@@ -968,6 +995,8 @@ def map(request):
 
 
 #=================================Multiple task========================================
+
+
 def activasi_multi_client(request):
     if request.method != "POST":
         return JsonResponse({"success": False, "message": "Method not allowed"}, status=405)
@@ -1016,6 +1045,8 @@ def activasi_multi_client(request):
     except Exception as e:
         return JsonResponse({"success": False, "message": str(e) or "Terjadi kesalahan saat memproses activasi."}, status=500)
 
+
+
 def payment_multiple_client(request):
 
     datas = json.loads(request.body.decode("utf-8"))
@@ -1033,6 +1064,8 @@ def payment_multiple_client(request):
 
     return JsonResponse({"success": True, "results": results})
 
+
+
 def verif_multiple_client(request):
     datas = json.loads(request.body.decode("utf-8"))
     results = []
@@ -1048,6 +1081,8 @@ def verif_multiple_client(request):
             results.append({"name": name, "success": False, "message": str(e)})
 
     return JsonResponse({"success": True, "results": results})
+
+
 
 def net_multiple_client(request):
     if request.method != "POST":
@@ -1071,6 +1106,8 @@ def net_multiple_client(request):
     except Exception as e:
         return JsonResponse({"success": False, "message": str(e) or "Terjadi kesalahan."}, status=500)
 
+
+
 def toggle_pembayaran_internal(client_id):
     client = get_object_or_404(Client, id=client_id)
     client.isPayed = not client.isPayed
@@ -1088,6 +1125,8 @@ def toggle_pembayaran_internal(client_id):
 
     client.save()
     return message
+
+
 
 def toggle_verif_internal(client_id, user):
 
@@ -1158,6 +1197,8 @@ def toggle_verif_internal(client_id, user):
         f"Verifikasi untuk dibatalkan."
     )
 
+
+
 def delete_ip_internal(ip_id):
     ip_pool = get_object_or_404(IPPool, pk=ip_id)
     server = ip_pool.id_server
@@ -1178,6 +1219,8 @@ def delete_ip_internal(ip_id):
     else:
         ip_pool.delete()
         return "IP Pool deleted without server action"
+
+
 
 def toggle_activasi_internal(client_id):
     client = get_object_or_404(Client, id=client_id)
@@ -1249,6 +1292,7 @@ def delete_multiple_client(request):
     return JsonResponse({"success": True, "results": results})
 
 
+
 def delete_multiple_gateway(request):
     datas = json.loads(request.body.decode('utf-8'))
     results = []
@@ -1266,6 +1310,8 @@ def delete_multiple_gateway(request):
             results.append({"name": name, "status": "failed", "message": "Data tidak ditemukan"})
 
     return JsonResponse({"success": True, "results": results})
+
+
 
 def delete_multiple_transaction(request):
     datas = json.loads(request.body.decode('utf-8'))
@@ -1286,6 +1332,7 @@ def delete_multiple_transaction(request):
     return JsonResponse({"success": True, "results": results})
 
 
+
 def delete_multiple_ip(request):
     datas = json.loads(request.body.decode("utf-8"))
     results = []
@@ -1301,7 +1348,6 @@ def delete_multiple_ip(request):
             results.append({"name": name, "success": False, "message": str(e)})
 
     return JsonResponse({"success": True, "results": results})
-
 
 
 
@@ -1321,6 +1367,8 @@ def delete_multiple_paket(request):
 
     return JsonResponse({"success": True, "results": results})
 
+
+
 def delete_paket(request, pk):
     if request.method != "POST":
         return JsonResponse({"success": False, "message": "Invalid request method"}, status=405)
@@ -1330,6 +1378,7 @@ def delete_paket(request, pk):
         return JsonResponse({"success": True, "message": res})
     except Exception as e:
         return JsonResponse({"success": False, "message": str(e)}, status=400)
+
 
 
 def delete_paket_internal(paket_id):
@@ -1355,6 +1404,8 @@ def delete_paket_internal(paket_id):
         return "Paket deleted without server action"
 
 # =========================other===================================
+
+
 def toggle_activasi(request, client_id):
     if request.method != "POST":
         return JsonResponse({"success": False, "message": "Method not allowed"}, status=405)
@@ -1379,9 +1430,6 @@ def toggle_verif(request, client_id):
 
 
 
-
-
-
 def toggle_pembayaran(request, client_id):
     try:
         message = toggle_pembayaran_internal(client_id)
@@ -1397,6 +1445,7 @@ def toggle_pembayaran(request, client_id):
 
 GENIEACS_USER = config("GENIEACS_USERNAME")
 GENIEACS_PASS = config("GENIEACS_PASSWORD")
+
 
 
 
@@ -1434,6 +1483,8 @@ def reboot(request):
             return JsonResponse({"status": "error", "message": f"Error: {str(e)}"}, status=500)
 
     return JsonResponse({"status": "error", "message": "Invalid request"}, status=405)
+
+
 
 def test_conn_view(request):
     if request.method == "POST":
