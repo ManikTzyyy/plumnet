@@ -103,7 +103,8 @@ class PaketForm(forms.ModelForm):
                 queryset=IPPool.objects.all(),
                 widget=forms.Select(attrs={'class': 'form-control'}),
                 required=True,
-                label="IP Pool"
+                label="IP Pool",
+                initial=self.instance.id_ip_pool if self.instance else None
             )
 
         # kalau edit (instance ada), parse limit "10M/2M" -> download=10, upload=2
@@ -154,7 +155,7 @@ class PaketForm(forms.ModelForm):
             for ip_pool in ip_pools:
                 server = ip_pool.id_server
                 qs = Paket.objects.filter(name=name, id_ip_pool__id_server=server)
-                
+
                 if not ip_pool:
                     self.add_error('id_ip_pool', "Pool tidak boleh kosong.")
                 if self.instance.pk:

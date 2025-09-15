@@ -484,11 +484,9 @@ def edit_gateway(request, server_id, pk):
     return render(request, 'form-pages/form-gateway.html', context)
 
 def edit_paket(request, pk):
-    success = False
-    error_message = None
     paket = get_object_or_404(Paket, pk=pk)
-    current_server = paket.id_ip_pool.id_server if paket.id_ip_pool else None
-    current_profile = paket.name if paket.name else None
+    info_message = ""
+    success_flag = False
 
     if request.method == 'POST':
         form = PaketForm(request.POST, instance=paket, edit=True)
@@ -496,43 +494,57 @@ def edit_paket(request, pk):
             limit = form.cleaned_data['limit']
             profile_name = form.cleaned_data['name']
             ip_pool = form.cleaned_data['id_ip_pool']
-            paket = form.save(commit=False)
-            paket.id_ip_pool = ip_pool
-            paket.limit = form.cleaned_data['limit'] 
-            if ip_pool == None:
-                error_message = "IP Pool tidak boleh Null"          
+
+            if ip_pool is None:
+                info_message = "IP Pool tidak boleh null."
             else:
                 new_server = ip_pool.id_server
-                if new_server == None:
-                    error_message = "Tambahkan Server pada IP Pool Terlebih Dahulu!"
+                if new_server is None:
+                    info_message = "Tambahkan server pada IP Pool terlebih dahulu!"
                 else:
+                    current_server = paket.id_ip_pool.id_server if paket.id_ip_pool else None
+                    current_profile = paket.name
+
                     try:
-                        
                         if current_server is None:
-                            create_profile(new_server.host,new_server.username,new_server.password,profile_name,ip_pool.name,limit,)
+                            # buat profile baru
+                            create_profile(new_server.host, new_server.username, new_server.password,
+                                           profile_name, ip_pool.name, limit)
+                            paket.id_ip_pool = ip_pool
+                            paket.limit = limit
                             paket.save()
-                            success = True
+                            info_message = f"Profile '{profile_name}' berhasil dibuat."
+                            success_flag = True
                         elif current_server != new_server:
-                            error_message = "Tidak boleh mengganti IP Pool yang berbeda dengan server lama."
+                            info_message = "Tidak boleh mengganti IP Pool yang berbeda dengan server lama."
                         else:
-                            edit_profile(new_server.host,new_server.username,new_server.password,profile_name,ip_pool.name,limit,current_profile)
+                            # edit profile
+                            edit_profile(new_server.host, new_server.username, new_server.password,
+                                         profile_name, ip_pool.name, limit, current_profile)
+                            paket.id_ip_pool = ip_pool
+                            paket.limit = limit
                             paket.save()
-                            success = True 
+                            info_message = f"Profile '{profile_name}' berhasil diupdate."
+                            success_flag = True
                     except Exception as e:
-                        error_message = str(e) 
+                        info_message = f"Gagal: {str(e)}"
         else:
-            error_message = ''
-            for field, errors in form.errors.items():
-                error_message += f"{field}: {', '.join(errors)}\n"
+            info_message = "\n".join(f"{field}: {', '.join(errors)}" for field, errors in form.errors.items())
+
+        return render(request, 'form-pages/form-profile.html', {
+            'form': form,
+            'success': success_flag,
+            'info_message': info_message,
+            'is_edit': True
+        })
+
     else:
         form = PaketForm(instance=paket, edit=True)
 
     return render(request, 'form-pages/form-profile.html', {
-        'form': form, 
-        'is_edit': True,
-        'success': success,
-        'error_message': error_message
-        })
+        'form': form,
+        'is_edit': True
+    })
 
 
 def edit_ip(request, pk):
