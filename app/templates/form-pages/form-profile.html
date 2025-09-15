@@ -55,7 +55,7 @@
   </div>
 </div>
 
-{% if success %}
+<!-- {% if success %}
 <script>
 Swal.fire({
   icon: 'success',
@@ -78,16 +78,38 @@ Swal.fire({
   confirmButtonText: 'OK'
 });
 </script>
+{% endif %} -->
+
+{% if info_message %}
+<script>
+Swal.fire({
+    icon: {% if success %}'success'{% else %}'info'{% endif %},
+    title: {% if success %}'Sukses!'{% else %}'Info'{% endif %},
+    html: `<div style="text-align:left; font-size:0.9em;">{{ info_message|linebreaksbr|escapejs }}</div>`,
+    {% if success %}
+    showConfirmButton: true
+    {% else %}
+    showConfirmButton: true
+    {% endif %}
+}).then(() => {
+    {% if success %}
+    window.location.href = "{% url 'paket' %}";
+    {% endif %}
+});
+</script>
 {% endif %}
 
 
+
+
 <script>
-  $(document).ready(function() {
+$(document).ready(function() {
     $('#id_id_ip_pool').select2({
-      placeholder: "Pilih server...",
-      allowClear: true
+        placeholder: "Pilih pool...",
+        allowClear: true
     });
-  });
+});
 </script>
+
 
 {% endblock %}

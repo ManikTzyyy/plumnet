@@ -191,50 +191,90 @@ def addGateway(request, server_id):
     }
     return render(request, "form-pages/form-gateway.html", context)
 
-
-def addProfile(request) :
+def addProfile(request):
     success = False
-    error_message = None 
+    error_message = None
+    infos = []
+    successes = []
+
     if request.method == "POST":
         form = PaketForm(request.POST)
         if form.is_valid():
-
             limit = form.cleaned_data['limit']
-            print(limit)
-            profile_name = form.cleaned_data['name']
-            ip_pool = form.cleaned_data['id_ip_pool']
-            server = ip_pool.id_server
-            paket = form.save(commit=False)
-            paket.limit = form.cleaned_data['limit']  # pastikan terset
-            
-            try:
-      
-                create_profile(
-                    server.host,
-                    server.username,
-                    server.password,
-                    profile_name,
-                    ip_pool.name,
-                    limit
+            pools = form.cleaned_data['id_ip_pool']
+            profile_base_name = form.cleaned_data['name']
+            price = form.cleaned_data['price']
+
+
+            errors = []
+            for ip_pool in pools:
+                
+                server = ip_pool.id_server
+                profile_name = f"{profile_base_name}-{ip_pool.name}"
+
+                if Paket.objects.filter(name=profile_name, id_ip_pool=ip_pool).exists():
+                    infos.append(f"{profile_name} sudah ada")
+                    continue
+
+                paket = Paket(
+                    name=profile_name,
+                    price=price,
+                    limit=limit,
+                    id_ip_pool=ip_pool  # single instance, aman
                 )
-                paket.save()
-                success = True
-            except Exception as e:
-                error_message = str(e) 
+
+                try:
+                    # print(f"Membuat profile {profile_name} di pool {ip_pool.name} -> server {server.host}")
+                    create_profile(
+                        server.host,
+                        server.username,
+                        server.password,
+                        profile_name,
+                        ip_pool.name,
+                        limit
+                    )
+                    paket.save()
+                    successes.append(profile_name)
+                except Exception as e:
+                    infos.append(f"{profile_name}: {str(e)}")
             
+            if successes and infos:
+                info_message = "Beberapa profile berhasil dibuat, beberapa sudah ada atau gagal:\n"
+                info_message += "Berhasil: " + ", ".join(successes) + "\n"
+                info_message += "Info: " + ", ".join(infos)
+                success = True
+            elif successes:
+                info_message = "Berhasil membuat profile: " + ", ".join(successes)
+                success = True
+            else:
+                info_message = "Tidak ada profile baru yang berhasil dibuat.\n" + ", ".join(infos)
+                success = False
+
+            return render(request, 'form-pages/form-profile.html', {
+                'form': form,
+                'success': success,
+                'info_message': info_message
+            })
 
         else:
-            error_message = ''
-            for field, errors in form.errors.items():
-                error_message += f"{field}: {', '.join(errors)}\n"
+            error_message = "\n".join(
+                f"{field}: {', '.join(errors)}" for field, errors in form.errors.items()
+            )
+            return render(request, 'form-pages/form-profile.html', {
+                'form': form,
+                'success': False,
+                'info_message': error_message
+            })
     else:
         form = PaketForm()
 
     return render(request, 'form-pages/form-profile.html', {
         'form': form,
-        'success': success, 
-        'error_message':error_message
-        })
+    })
+
+
+
+
 
 def addIp(request) : 
     success = False
@@ -451,12 +491,13 @@ def edit_paket(request, pk):
     current_profile = paket.name if paket.name else None
 
     if request.method == 'POST':
-        form = PaketForm(request.POST, instance=paket)
+        form = PaketForm(request.POST, instance=paket, edit=True)
         if form.is_valid():
             limit = form.cleaned_data['limit']
             profile_name = form.cleaned_data['name']
             ip_pool = form.cleaned_data['id_ip_pool']
             paket = form.save(commit=False)
+            paket.id_ip_pool = ip_pool
             paket.limit = form.cleaned_data['limit'] 
             if ip_pool == None:
                 error_message = "IP Pool tidak boleh Null"          
@@ -484,7 +525,7 @@ def edit_paket(request, pk):
             for field, errors in form.errors.items():
                 error_message += f"{field}: {', '.join(errors)}\n"
     else:
-        form = PaketForm(instance=paket)
+        form = PaketForm(instance=paket, edit=True)
 
     return render(request, 'form-pages/form-profile.html', {
         'form': form, 
