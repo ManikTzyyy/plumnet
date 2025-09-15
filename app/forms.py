@@ -337,12 +337,14 @@ class ClientForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
+        name = cleaned_data.get('name')
         pppoe = cleaned_data.get('pppoe')
         paket = cleaned_data.get('id_paket')
 
-        # kalau pppoe atau paket kosong, skip validasi tambahan
-        if not pppoe or not paket:
-            return cleaned_data  
+        if not name:
+            self.add_error('name', "Nama tidak boleh kosong.")
+        if not paket:
+            self.add_error('id_paket', "Paket tidak boleh kosong.")
 
         ip_pool = getattr(paket, 'id_ip_pool', None)
         server = getattr(ip_pool, 'id_server', None)

@@ -320,14 +320,17 @@ def addClient(request) :
     if request.method == "POST":
         paket_id = request.POST.get('id_paket')
         paket = Paket.objects.get(pk=paket_id) if paket_id else None
-        server = paket.id_ip_pool.id_server if paket else None
-        ip_range = paket.id_ip_pool.ip_range
+        
+        ip_pool = getattr(paket, 'id_ip_pool', None)
+        server = getattr(ip_pool, 'id_server', None)
+        ip_range = getattr(ip_pool, 'ip_range', None)
 
+        local_ip = None
         if ip_range:
             start_ip = ip_range.split("-")[0].strip()   # ambil "10.10.2.2"
             parts = start_ip.split(".")
-        if len(parts) == 4:
-            local_ip = f"{parts[0]}.{parts[1]}.{parts[2]}.1"   # hasil "10.10.2.1"
+            if len(parts) == 4:
+                local_ip = f"{parts[0]}.{parts[1]}.{parts[2]}.1"   # hasil "10.10.2.1"
         else:
             local_ip = None
 
@@ -335,6 +338,8 @@ def addClient(request) :
         form = ClientForm(request.POST)
         if form.is_valid():
             cd = form.cleaned_data
+            if not cd.get('id_paket'):
+                error_message = "Paket tidak boleh kosong."
 
             client = Client(
                     id_paket=cd['id_paket'],
@@ -487,9 +492,12 @@ def edit_paket(request, pk):
     paket = get_object_or_404(Paket, pk=pk)
     info_message = ""
     success_flag = False
+    print('data old name di database', paket.name)
+    old_name = paket.name
 
     if request.method == 'POST':
         form = PaketForm(request.POST, instance=paket, edit=True)
+        
         if form.is_valid():
             limit = form.cleaned_data['limit']
             profile_name = form.cleaned_data['name']
@@ -503,10 +511,11 @@ def edit_paket(request, pk):
                     info_message = "Tambahkan server pada IP Pool terlebih dahulu!"
                 else:
                     current_server = paket.id_ip_pool.id_server if paket.id_ip_pool else None
-                    current_profile = paket.name
+                  
 
                     try:
                         if current_server is None:
+                        
                             # buat profile baru
                             create_profile(new_server.host, new_server.username, new_server.password,
                                            profile_name, ip_pool.name, limit)
@@ -519,8 +528,9 @@ def edit_paket(request, pk):
                             info_message = "Tidak boleh mengganti IP Pool yang berbeda dengan server lama."
                         else:
                             # edit profile
+              
                             edit_profile(new_server.host, new_server.username, new_server.password,
-                                         profile_name, ip_pool.name, limit, current_profile)
+                                         profile_name, ip_pool.name, limit, old_name)
                             paket.id_ip_pool = ip_pool
                             paket.limit = limit
                             paket.save()
