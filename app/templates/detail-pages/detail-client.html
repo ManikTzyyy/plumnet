@@ -6,7 +6,6 @@
       <div class="row title-head-td ">
         <i class="fa-solid fa-user" style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"></i>
         <span class="title">Pelanggan</span>
-        
       </div>
       <a href="{% url 'client' %}" class="main-button">Kembali</a>
       {% if not client.isApproved %}
@@ -39,8 +38,12 @@
           <div class="text">{{ client.id_paket.price|rupiah }} </div>
         </div>
         <div class="row wrap gap-10">
-             <a href="{% url 'edit-client' client.id %}" class="warning-button">Edit</a>
-            <button  onclick="deleteData('{{ client.id }}', 'client', 'client')" class="danger-button">Delete</button>
+          {% if perms.app.change_client %}
+          <a href="{% url 'edit-client' client.id %}" class="warning-button">Edit</a>
+          {% endif %}
+          {% if perms.app.delete_client %}
+          <button  onclick="deleteData('{{ client.id }}', 'client', 'client')" class="danger-button">Delete</button>
+          {% endif %}
         </div>
       </div>
       <div class="wrapper column">
@@ -49,7 +52,6 @@
           <div class="title strong">Server</div>
           <div class="text">{{ client.id_paket.id_ip_pool.id_server.name }}</div>
         </div>
-        
         <div class="column">
           <div class="title strong">Id PPPoE</div>
           <div class="text">{{ client.pppoe }}</div>
@@ -62,7 +64,9 @@
           <div class="title strong">Status</div>
           <div class=" {% if client.isActive %}enable-t{% else %}disable-t{% endif %}"> {% if client.isActive %}Online{% else %}Offline{% endif %} </div>
         </div>
-        <button onclick="toggleActivasiClient('{{ client.id }}', '{{ client.name }}',`{{ client.isActive|yesno:'true,false' }}`, 'detail-client')" class="{% if user.is_authenticated %}main-button{% else %}disable-button{% endif %}" {% if not user.is_authenticated %}disabled{% endif %} >{% if client.isActive %}Nonaktifkan{% else %}Activasi{% endif %}</button>
+        {% if perms.app.can_change_is_active %}
+        <button onclick="toggleActivasiClient('{{ client.id }}', '{{ client.name }}',`{{ client.isActive|yesno:'true,false' }}`, 'detail-client')" class="main-button">{% if client.isActive %}Nonaktifkan{% else %}Activasi{% endif %}</button>
+        {% endif %}
       </div>
       <div class="wrapper column">
         <h2>Device</h2>
@@ -80,58 +84,47 @@
         </div>
         <div class="column">
           <div class="title strong">IP Remote</div>
-          <div class="text row">
-            <a href="#" target="_blank" class="no-loader" id="remote">-</a>
-          </div>
+          <div class="text row"><a href="#" target="_blank" class="no-loader" id="remote">-</a></div>
         </div>
         {% if acs_ip %}
-        <button id="rebootBtn" class="info-button" style="display:none;" > Reboot Perangkat </button>
+        <button id="rebootBtn" class="info-button" style="display:none;"> Reboot Perangkat </button>
         {% endif %}
       </div>
       <div class="wrapper column">
         <h2>Status Langganan</h2>
-        
         <div class="column">
           <div class="title strong">Tanggal Mulai Langganan</div>
           <div class="text">{{client.activated_at}}</div>
         </div>
         <div class="column">
           <div class="title strong">Status Pembayaran</div>
-           <div class=" {% if client.isPayed %}enable-t{% else %}waiting-t{% endif %}">
-              {% if client.isPayed %}Done{% else %}Waiting{% endif %}
-          </div>
+          <div class="{% if client.isPayed %}enable-t{% else %}waiting-t{% endif %}">{% if client.isPayed %}Done{% else %}Waiting{% endif %}</div>
         </div>
         <div class="row wrap gap-20">
           <div class="column">
-          <div class="title strong">Pembayaran Terakhir</div>
-          <div class="text">
-            {% if last_payment %}
-              {{ last_payment }}
-            {% else %}
-              Belum Ada
-            {% endif %}
+            <div class="title strong">Pembayaran Terakhir</div>
+            <div class="text">{% if last_payment %}{{ last_payment }}{% else %}Belum Ada{% endif %}</div>
+          </div>
+          <div class="column">
+            <div class="title strong">Tagihan Berikutnya</div>
+            <div class="text"> {{ next_bill }}</div>
           </div>
         </div>
-        <div class="column">
-          <div class="title strong">Tagihan Berikutnya</div>
-          <div class="text"> {{ next_bill }}</div>
-        </div>
-        </div>
-        
         <div class="column button-wrapper no-loader wrap">
           <form id="delete-form" method="POST" style="display: none;">
           {% csrf_token %}
           </form>
             <div class="row wrap gap-10">
-              <button onclick="togglePembayaran('{{ client.id }}', '{{ client.name }}',`{{ client.isPayed|yesno:'true,false' }}`, 'detail-client')" class="{% if user.is_authenticated %}main-button{% else %}disable-button{% endif %}" {% if not user.is_authenticated %}disabled{% endif %} >{% if client.isPayed %}Buat Tagihan{% else %}Konfirmasi Pembayaran{% endif %}</button>
+              {% if perms.app.can_change_is_payed %}
+              <button onclick="togglePembayaran('{{ client.id }}', '{{ client.name }}',`{{ client.isPayed|yesno:'true,false' }}`, 'detail-client')" class="main-button">{% if client.isPayed %}Buat Tagihan{% else %}Konfirmasi Pembayaran{% endif %}</button>
+              {% endif %}
             </div>
         </div>
       </div>
     </div>
 
     <br>
-    
-
+    {% if perms.app.delete_transaction %}
     <div class="row gap-10 align-center">
       <p>Action:</p>
       <select name="" id="action-dropdown" class="action-dropdown">
@@ -140,45 +133,47 @@
       </select>
       <button class="button success-button" id="go-action">Go</button>
     </div>  
+    {% endif %}
 
+    {% if perms.app.view_transaction %}
     <div class="table-container">
       <p class="text-center strong">History Transaction</p>
-          <table class="table" id="table">
-            <thead>
-            <tr class="t-head">
-              <th><input type="checkbox" id="select-all-checkbox"></th>
-              <th>#</th>
-              <th>Value</th>
-              <th>Date</th>
-              <th></th>
-            </tr>
-            </thead>
-            <tbody>
-              {% for ts in transaction %}
-            <tr class="t-d">
-              <td>
-                 <input type="checkbox" class="client-checkbox" 
-                  data-id="{{ ts.id }}"
-                  data-name="{{ ts.create_at }}" > 
-                
-              </td>
-              <td>{{ ts.id }}</td>
-              <td>{{ ts.value|rupiah }}</td>
-              <td>{{ ts.create_at }}</td>
-              <td>
-                <div class="row button-wrapper">
-                  <button
-                    onclick="deleteData('{{ ts.id }}', 'transaction', 'client/id={{client.id}}')"
-                    class="danger-button">
-                    Delete
-                  </button>
-                </div>
-              </td>
-            </tr>
-            {% endfor %}
-            </tbody>
-          </table>
-        </div>
+      <table class="table" id="table">
+        <thead>
+          <tr class="t-head">
+            <th>
+              {% if perms.app.delete_transaction %}
+              <input type="checkbox" id="select-all-checkbox">
+              {% endif %}
+            </th>
+            <th>#</th>
+            <th>Value</th>
+            <th>Date</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for ts in transaction %}
+          <tr class="t-d">
+            <td>
+              {% if perms.app.delete_transaction %}
+              <input type="checkbox" class="client-checkbox" data-id="{{ ts.id }}" data-name="{{ ts.create_at }}"> 
+              {% endif %}
+            </td>
+            <td>{{ ts.id }}</td>
+            <td>{{ ts.value|rupiah }}</td>
+            <td>{{ ts.create_at }}</td>
+            <td>
+              {% if perms.app.delete_transaction %}
+              <button onclick="deleteData('{{ ts.id }}', 'transaction', 'client/id={{client.id}}')" class="danger-button">Delete</button>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
 
     <details>
       <summary>Map</summary>
@@ -192,15 +187,10 @@
       <canvas id="redamanChart"></canvas>
     </details>
 
+  </div>
+</div>
 
-    
-
-    
-
-    
- </div>
-
- <script src="{% static 'js/library/chart.umd.js' %}"></script>
+<script src="{% static 'js/library/chart.umd.js' %}"></script>
 
 <script src="{% static 'js/scripts/checkbox.js' %}"></script>
 

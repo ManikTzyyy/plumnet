@@ -46,6 +46,8 @@ from .models import Gateway, Paket, Redaman, Server, IPPool, Client, Transaction
 
 
 
+
+@login_required(login_url='/login/')
 def get_server_info(request, server_id):
     try:
         server = Server.objects.get(id=server_id)
@@ -60,6 +62,9 @@ def get_server_info(request, server_id):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
+
+
+@login_required(login_url='/login/')
 def dashboard(request) : 
     servers = Server.objects.all()
     clients = Client.objects.all()
@@ -82,17 +87,21 @@ def dashboard(request) :
     return render(request, 'pages/dashboard.html', context)
 
 
-
+@login_required(login_url='/login/')
 def server(request):
     servers_list = Server.objects.all()
     return render(request, 'pages/server.html', {'servers': servers_list})
 
+
+@login_required(login_url='/login/')
 def paket(request) : 
    
     paket_list = Paket.objects.all()
     ip_pools = IPPool.objects.all()
     return render(request, 'pages/paket.html', {'pakets': paket_list, 'ip_pools':ip_pools,})
 
+
+@login_required(login_url='/login/')
 def client(request) : 
     client_list = Client.objects.all()
     context = {
@@ -102,7 +111,7 @@ def client(request) :
     return render(request, 'pages/client.html', context )
 
 
-
+@login_required(login_url='/login/')
 def activasi(request) : 
     inactiveClient = Client.objects.filter(isActive=0)
     context = {
@@ -114,6 +123,8 @@ def activasi(request) :
 
 #forms
 
+
+@login_required(login_url='/login/')
 def addServer(request):
     success = False
     error_message = None
@@ -132,7 +143,10 @@ def addServer(request):
 
     return render(request, 'form-pages/form-server.html', {'form': form, 'success': success, 'error_message':error_message})
 
+
 # views.py
+
+@login_required(login_url='/login/')
 def addGateway(request, server_id):
     server = get_object_or_404(Server, pk=server_id)
     gateway_list = Gateway.objects.filter(server=server)
@@ -192,50 +206,90 @@ def addGateway(request, server_id):
     return render(request, "form-pages/form-gateway.html", context)
 
 
-def addProfile(request) :
+@login_required(login_url='/login/')
+def addProfile(request):
     success = False
-    error_message = None 
+    error_message = None
+    infos = []
+    successes = []
+
     if request.method == "POST":
         form = PaketForm(request.POST)
         if form.is_valid():
-
             limit = form.cleaned_data['limit']
-            print(limit)
-            profile_name = form.cleaned_data['name']
-            ip_pool = form.cleaned_data['id_ip_pool']
-            server = ip_pool.id_server
-            paket = form.save(commit=False)
-            paket.limit = form.cleaned_data['limit']  # pastikan terset
-            
-            try:
-      
-                create_profile(
-                    server.host,
-                    server.username,
-                    server.password,
-                    profile_name,
-                    ip_pool.name,
-                    limit
+            pools = form.cleaned_data['id_ip_pool']
+            profile_base_name = form.cleaned_data['name']
+            price = form.cleaned_data['price']
+
+
+            errors = []
+            for ip_pool in pools:
+                
+                server = ip_pool.id_server
+                profile_name = f"{profile_base_name}-{ip_pool.name}"
+
+                if Paket.objects.filter(name=profile_name, id_ip_pool=ip_pool).exists():
+                    infos.append(f"{profile_name} sudah ada")
+                    continue
+
+                paket = Paket(
+                    name=profile_name,
+                    price=price,
+                    limit=limit,
+                    id_ip_pool=ip_pool  # single instance, aman
                 )
-                paket.save()
-                success = True
-            except Exception as e:
-                error_message = str(e) 
+
+                try:
+                    # print(f"Membuat profile {profile_name} di pool {ip_pool.name} -> server {server.host}")
+                    create_profile(
+                        server.host,
+                        server.username,
+                        server.password,
+                        profile_name,
+                        ip_pool.name,
+                        limit
+                    )
+                    paket.save()
+                    successes.append(profile_name)
+                except Exception as e:
+                    infos.append(f"{profile_name}: {str(e)}")
             
+            if successes and infos:
+                info_message = "Beberapa profile berhasil dibuat, beberapa sudah ada atau gagal:\n"
+                info_message += "Berhasil: " + ", ".join(successes) + "\n"
+                info_message += "Info: " + ", ".join(infos)
+                success = True
+            elif successes:
+                info_message = "Berhasil membuat profile: " + ", ".join(successes)
+                success = True
+            else:
+                info_message = "Tidak ada profile baru yang berhasil dibuat.\n" + ", ".join(infos)
+                success = False
+
+            return render(request, 'form-pages/form-profile.html', {
+                'form': form,
+                'success': success,
+                'info_message': info_message
+            })
 
         else:
-            error_message = ''
-            for field, errors in form.errors.items():
-                error_message += f"{field}: {', '.join(errors)}\n"
+            error_message = "\n".join(
+                f"{field}: {', '.join(errors)}" for field, errors in form.errors.items()
+            )
+            return render(request, 'form-pages/form-profile.html', {
+                'form': form,
+                'success': False,
+                'info_message': error_message
+            })
     else:
         form = PaketForm()
 
     return render(request, 'form-pages/form-profile.html', {
         'form': form,
-        'success': success, 
-        'error_message':error_message
-        })
+    })
 
+
+@login_required(login_url='/login/')
 def addIp(request) : 
     success = False
     error_message = None 
@@ -270,6 +324,8 @@ def addIp(request) :
         'error_message':error_message
         })
 
+
+@login_required(login_url='/login/')
 def addClient(request) : 
 
     servers = Server.objects.all().values("id", 'name', 'lat', 'long')
@@ -280,14 +336,17 @@ def addClient(request) :
     if request.method == "POST":
         paket_id = request.POST.get('id_paket')
         paket = Paket.objects.get(pk=paket_id) if paket_id else None
-        server = paket.id_ip_pool.id_server if paket else None
-        ip_range = paket.id_ip_pool.ip_range
+        
+        ip_pool = getattr(paket, 'id_ip_pool', None)
+        server = getattr(ip_pool, 'id_server', None)
+        ip_range = getattr(ip_pool, 'ip_range', None)
 
+        local_ip = None
         if ip_range:
             start_ip = ip_range.split("-")[0].strip()   # ambil "10.10.2.2"
             parts = start_ip.split(".")
-        if len(parts) == 4:
-            local_ip = f"{parts[0]}.{parts[1]}.{parts[2]}.1"   # hasil "10.10.2.1"
+            if len(parts) == 4:
+                local_ip = f"{parts[0]}.{parts[1]}.{parts[2]}.1"   # hasil "10.10.2.1"
         else:
             local_ip = None
 
@@ -295,6 +354,8 @@ def addClient(request) :
         form = ClientForm(request.POST)
         if form.is_valid():
             cd = form.cleaned_data
+            if not cd.get('id_paket'):
+                error_message = "Paket tidak boleh kosong."
 
             client = Client(
                     id_paket=cd['id_paket'],
@@ -353,6 +414,7 @@ def addClient(request) :
 
 
 #edit data
+@login_required(login_url='/login/')
 def edit_server(request, pk):
     success = False
     error_message = None
@@ -378,6 +440,7 @@ def edit_server(request, pk):
         })
 
 
+@login_required(login_url='/login/')
 def edit_gateway(request, server_id, pk):
     success = False
     error_message = None
@@ -443,57 +506,78 @@ def edit_gateway(request, server_id, pk):
     }
     return render(request, 'form-pages/form-gateway.html', context)
 
+
+@login_required(login_url='/login/')
 def edit_paket(request, pk):
-    success = False
-    error_message = None
     paket = get_object_or_404(Paket, pk=pk)
-    current_server = paket.id_ip_pool.id_server if paket.id_ip_pool else None
-    current_profile = paket.name if paket.name else None
+    info_message = ""
+    success_flag = False
+    old_name = paket.name
 
     if request.method == 'POST':
-        form = PaketForm(request.POST, instance=paket)
+        form = PaketForm(request.POST, instance=paket, edit=True)
+        
         if form.is_valid():
             limit = form.cleaned_data['limit']
             profile_name = form.cleaned_data['name']
             ip_pool = form.cleaned_data['id_ip_pool']
-            paket = form.save(commit=False)
-            paket.limit = form.cleaned_data['limit'] 
-            if ip_pool == None:
-                error_message = "IP Pool tidak boleh Null"          
+
+            if ip_pool is None:
+                info_message = "IP Pool tidak boleh null."
             else:
                 new_server = ip_pool.id_server
-                if new_server == None:
-                    error_message = "Tambahkan Server pada IP Pool Terlebih Dahulu!"
+                if new_server is None:
+                    info_message = "Tambahkan server pada IP Pool terlebih dahulu!"
                 else:
-                    try:
-                        
-                        if current_server is None:
-                            create_profile(new_server.host,new_server.username,new_server.password,profile_name,ip_pool.name,limit,)
-                            paket.save()
-                            success = True
-                        elif current_server != new_server:
-                            error_message = "Tidak boleh mengganti IP Pool yang berbeda dengan server lama."
-                        else:
-                            edit_profile(new_server.host,new_server.username,new_server.password,profile_name,ip_pool.name,limit,current_profile)
-                            paket.save()
-                            success = True 
-                    except Exception as e:
-                        error_message = str(e) 
-        else:
-            error_message = ''
-            for field, errors in form.errors.items():
-                error_message += f"{field}: {', '.join(errors)}\n"
-    else:
-        form = PaketForm(instance=paket)
+                    current_server = paket.id_ip_pool.id_server if paket.id_ip_pool else None
+                  
 
-    return render(request, 'form-pages/form-profile.html', {
-        'form': form, 
-        'is_edit': True,
-        'success': success,
-        'error_message': error_message
+                    try:
+                        if current_server is None:
+                        
+                            # buat profile baru
+                            create_profile(new_server.host, new_server.username, new_server.password,
+                                           profile_name, ip_pool.name, limit)
+                            paket.id_ip_pool = ip_pool
+                            paket.limit = limit
+                            paket.save()
+                            info_message = f"Profile '{profile_name}' berhasil dibuat."
+                            success_flag = True
+                        elif current_server != new_server:
+                            info_message = "Tidak boleh mengganti IP Pool yang berbeda dengan server lama."
+                        else:
+                            # edit profile
+              
+                            edit_profile(new_server.host, new_server.username, new_server.password,
+                                         profile_name, ip_pool.name, limit, old_name)
+                            paket.id_ip_pool = ip_pool
+                            paket.limit = limit
+                            paket.save()
+                            info_message = f"Profile '{profile_name}' berhasil diupdate."
+                            success_flag = True
+                    except Exception as e:
+                        info_message = f"Gagal: {str(e)}"
+        else:
+            info_message = "\n".join(f"{field}: {', '.join(errors)}" for field, errors in form.errors.items())
+
+        return render(request, 'form-pages/form-profile.html', {
+            'form': form,
+            'paket': paket,
+            'success': success_flag,
+            'info_message': info_message,
+            'is_edit': True
         })
 
+    else:
+        form = PaketForm(instance=paket, edit=True)
 
+    return render(request, 'form-pages/form-profile.html', {
+        'form': form,
+        'is_edit': True
+    })
+
+
+@login_required(login_url='/login/')
 def edit_ip(request, pk):
     success = False
     error_message = None
@@ -561,6 +645,7 @@ def edit_ip(request, pk):
     })
 
 
+@login_required(login_url='/login/')
 def edit_client(request, pk):
     client = get_object_or_404(Client, pk=pk)
     success = False
@@ -655,10 +740,8 @@ def edit_client(request, pk):
     })
 
 
-
-
-
 #delete data
+
 
 def delete_server(request, pk):
     server = get_object_or_404(Server, pk=pk)
@@ -699,6 +782,7 @@ def delete_gateway(request, pk):
     return JsonResponse({'success': False, 'message': error_message}, status=400)
 
 
+
 def delete_paket(request, pk):
     if request.method != "POST":
         return JsonResponse({"success": False, "message": "Invalid request method"}, status=405)
@@ -710,6 +794,7 @@ def delete_paket(request, pk):
         return JsonResponse({"success": False, "message": str(e)}, status=400)
 
 
+
 def delete_ip(request, pk):
     if request.method != "POST":
         return JsonResponse({"success": False, "message": "Invalid request method"}, status=405)
@@ -719,7 +804,6 @@ def delete_ip(request, pk):
         return JsonResponse({"success": True, "message": res})
     except Exception as e:
         return JsonResponse({"success": False, "message": str(e)}, status=400)
-
 
 
 
@@ -745,6 +829,7 @@ def delete_client(request, pk):
     return JsonResponse({'success': False, 'message': error_message}, status=400)
 
 
+
 def delete_transaction(request, pk):
     tx = get_object_or_404(Transaction, pk=pk)
     if request.method == "POST":
@@ -760,6 +845,9 @@ def delete_transaction(request, pk):
     return JsonResponse({'success': False, 'message': error_message}, status=400) 
 #detail
 
+
+
+@login_required(login_url='/login/')
 def detailServer(request, server_id) : 
     server = get_object_or_404(Server, id=server_id)
     gateway_list = Gateway.objects.filter(server=server)
@@ -771,6 +859,7 @@ def detailServer(request, server_id) :
         'data': data
         }
     return render(request, 'detail-pages/detail-server.html', context)
+
 
 
 def get_client_remote(request, client_id):
@@ -835,6 +924,7 @@ def get_genieacs_data(request, client_id):
 
 
 
+@login_required(login_url='/login/')
 def detailClient(request, client_id): 
     client = get_object_or_404(Client, id=client_id)
 
@@ -886,7 +976,7 @@ def detailClient(request, client_id):
     return render(request, "detail-pages/detail-client.html", context)
 
 
-
+@login_required(login_url='/login/')
 def map(request):
     servers = Server.objects.all().values("id", 'name', 'lat', 'long')
     gateways = Gateway.objects.all().values("id", "name", "lat", "long", "parent_lat", "parent_long")
@@ -903,14 +993,11 @@ def map(request):
     return render(request, "pages/maps.html", context)
 
 
-def testPage(request):
-    return render(request, "pages/testttt.html",)
 
 #=================================Multiple task========================================
-def activasi_multi_client(request):
-    if not request.user.is_authenticated:
-        return JsonResponse({"success": False, "message": "Anda harus login dahulu untuk melakukan activasi."}, status=401)
 
+
+def activasi_multi_client(request):
     if request.method != "POST":
         return JsonResponse({"success": False, "message": "Method not allowed"}, status=405)
 
@@ -958,12 +1045,9 @@ def activasi_multi_client(request):
     except Exception as e:
         return JsonResponse({"success": False, "message": str(e) or "Terjadi kesalahan saat memproses activasi."}, status=500)
 
+
+
 def payment_multiple_client(request):
-    if not request.user.is_authenticated:
-        return JsonResponse({
-            "success": False,
-            "message": "Anda harus login dahulu."
-        }, status=401)
 
     datas = json.loads(request.body.decode("utf-8"))
     results = []
@@ -979,6 +1063,8 @@ def payment_multiple_client(request):
             results.append({"name": name, "success": False, "message": str(e)})
 
     return JsonResponse({"success": True, "results": results})
+
+
 
 def verif_multiple_client(request):
     datas = json.loads(request.body.decode("utf-8"))
@@ -997,9 +1083,52 @@ def verif_multiple_client(request):
     return JsonResponse({"success": True, "results": results})
 
 
+
+def net_multiple_client(request):
+    if request.method != "POST":
+        return JsonResponse({"success": False, "message": "Method not allowed"}, status=405)
+
+    try:
+        datas = json.loads(request.body.decode("utf-8"))
+        results = []
+
+        for data in datas:
+            client_id = data.get("id")
+            name = data.get("name")
+
+            try:
+                message = toggle_activasi_internal(client_id)
+                results.append({"name": name, "success": True, "message": message})
+            except Exception as e:
+                results.append({"name": name, "success": False, "message": str(e)})
+
+        return JsonResponse({"success": True, "results": results})
+    except Exception as e:
+        return JsonResponse({"success": False, "message": str(e) or "Terjadi kesalahan."}, status=500)
+
+
+
+def toggle_pembayaran_internal(client_id):
+    client = get_object_or_404(Client, id=client_id)
+    client.isPayed = not client.isPayed
+    price = getattr(client.id_paket, "price", 0) or 0
+
+    if client.isPayed:
+        # buat record transaksi
+        Transaction.objects.create(
+            id_client=client,
+            value=price
+        )
+        message = f"Pembayaran  berhasil dikonfirmasi!"
+    else:
+        message = f"Tagihan berhasil dibuat."
+
+    client.save()
+    return message
+
+
+
 def toggle_verif_internal(client_id, user):
-    if not user.is_authenticated:
-        raise Exception("Anda harus login dahulu untuk melakukan verifikasi.")
 
     client = get_object_or_404(Client, id=client_id)
     old_pppoe = client.pppoe
@@ -1068,6 +1197,69 @@ def toggle_verif_internal(client_id, user):
         f"Verifikasi untuk dibatalkan."
     )
 
+
+
+def delete_ip_internal(ip_id):
+    ip_pool = get_object_or_404(IPPool, pk=ip_id)
+    server = ip_pool.id_server
+    profile_data = list(
+        Paket.objects.filter(id_ip_pool_id=ip_pool).values_list("name", flat=True)
+    )
+
+    if server:
+        delete_pool(
+            server.host,
+            server.username,
+            server.password,
+            ip_pool.name,
+            profile_data,
+        )
+        ip_pool.delete()
+        return "IP Pool deleted (with server action)"
+    else:
+        ip_pool.delete()
+        return "IP Pool deleted without server action"
+
+
+
+def toggle_activasi_internal(client_id):
+    client = get_object_or_404(Client, id=client_id)
+    paket = client.id_paket
+    server = paket.id_ip_pool.id_server
+
+    if client.isActive:
+        # Nonaktifkan client
+        result = cut_network([{
+            "host": server.host,
+            "username": server.username,
+            "password": server.password,
+            "pppoe": client.pppoe,
+        }])
+        if result[0].get("status") == "success":
+            client.isActive = False
+            client.save()
+            return "Client berhasil dinonaktifkan"
+        else:
+            raise Exception(f"Gagal nonaktifkan: {result[0].get('error')}")
+    else:
+        # Aktifkan client
+        result = connect_network([{
+            "host": server.host,
+            "username": server.username,
+            "password": server.password,
+            "pppoe": client.pppoe,
+            "profile": paket.name,
+            "local_address": client.local_ip,
+        }])
+        if result[0].get("status") == "success":
+            client.isActive = True
+            client.save()
+            return "Client berhasil diaktifkan"
+        else:
+            raise Exception(f"Gagal aktifkan: {result[0].get('error')}")
+
+
+
 def delete_multiple_client(request):
     data = json.loads(request.body.decode('utf-8'))
     results = []
@@ -1119,6 +1311,8 @@ def delete_multiple_gateway(request):
 
     return JsonResponse({"success": True, "results": results})
 
+
+
 def delete_multiple_transaction(request):
     datas = json.loads(request.body.decode('utf-8'))
     results = []
@@ -1138,6 +1332,7 @@ def delete_multiple_transaction(request):
     return JsonResponse({"success": True, "results": results})
 
 
+
 def delete_multiple_ip(request):
     datas = json.loads(request.body.decode("utf-8"))
     results = []
@@ -1153,28 +1348,6 @@ def delete_multiple_ip(request):
             results.append({"name": name, "success": False, "message": str(e)})
 
     return JsonResponse({"success": True, "results": results})
-
-def delete_ip_internal(ip_id):
-    ip_pool = get_object_or_404(IPPool, pk=ip_id)
-    server = ip_pool.id_server
-    profile_data = list(
-        Paket.objects.filter(id_ip_pool_id=ip_pool).values_list("name", flat=True)
-    )
-
-    if server:
-        delete_pool(
-            server.host,
-            server.username,
-            server.password,
-            ip_pool.name,
-            profile_data,
-        )
-        ip_pool.delete()
-        return "IP Pool deleted (with server action)"
-    else:
-        ip_pool.delete()
-        return "IP Pool deleted without server action"
-
 
 
 
@@ -1194,6 +1367,8 @@ def delete_multiple_paket(request):
 
     return JsonResponse({"success": True, "results": results})
 
+
+
 def delete_paket(request, pk):
     if request.method != "POST":
         return JsonResponse({"success": False, "message": "Invalid request method"}, status=405)
@@ -1203,6 +1378,7 @@ def delete_paket(request, pk):
         return JsonResponse({"success": True, "message": res})
     except Exception as e:
         return JsonResponse({"success": False, "message": str(e)}, status=400)
+
 
 
 def delete_paket_internal(paket_id):
@@ -1228,47 +1404,20 @@ def delete_paket_internal(paket_id):
         return "Paket deleted without server action"
 
 # =========================other===================================
+
+
 def toggle_activasi(request, client_id):
-    if not request.user.is_authenticated:
-        return JsonResponse({"success": False, "message": "Anda harus login dahulu untuk melakukan activasi."}, status=401)
+    if request.method != "POST":
+        return JsonResponse({"success": False, "message": "Method not allowed"}, status=405)
 
     try:
-        client = get_object_or_404(Client, id=client_id)
-        paket = client.id_paket
-        server = paket.id_ip_pool.id_server
-
-        if client.isActive:
-            result = cut_network([{
-                "host": server.host,
-                "username": server.username,
-                "password": server.password,
-                "pppoe": client.pppoe,
-            }])
-            if result[0].get("status") == "success":
-                client.isActive = False
-                client.save()
-                msg = "Client berhasil dinonaktifkan"
-            else:
-                return JsonResponse({"success": False, "message": f"Gagal nonaktifkan: {result[0].get('error')}"})
-        else:
-            result = connect_network([{
-                "host": server.host,
-                "username": server.username,
-                "password": server.password,
-                "pppoe": client.pppoe,
-                "profile": paket.name,
-                "local_address": client.local_ip,
-            }])
-            if result[0].get("status") == "success":
-                client.isActive = True
-                client.save()
-                msg = "Client berhasil diaktifkan"
-            else:
-                return JsonResponse({"success": False, "message": f"Gagal aktifkan: {result[0].get('error')}"})
-
-        return JsonResponse({"success": True, "message": msg, "server_res": result})
+        message = toggle_activasi_internal(client_id)
+        return JsonResponse({"success": True, "message": message})
     except Exception as e:
-        return JsonResponse({"success": False, "message": str(e) or "Terjadi kesalahan saat memproses activasi."}, status=500)
+        return JsonResponse({
+            "success": False,
+            "message": str(e) or "Terjadi kesalahan saat memproses activasi."
+        }, status=500)
 
 
 
@@ -1281,32 +1430,7 @@ def toggle_verif(request, client_id):
 
 
 
-def toggle_pembayaran_internal(client_id):
-    client = get_object_or_404(Client, id=client_id)
-    client.isPayed = not client.isPayed
-    price = getattr(client.id_paket, "price", 0) or 0
-
-    if client.isPayed:
-        # buat record transaksi
-        Transaction.objects.create(
-            id_client=client,
-            value=price
-        )
-        message = f"Pembayaran  berhasil dikonfirmasi!"
-    else:
-        message = f"Tagihan berhasil dibuat."
-
-    client.save()
-    return message
-
-
 def toggle_pembayaran(request, client_id):
-    if not request.user.is_authenticated:
-        return JsonResponse({
-            "success": False,
-            "message": "Anda harus login dahulu."
-        }, status=401)
-
     try:
         message = toggle_pembayaran_internal(client_id)
         return JsonResponse({"success": True, "message": message})
@@ -1321,6 +1445,7 @@ def toggle_pembayaran(request, client_id):
 
 GENIEACS_USER = config("GENIEACS_USERNAME")
 GENIEACS_PASS = config("GENIEACS_PASSWORD")
+
 
 
 
@@ -1358,6 +1483,8 @@ def reboot(request):
             return JsonResponse({"status": "error", "message": f"Error: {str(e)}"}, status=500)
 
     return JsonResponse({"status": "error", "message": "Invalid request"}, status=405)
+
+
 
 def test_conn_view(request):
     if request.method == "POST":

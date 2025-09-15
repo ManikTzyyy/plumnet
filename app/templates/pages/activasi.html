@@ -1,87 +1,66 @@
 {% extends 'index.html' %} {% block content %} {% load custom_filters%} {% load static %}
-
+{% if perms.app.view_client %}
 <div class="content-page client">
   <div class="table-wrapper column">
     <div class="header-table column">
       <div class="row title-head-td">
-        <i
-          class="fa-solid fa-check-to-slot"
-          style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
-        ></i>
+        <i class="fa-solid fa-check-to-slot" style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"></i>
         <span class="title">Client List</span>
       </div>
       <a href="{% url 'client' %}" class="main-button">View All Client</a>
-
       <div id="selected-box" class="selected-box column">
-        <div id="selected-list" style="display: none;"></div>
-        <br>
-          <button id="activate-all" class="disable-button " disabled >Aktivasi Terpilih</button>
+        {% if perms.app.can_change_is_active %}
+        <button id="activate-all" class="disable-button " disabled >Aktivasi Terpilih</button>
+        {% endif %}
       </div>
-
     </div>
-
-    
-
     <div class="table-container">
       <table class="table" id="table">
-       <thead> 
+        <thead> 
           <tr class="t-head">
-          <th><input type="checkbox" id="select-all-checkbox"></th>
-          <th>#</th>
-          <th>Nama</th>
-          <th>Alamat</th>
-          <th>Paket</th>
-          <th>Server</th>
-          <th>Payment</th>
-
-          <th class="center-th">Action</th>
-        </tr></thead>
-
+            <th>
+              {% if perms.app.can_change_is_active %}
+              <input type="checkbox" id="select-all-checkbox">
+              {% endif %}
+            </th>
+            <th>#</th>
+            <th>Nama</th>
+            <th>Alamat</th>
+            <th>Paket</th>
+            <th>Server</th>
+            <th>Payment</th>
+            <th class="center-th">Action</th>
+          </tr>
+        </thead>
         <tbody>
           {% for client in clients %}
-
-        <tr class="t-d">
-          <td>
-            <input type="checkbox" class="client-checkbox" 
-            data-id="{{ client.id }}" 
-            data-name="{{ client.name }}" 
-            data-host="{{client.id_paket.id_ip_pool.id_server.host}}"
-            data-username="{{client.id_paket.id_ip_pool.id_server.username}}"
-            data-password="{{client.id_paket.id_ip_pool.id_server.password}}"
-            data-pppoe="{{client.pppoe}}"
-            data-paket="{{ client.id_paket.name }}"
-            data-iplocal="{{client.local_ip}}">
-          </td>
-          <td>{{ client.id }}</td>
-          <td>{{ client.name }}</td>
-          <td>{{ client.address }}</td>
-          <td>
-            {{ client.id_paket.name }} - {{ client.id_paket.price|rupiah }}
-          </td>
-          <td>{{ client.id_paket.id_ip_pool.id_server.name }}</td>
-          <td class="">
-            <div class="{% if client.isPayed %}enable-t{% else %}waiting-t{% endif %}"> {% if client.isPayed %}Done{% else %}Waiting{% endif %}
-            </div>
-          </td>
-          <td>
-            <div class="row button-wrapper">
-              <a href="{% url 'detail-client' client.id %}" class="main-button"
-                >view</a
-              >
-              <button
-                onclick="toggleActivasiClient('{{ client.id }}', '{{ client.name }}', `{{ client.isActive|yesno:'true,false' }}`,'activation')"
-                class="success-button"
-              >
-                Activasi
-              </button>
-            </div>
-          </td>
-        </tr>
-        {% endfor %}
+          <tr class="t-d">
+            <td>
+              {% if perms.app.can_change_is_active %}
+              <input type="checkbox" class="client-checkbox"  data-id="{{ client.id }}"  data-name="{{ client.name }}"  data-host="{{client.id_paket.id_ip_pool.id_server.host}}" data-username="{{client.id_paket.id_ip_pool.id_server.username}}" data-password="{{client.id_paket.id_ip_pool.id_server.password}}" data-pppoe="{{client.pppoe}}" data-paket="{{ client.id_paket.name }}" data-iplocal="{{client.local_ip}}">
+              {% endif %}
+            </td>
+            <td>{{ client.id }}</td>
+            <td>{{ client.name }}</td>
+            <td>{{ client.address }}</td>
+            <td>{{ client.id_paket.name }} - {{ client.id_paket.price|rupiah }}</td>
+            <td>{{ client.id_paket.id_ip_pool.id_server.name }}</td>
+            <td class="">
+              <div class="{% if client.isPayed %}enable-t{% else %}waiting-t{% endif %}"> {% if client.isPayed %}Done{% else %}Waiting{% endif %}</div>
+            </td>
+            <td>
+              <div class="row button-wrapper">
+                <a href="{% url 'detail-client' client.id %}" class="main-button">view</a>
+                {% if perms.app.can_change_is_active %}
+                <button onclick="toggleActivasiClient('{{ client.id }}', '{{ client.name }}', `{{ client.isActive|yesno:'true,false' }}`,'activation')" class="success-button" > Activasi </button>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
         </tbody>
       </table>
     </div>
-
   </div>
 </div>
 
@@ -101,5 +80,7 @@
     });
   });
 </script>
+
+{% endif %}
 
 {% endblock %}

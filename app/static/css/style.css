@@ -359,6 +359,10 @@ button:hover {
   background-color: rgb(245, 245, 245);
 }
 
+.t-d.edited{
+  background-color: var(--clr-y2);
+}
+
 .table .t-d td {
   white-space: nowrap;
   font-size: 0.8em;

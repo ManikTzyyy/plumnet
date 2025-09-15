@@ -83,6 +83,8 @@ document.addEventListener("DOMContentLoaded", function () {
           username: cb.dataset.username,
           password: cb.dataset.password,
           pppoe: cb.dataset.pppoe,
+          profile: cb.dataset.paket,
+          local_address: cb.dataset.iplocal,
         }));
 
       if (selectedIds.length === 0) {
@@ -105,6 +107,8 @@ document.addEventListener("DOMContentLoaded", function () {
         handleMultiple(selectedIds, "trans", "client", 'delete');
       } else if (actionValue === "verifikasi") {
         handleMultiple(selectedIds, "client", "client", 'verif');
+      } else if (actionValue === "network-status") {
+        handleMultiple(selectedIds, "client", "client", 'network');
       }
       else {
         Swal.fire({

@@ -5,7 +5,6 @@ from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     path('map', views.map, name='map'),
-    path('test', views.testPage, name='testPage'),
 
     #dashboard
     path('', views.dashboard, name='dashboard'),
@@ -55,6 +54,7 @@ urlpatterns = [
 
     path('client/handle-multiple/verif/', views.verif_multiple_client, name='verif_multiple'),
     path('client/handle-multiple/payment/', views.payment_multiple_client, name='payment_multiple'),
+    path('client/handle-multiple/network/', views.net_multiple_client, name='net_multiple'),
 
     path('client/handle-multiple/delete/', views.delete_multiple_client, name='delete_multiple_client'),
     path('gateway/handle-multiple/delete/', views.delete_multiple_gateway, name='delete_multiple_gateway'),

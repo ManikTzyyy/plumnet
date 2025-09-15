@@ -1,5 +1,5 @@
 {% extends 'index.html' %} {% block content %} {% load static %}
-
+{% if perms.app.view_server %}
 <div class="content-page server">
   <div class="table-wrapper column">
     <div class="header-table column">
@@ -10,10 +10,14 @@
         ></i>
         <span class="title">Server List</span>
       </div>
-    <div class="row wrap gap-10">  <a href="{% url 'add-server' %}" class="success-button">Add Device +</a>
+    <div class="row wrap gap-10"> 
+      {% if perms.app.add_server %}
+      <a href="{% url 'add-server' %}" class="success-button">Add Device +</a>
       <button class="main-button" onclick="addServerWithConfig()">Add Device + Config</button></div>
+      {% endif %}
     </div>
 
+    
     <div class="table-container">
       <table class="table" id="table">
        <thead>
@@ -28,7 +32,7 @@
         </tr>
        </thead>
        <tbody>
- {% for server in servers %}
+        {% for server in servers %}
         <tr class="t-d">
           <td>{{ server.id }}</td>
           <td>{{ server.name }}</td>
@@ -38,23 +42,16 @@
 
           <td>
             <div class="row button-wrapper">
-              <a href="{% url 'detail-server' server.id %}" class="main-button"
-                >View</a
-              >
-
-              <button
-                onclick="test_connection('{{ server.host }}', '{{ server.username }}', '{{ server.password }}')"
-                class="success-button"
-              >
-                Test Connection
-              </button>
+              <a href="{% url 'detail-server' server.id %}" class="main-button">View</a>
+              <button onclick="test_connection('{{ server.host }}', '{{ server.username }}', '{{ server.password }}')" class="success-button" >Test Connection</button>
             </div>
           </td>
         {% endfor %}
        </tbody>
-       
       </table>
     </div>
+
+  
   </div>
 </div>
 
@@ -73,5 +70,9 @@
   });
 </script>
 
+
+{% else %}
+  <p class="text-danger">Kamu tidak punya izin untuk melihat data server.</p>
+{% endif %}
 
 {% endblock %}

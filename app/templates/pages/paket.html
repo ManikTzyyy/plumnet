@@ -4,16 +4,15 @@
   <div class="table-wrapper column">
     <div class="header-table column">
       <div class="row title-head-td">
-        <i
-          class="fa-solid fa-coins"
-          style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
-        ></i>
+        <i class="fa-solid fa-coins" style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)" ></i>
         <span class="title">Paket List</span>
       </div>
+      {% if perms.app.add_paket %}
       <a href="{% url 'add-paket' %}" class="success-button">Add Paket +</a>
-      
+      {% endif %}
     </div>
 
+    {% if perms.app.delete_paket%}
     <div class="row gap-10 align-center">
       <p>Action:</p>
       <select name="" id="action-dropdown" class="action-dropdown">
@@ -21,75 +20,73 @@
         <option value="delete-paket">Delete Selected Data</option>
       </select>
       <button class="button success-button" id="go-action">Go</button>
-    </div>  
+    </div> 
+    {% endif %} 
 
+    {% if perms.app.view_paket or perms.app.can_change_price %}
     <div class="table-container">
       <table class="table" id="paket-table">
         <thead>
           <tr class="t-head">
-          <th><input type="checkbox" id="select-all-checkbox"></th>
-          <th>#</th>
-          <th>Nama Paket</th>
-          <th>Price</th>
-          <th>Speed</th>
-          <th>Ip Pool</th>
-          <th>Avaible IPs</th>
-          <th>Used</th>
-          <th class="center-th">Action</th>
-        </tr>
+            <th>
+              {% if perms.app.delete_paket %}
+              <input type="checkbox" id="select-all-checkbox">
+              {% endif %}
+            </th>
+            <th>#</th>
+            <th>Nama Paket</th>
+            <th>Price</th>
+            <th>Speed</th>
+            <th>Ip Pool</th>
+            <th>Avaible IPs</th>
+            <th>Used</th>
+            <th class="center-th">Action</th>
+          </tr>
         </thead>
         <tbody>
           {% for paket in pakets %}
-        <tr class="t-d">
-          <td>
-                 <input type="checkbox" class="client-checkbox" 
-                  data-id="{{ paket.id }}"
-                  data-name="{{ paket.name }}" > 
-                
-              </td>
-          <td>{{ paket.id }}</td>
-          <td>{{ paket.name }}</td>
-          <td>{{ paket.price|rupiah }}</td>
-          <td>{{ paket.limit }}</td>
-          <td>{{ paket.id_ip_pool.name }}</td>
-          <td>{{ paket.available_ips }}</td>
-          <td>{{ paket.used_ips }}</td>
-          <td>
-            <div class="row button-wrapper">
-              <a href="{% url 'edit-paket' paket.id %}" class="warning-button"
-                >Edit</a
-              >
-              <button
-                onclick="deleteData('{{ paket.id }}', 'paket', 'paket-list')"
-                class="danger-button"
-              >
-                Delete
-              </button>
-            </div>
-          </td>
-        </tr>
-       
+          <tr class="t-d">
+            <td>
+              {% if perms.app.delete_paket %}
+              <input type="checkbox" class="client-checkbox" data-id="{{ paket.id }}" data-name="{{ paket.name }}" > 
+              {% endif %}
+            </td>
+            <td>{{ paket.id }}</td>
+            <td>{{ paket.name }}</td>
+            <td>{{ paket.price|rupiah }}</td>
+            <td>{{ paket.limit }}</td>
+            <td>{{ paket.id_ip_pool.name }}</td>
+            <td>{{ paket.available_ips }}</td>
+            <td>{{ paket.used_ips }}</td>
+            <td>
+              <div class="row button-wrapper">
+                {% if perms.app.change_paket or perms.app.can_change_price %}
+                <a href="{% url 'edit-paket' paket.id %}" class="warning-button">Edit</a> 
+                {% endif %}
+                {% if perms.app.delete_paket %}
+                <button onclick="deleteData('{{ paket.id }}', 'paket', 'paket-list')" class="danger-button">Delete</button>
+                {% endif %}
+              </div>
+            </td>
+          </tr>       
         {% endfor %}
         </tbody>
       </table>
     </div>
-
-   
-
+    {% endif %}
     <br />
 
     <div class="header-table row">
       <div class="row title-head-td">
-        <i
-          class="fa-solid fa-clipboard-list"
-          style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"
-        ></i>
+        <i class="fa-solid fa-clipboard-list" style="--clr: var(--clr-fourth); --icon-clr: var(--clr-second)"></i>
         <span class="title">IP Pool</span>
       </div>
+      {% if perms.app.add_ippool %}
       <a href="{% url 'add-ip' %}" class="success-button">Add IP Pool +</a>
+      {% endif %}
     </div>
 
-
+    {% if perms.app.delete_ippool %}
     <div class="row gap-10 align-center">
       <p>Action:</p>
       <select name="" id="action-dropdown-ip" class="action-dropdown">
@@ -98,49 +95,53 @@
       </select>
       <button class="button success-button" id="go-action-ip">Go</button>
     </div>  
+    {% endif %}
 
+    {% if perms.app.view_ippool %}
     <div class="table-container">
       <table class="table" id="ip-table">
         <thead>
           <tr class="t-head">
-          <th><input type="checkbox" id="select-all-checkbox-IP"></th>
-          <th>#</th>
-          <th>Nama IP Pool</th>
-          <th>IP Range</th>
-          <th class="w-sm">Server</th>
-          <th class="center-th">Action</th>
-        </tr>
+            <th>
+              {% if perms.app.delete_ippool %}
+              <input type="checkbox" id="select-all-checkbox-IP">
+              {% endif %}
+            </th>
+            <th>#</th>
+            <th>Nama IP Pool</th>
+            <th>IP Range</th>
+            <th class="w-sm">Server</th>
+            <th class="center-th">Action</th>
+          </tr>
         </thead>
         <tbody>
           {% for ip in ip_pools %}
-        <tr class="t-d">
-           <td>
-             <input type="checkbox" class="ip-checkbox" 
-              data-id="{{ ip.id }}"
-              data-name="{{ ip.name }}" >
+          <tr class="t-d">
+            <td>
+              {% if perms.app.delete_ippool %}
+              <input type="checkbox" class="ip-checkbox" data-id="{{ ip.id }}" data-name="{{ ip.name }}" >
+              {% endif %}
             </td>
-          <td>{{ ip.id }}</td>
-          <td>{{ ip.name }}</td>
-          <td>{{ ip.ip_range}}</td>
-          <td>{{ ip.id_server.name}}</td>
-          <td>
-            <div class="row button-wrapper">
-              <a href="{% url 'edit-ip' ip.id %}" class="warning-button"
-                >Edit</a
-              >
-              <button
-                onclick="deleteData('{{ ip.id }}', 'ip', 'paket-list')"
-                class="danger-button"
-              >
-                Delete
-              </button>
-            </div>
-          </td>
-        </tr>
-        {% endfor %}
+            <td>{{ ip.id }}</td>
+            <td>{{ ip.name }}</td>
+            <td>{{ ip.ip_range}}</td>
+            <td>{{ ip.id_server.name}}</td>
+            <td>
+              <div class="row button-wrapper">
+                {% if perms.app.change_ippool %}
+                <a href="{% url 'edit-ip' ip.id %}" class="warning-button">Edit</a>
+                {% endif %}
+                {% if perms.app.delete_ippool %}
+                <button onclick="deleteData('{{ ip.id }}', 'ip', 'paket-list')" class="danger-button">Delete</button>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
         </tbody>
       </table>
     </div>
+    {% endif %}
   </div>
 </div>
 

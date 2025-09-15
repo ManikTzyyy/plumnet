@@ -542,7 +542,9 @@ function handleMultiple(data, object, url, action) {
     title = 'Verifikasi Perubahan Data Terpilih?'
   } else if(action == 'payment'){
     title = 'Toggle Status Pembayaran Terpilih?'
-  } else{
+  } else if(action == 'network'){
+    title = 'Toggle Network Terpilih?'
+  }else{
     title = 'Confirm The Action?'
   }
 
@@ -604,9 +606,9 @@ function handleMultiple(data, object, url, action) {
           .join("<br>");
 
         Swal.fire({
-          title: "Task Success",
+          title: "Task Done",
           html: container,
-          icon: "success",
+          icon: "info",
         }).then(() => {
           // reload halaman
           location.href = `/${url}`;

@@ -76,18 +76,36 @@ class PaketForm(forms.ModelForm):
         initial='M',
         widget=forms.Select(attrs={'class': 'form-control'})
     )
+
+    id_ip_pool = forms.ModelMultipleChoiceField(
+        queryset=IPPool.objects.all(),
+        widget=forms.SelectMultiple(attrs={'class': 'form-control'}),
+        required=True,
+        label="IP Pool"
+    )
     class Meta : 
         model = Paket
-        fields = ['name', 'price', 'id_ip_pool']
+        fields = ['name', 'price']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Masukan Nama Paket'}),
             'price': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Contoh 200000'}),
             'limit': forms.HiddenInput(), 
-            'id_ip_pool': forms.Select(attrs={'class': 'form-control'}),
+            # 'id_ip_pool': forms.Select(attrs={'class': 'form-control'}),
         }
 
     def __init__(self, *args, **kwargs):
+        edit = kwargs.pop('edit', False)
         super().__init__(*args, **kwargs)
+
+        if edit:
+            # ganti field jadi single select
+            self.fields['id_ip_pool'] = forms.ModelChoiceField(
+                queryset=IPPool.objects.all(),
+                widget=forms.Select(attrs={'class': 'form-control'}),
+                required=True,
+                label="IP Pool",
+                initial=self.instance.id_ip_pool if self.instance else None
+            )
 
         # kalau edit (instance ada), parse limit "10M/2M" -> download=10, upload=2
         if self.instance and self.instance.pk and self.instance.limit:
@@ -111,7 +129,10 @@ class PaketForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super().clean()
         name = cleaned_data.get('name')
-        ip_pool = cleaned_data.get('id_ip_pool')
+        ip_pools = cleaned_data.get('id_ip_pool')  
+
+        if isinstance(ip_pools, IPPool):
+            ip_pools = [ip_pools]
 
         up = cleaned_data.get('upload_rate') or 0
         up_unit = cleaned_data.get('upload_unit') or 'M'
@@ -120,25 +141,30 @@ class PaketForm(forms.ModelForm):
 
         cleaned_data['limit'] = f"{down}{down_unit}/{up}{up_unit}".upper()
 
-        if not name or not ip_pool:
-            return cleaned_data
+        if not ip_pools:
+            self.add_error('id_ip_pool', "Pool tidak boleh kosong.")
+
+        if not name:
+            self.add_error('name', "Nama Paket tidak boleh kosong.")
 
         if " " in name:
             self.add_error('name', "Nama Paket tidak boleh mengandung spasi.")
 
-    
-        server = ip_pool.id_server if ip_pool else None
-        if server:
-            qs = Paket.objects.filter(
-                name=name,
-                id_ip_pool__id_server=server
-            )
-            if self.instance.pk:
-                qs = qs.exclude(pk=self.instance.pk)
-            if qs.exists():
-                self.add_error('name', "Nama Paket sudah ada di server ini, silakan gunakan nama lain.")
+        # cek nama paket unik per server untuk tiap pool
+        if ip_pools:
+            for ip_pool in ip_pools:
+                server = ip_pool.id_server
+                qs = Paket.objects.filter(name=name, id_ip_pool__id_server=server)
+
+                if not ip_pool:
+                    self.add_error('id_ip_pool', "Pool tidak boleh kosong.")
+                if self.instance.pk:
+                    qs = qs.exclude(pk=self.instance.pk)
+                if qs.exists():
+                    self.add_error('name', f"Nama Paket sudah ada di server {server.host}, silakan gunakan nama lain.")
 
         return cleaned_data
+
     
 
 USABLE_PER_24 = 253
@@ -217,6 +243,11 @@ class ipPoolForm(forms.ModelForm):
         server = cleaned_data.get('id_server')
         prefix = cleaned_data.get('prefix')
         count = cleaned_data.get('count')
+
+        if not name:
+            self.add_error('name', "Nama IP Pool tidak boleh kosong.")
+        if not server:
+            self.add_error('id_server', "Server tidak boleh kosong.")
 
         # validasi awal (misal name/server)
         if not name or not server:
@@ -306,12 +337,14 @@ class ClientForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
+        name = cleaned_data.get('name')
         pppoe = cleaned_data.get('pppoe')
         paket = cleaned_data.get('id_paket')
 
-        # kalau pppoe atau paket kosong, skip validasi tambahan
-        if not pppoe or not paket:
-            return cleaned_data  
+        if not name:
+            self.add_error('name', "Nama tidak boleh kosong.")
+        if not paket:
+            self.add_error('id_paket', "Paket tidak boleh kosong.")
 
         ip_pool = getattr(paket, 'id_ip_pool', None)
         server = getattr(ip_pool, 'id_server', None)
