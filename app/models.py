@@ -65,43 +65,11 @@ class Paket(models.Model):
         pool = self.id_ip_pool
         total_used = Client.objects.filter(id_paket__id_ip_pool=pool).count()
         return max(0, pool.total_ips - total_used)
-
-class Client(models.Model):
-    id_paket = models.ForeignKey(Paket, on_delete=models.SET_NULL, null=True, blank=True, related_name='pakets') 
-    name = models.CharField(max_length=255)
-    address = models.CharField(max_length=255)
-    email = models.EmailField(null=True, blank=True)
-    phone = models.CharField(max_length=255)
-    pppoe = models.CharField(max_length=255) 
-    password = models.CharField(max_length=255)
-    isActive = models.BooleanField(default=True)
-    isApproved = models.BooleanField(default=True)
-    local_ip = models.GenericIPAddressField(blank=True, null=True)
-    lat = models.CharField(max_length=255, null=True, blank=True)
-    long = models.CharField(max_length=255, null=True, blank=True)
-    temp_paket = models.ForeignKey(Paket, on_delete=models.SET_NULL, related_name='temp_paket', null=True, blank=True)
-    temp_name = models.CharField(max_length=255, null=True, blank=True)
-    temp_address = models.CharField(max_length=255, null=True, blank=True)
-    temp_phone = models.CharField(max_length=255, null=True, blank=True)
-    temp_email = models.EmailField(null=True, blank=True)
-    temp_pppoe = models.CharField(max_length=255, null=True, blank=True)
-    temp_password = models.CharField(max_length=255, null=True, blank=True)
-    temp_local_ip = models.GenericIPAddressField(blank=True, null=True)
-    temp_lat = models.CharField(max_length=255, null=True, blank=True)
-    temp_long = models.CharField(max_length=255, null=True, blank=True)
-    isServerNull = models.BooleanField(default=False)
-    isPayed = models.BooleanField(default=True)
-    gateway = models.ForeignKey(Gateway, on_delete=models.SET_NULL, null=True, blank=True, related_name='gateways') 
-    temp_gateway = models.ForeignKey(Gateway, on_delete=models.SET_NULL, null=True, blank=True, related_name='temp_gateways') 
     
-    def __str__(self):
-        client_name = self.name if self.name else "Unnamed Client"
-        paket_name = self.id_paket.name if self.id_paket else "No Paket"
-        return f"{client_name} ({paket_name})"
-from datetime import date, timedelta
-from django.utils import timezone
-from decouple import config
-from django.db import models
+    class Meta:
+        permissions = [
+            ("can_change_price", "Can change Price only"),
+        ]
 
 
 class Client(models.Model):
@@ -170,6 +138,13 @@ class Client(models.Model):
     def should_cut_network(self):
         cut_after = int(config("CUT_NETWORK_AFTER", default=10))
         return timezone.now().date() >= self.get_next_bill_date() + timedelta(days=cut_after)
+    
+    class Meta:
+        permissions = [
+            ("can_change_is_active", "Can change active or nonactive client"),
+            ("can_change_is_payed", "Can change payment status + write transaction"),
+            ("can_verif_edited", "Can verif edited client"),
+        ]
 
 class Transaction(models.Model):
     id_client = models.ForeignKey(
