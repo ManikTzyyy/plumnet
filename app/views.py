@@ -964,7 +964,7 @@ def detailClient(request, client_id):
 
     acs_ip = client.id_paket.id_ip_pool.id_server.genieacs if client.id_paket else None
 
-    print(acs_ip)
+   
 
     context = {
         "client": client,
