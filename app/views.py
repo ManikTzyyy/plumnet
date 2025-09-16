@@ -898,7 +898,8 @@ def get_genieacs_data(request, client_id):
                 "VirtualParameters.redaman._value,"
                 "VirtualParameters.active._value,"
                 "VirtualParameters.pppoe._value,"
-                "VirtualParameters.temperature._value"
+                "VirtualParameters.temperature._value,"
+                "VirtualParameters.uptime._value"
             )
             query_str = urllib.parse.quote(str(query).replace("'", '"'))
             url = f"http://{genieACS}:7557/devices?query={query_str}&projection={projection}"
@@ -911,6 +912,7 @@ def get_genieacs_data(request, client_id):
                 device = resp[0]
                 vp = device.get("VirtualParameters", {})
                 data = {
+                    "uptime": vp.get("uptime", {}).get("_value", "-"),
                     "redaman": vp.get("redaman", {}).get("_value", "-"),
                     "active": vp.get("active", {}).get("_value", "-"),
                     "remote": vp.get("remote", {}).get("_value", "-"),
@@ -962,7 +964,7 @@ def detailClient(request, client_id):
 
     acs_ip = client.id_paket.id_ip_pool.id_server.genieacs if client.id_paket else None
 
-   
+    print(acs_ip)
 
     context = {
         "client": client,
@@ -1551,7 +1553,7 @@ def random_devices(request):
         data.append({
             "_id": str(idx),
             "VirtualParameters": {
-                "RXpower": {"_value": f"{round(random.uniform(-20, -15), 2)}"},
+                "RXpower": {"_value": f"{round(random.uniform(-25, -10), 2)}"},
                 "ipTR069": {"_value": f"192.168.76.{random.randint(1,254)}"},
                 "IDPPPoE": {"_value": pppoe},
                 "hostActive": {"_value": str(random.randint(1, 10))}
