@@ -71,6 +71,10 @@
       <div class="wrapper column">
         <h2>Device</h2>
         <div class="column">
+          <div class="title strong">Uptime</div>
+          <div class="text" id="uptime">-</div>
+        </div>
+        <div class="column">
           <div class="title strong">Redaman</div>
           <div class="text" id="redaman">- dBm</div>
         </div>
@@ -224,24 +228,22 @@ document.addEventListener("DOMContentLoaded", function () {
       document.getElementById("redaman").textContent = data.redaman + " dBm";
       document.getElementById("temperature").textContent = data.temperature + " °C";
       document.getElementById("active").textContent = data.active;
+      document.getElementById("uptime").textContent = data.uptime;
 
       // console.log(data)
 
       const remoteLink = document.getElementById("remote");
-      if (data.remote && data.remote !== "-") {
-        remoteLink.href = "http://" + data.remote;
-        remoteLink.textContent = data.remote;
-        if (rebootBtn) {
-          rebootBtn.onclick = function () {
+      if (rebootBtn) {
+        if (data.redaman && data.redaman !== "-") {
+            rebootBtn.onclick = function () {
             rebootDevice("{{ client.name }}", data.device, "{{ acs_ip }}");
-          };
-          rebootBtn.style.display = "inline-block";
+            };
+            rebootBtn.style.display = "inline-block";
+        } else {
+          rebootBtn.style.display = "none";
+          }
         }
-      } else {
-        remoteLink.href = "#";
-        remoteLink.textContent = "-";
-      }
-    })
+      })
     .catch(err => {
       console.error("GenieACS error:", err);
     });
@@ -254,6 +256,7 @@ document.addEventListener("DOMContentLoaded", function () {
   fetch("/api/client-remote/{{ client.id }}/")
     .then(res => res.json())
     .then(data => {
+      console.log("GenieACS data:", data);
       const remoteLink = document.getElementById("remote");
       if (data.remote && data.remote !== "-") {
         remoteLink.href = "http://" + data.remote;
