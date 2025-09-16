@@ -88,7 +88,7 @@ def process_billing_cycle():
         next_bill = client.get_next_bill_date()
         cut_date = next_bill + timedelta(days=cut_after)
 
-        print(f"[DEBUG] {client.name} - today={today}, next_bill={next_bill}, cut_date={cut_date}, isPayed={client.isPayed}, isActive={client.isActive}")
+        # print(f"[DEBUG] {client.name} - today={today}, next_bill={next_bill}, cut_date={cut_date}, isPayed={client.isPayed}, isActive={client.isActive}")
 
         # === Hari jatuh tempo: kasih notif ===
         if today == next_bill and client.isPayed:
