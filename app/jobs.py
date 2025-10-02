@@ -100,8 +100,8 @@ def process_billing_cycle():
                 subject="Pengingat Tagihan Internet Anda",
                 message=(
                     f"Halo {client.name}, ini adalah pengingat bahwa tagihan Anda "
-                    f"akan jatuh tempo pada {cut_date}. "
-                    f"Silakan melakukan pembayaran sebelum tanggal tersebut agar layanan tetap aktif."
+                    f"akan jatuh tempo pada {next_bill}. "
+                    f"Silakan melakukan pembayaran sebelum tanggal {cut_date} agar layanan tetap aktif."
                 ),
                 from_email=config("DEFAULT_FROM_EMAIL"),
                 recipient_list=[client.email],
