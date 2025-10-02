@@ -1,6 +1,6 @@
 from django import forms
 import ipaddress
-from .models import Gateway, Server, Paket, IPPool, Client
+from .models import ConfigSystem, Gateway, Server, Paket, IPPool, Client
 import re
 
 
@@ -22,7 +22,7 @@ class GatewayForm(forms.ModelForm):
     parent_choice = forms.ChoiceField(
         choices=[],
         widget=forms.Select(attrs={'class': 'form-control', 'id':'gw-select'}),
-        required=False
+        required=True
     )
 
     class Meta:
@@ -361,3 +361,9 @@ class ClientForm(forms.ModelForm):
                 self.add_error('pppoe', "ID PPPoE ini sudah digunakan di server ini, silakan pilih yang lain.")
 
         return cleaned_data
+
+
+class ConfigSystemForm(forms.ModelForm):
+    class Meta:
+        model = ConfigSystem
+        fields = ["cut_network_after", "reminder_before_bill", "interval_check"]

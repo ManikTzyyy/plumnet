@@ -22,7 +22,7 @@ from django.conf.urls import handler404
 
 # Project imports
 from mysite import settings
-from app.forms import GatewayForm, ServerForm, PaketForm, ipPoolForm, ClientForm
+from app.forms import ConfigSystemForm, GatewayForm, ServerForm, PaketForm, ipPoolForm, ClientForm
 from app.utils.utlis import parse_mikrotik_output
 from app.templates.network.netmiko_service import (
     clear_config,
@@ -42,7 +42,7 @@ from app.templates.network.netmiko_service import (
     test_conn,
 )
 from .templates.network.routeros_service import get_mikrotik_info
-from .models import Gateway, Paket, Redaman, Server, IPPool, Client, Transaction
+from .models import ConfigSystem, Gateway, Paket, Redaman, Server, IPPool, Client, Transaction
 
 
 
@@ -61,6 +61,22 @@ def get_server_info(request, server_id):
         return JsonResponse({"error": "Server not found"}, status=404)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+
+
+def update_config(request):
+    config = ConfigSystem.objects.last() or ConfigSystem.objects.create()
+
+    if request.method == "POST":
+        form = ConfigSystemForm(request.POST, instance=config)
+        if form.is_valid():
+            form.save()
+            return JsonResponse({"status": "success", "message": "Config berhasil diperbarui"})
+        else:
+            return JsonResponse({"status": "error", "errors": form.errors}, status=400)
+
+    # kalau GET tetap render form biasa (opsional)
+    form = ConfigSystemForm(instance=config)
+    return render(request, "update_config.html", {"form": form})
 
 
 

@@ -51,6 +51,7 @@
             <i class="fa-solid fa-angle-left menu-collapse"></i>
           </button>
         </div>
+{% if user.is_authenticated %}
         <div class="menu column">
           <a
             href="{% url 'dashboard' %}"
@@ -62,7 +63,7 @@
               <span class="menu-text">Dashboard</span>
             </div>
           </a>
-{% if perms.app.view_server %}
+          {% if perms.app.view_server %}
           <a
             href="{% url 'server' %}"
             class="menu-link"
@@ -73,8 +74,8 @@
               <span class="menu-text">Server</span>
             </div>
           </a>
-{% endif %}
-{% if perms.app.view_paket or perms.app.can_change_price %}
+          {% endif %}
+          {% if perms.app.view_paket or perms.app.can_change_price %}
           <a
             href="{% url 'paket' %}"
             class="menu-link"
@@ -85,8 +86,8 @@
               <span class="menu-text">Paket</span>
             </div>
           </a>
-{% endif %}
-{% if perms.app.view_client %}
+          {% endif %}
+          {% if perms.app.view_client %}
           <a
             href="{% url 'client' %}"
             class="menu-link"
@@ -107,7 +108,7 @@
               <span class="menu-text">Activasi</span>
             </div>
           </a>
-{% endif %}
+          {% endif %}
           <a
             href="{% url 'map' %}"
             class="menu-link"
@@ -118,7 +119,9 @@
               <span class="menu-text">Maps</span>
             </div>
           </a>
+          
         </div>
+{% endif %}
       </div>
 
       <div class="content">
@@ -151,3 +154,4 @@
     
   </body>
 </html>
+

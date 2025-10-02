@@ -23,12 +23,12 @@ class Server(models.Model):
     
 
 class Gateway(models.Model):
-    name= models.CharField(max_length=255, null=True, blank=True)
+    name= models.CharField(max_length=255)
     server =  models.ForeignKey(Server, on_delete=models.CASCADE, null=True, blank=True, related_name='gateways') 
-    lat = models.CharField(max_length=255, null=True, blank=True)
-    long = models.CharField(max_length=255, null=True, blank=True)
-    parent_lat = models.CharField(max_length=255, null=True, blank=True)
-    parent_long = models.CharField(max_length=255, null=True, blank=True)
+    lat = models.CharField(max_length=255)
+    long = models.CharField(max_length=255)
+    parent_lat = models.CharField(max_length=255)
+    parent_long = models.CharField(max_length=255)
     
 
 class IPPool(models.Model):
@@ -168,3 +168,12 @@ class Redaman(models.Model):
     value = models.CharField(max_length=255)
     create_at = models.DateTimeField(auto_now_add=True)
   
+class ConfigSystem(models.Model):
+    cut_network_after = models.IntegerField(default=2, help_text="Berapa hari setelah jatuh tempo layanan diputus")
+    reminder_before_bill = models.IntegerField(default=3, help_text="Berapa hari sebelum cut date reminder dikirim")
+    interval_check = models.IntegerField(default=300, help_text="Interval pengecekan (detik)")
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Config (cut_after={self.cut_network_after}, reminder={self.reminder_before_bill}, interval={self.interval_check})"
