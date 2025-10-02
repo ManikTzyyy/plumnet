@@ -53,16 +53,6 @@ def cek_genieacs(message):
         msg.append(f"{ip} - {status.upper()}: {detail}")
     bot.reply_to(message, "\n".join(msg))
 
-# ---------- FUNGSI FETCH ----------
-# def fetch_data(url):
-#     try:
-#         response = requests.get(url, timeout=5)
-#         response.raise_for_status()
-#         return response
-#     except requests.exceptions.RequestException as e:
-#         print(f"[API ERROR] {e}")
-#         return e 
-
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):

@@ -1,6 +1,6 @@
-from django.db.models.signals import pre_delete, post_delete, pre_save, post_save
+from django.db.models.signals import pre_delete, post_delete, pre_save, post_save, post_migrate
 from django.dispatch import receiver
-from .models import Server, IPPool, Paket, Client
+from .models import ConfigSystem, Server, IPPool, Paket, Client
 
 # Kalau hapus Server → nullify relasi turunannya
 @receiver(post_delete, sender=Server)
@@ -66,3 +66,13 @@ def track_old_paket(sender, instance, **kwargs):
         instance._old_paket_id = old_client.id_paket_id
     else:
         instance._old_paket_id = None
+
+@receiver(post_migrate)
+def create_default_config(sender, **kwargs):
+    if sender.name == "app":  # ganti dengan nama app-mu
+        if not ConfigSystem.objects.exists():
+            ConfigSystem.objects.create(
+                cut_network_after=2,
+                reminder_before_bill=3,
+                interval_check=300,
+            )
