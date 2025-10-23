@@ -46,13 +46,13 @@
             <th>ID PPPoE</th>
             <th>Status</th>
             <th>Payment</th>
-            <th>verified</th>
+            <th>data status</th>
             <th></th>
           </tr>
         </thead>
         <tbody>
           {% for client in clients %}
-          <tr class="t-d {% if not client.isApproved %}edited{% endif %} ">
+          <tr class="t-d">
             <td>
               <input type="checkbox" class="client-checkbox" data-id="{{ client.id }}" data-name="{{ client.name }}" data-pppoe="{{client.pppoe}}" data-host="{{client.id_paket.id_ip_pool.id_server.host}}" data-username="{{client.id_paket.id_ip_pool.id_server.username}}" data-password="{{client.id_paket.id_ip_pool.id_server.password}}" data-paket="{{ client.id_paket.name }}" data-iplocal="{{client.local_ip}}" >
             </td>
@@ -74,7 +74,7 @@
             </td>
             <td>
               <div class="{% if  client.isApproved %}enable-t{% else %}waiting-t{% endif %}">
-                {% if client.isActive %}verified{% else %}pembaruan{% endif %}
+                {% if client.isApproved %}updated{% else %}has change{% endif %}
               </div>
             </td>
             <td>

@@ -359,9 +359,9 @@ button:hover {
   background-color: rgb(245, 245, 245);
 }
 
-.t-d.edited{
+/* .t-d.edited{
   background-color: var(--clr-y2);
-}
+} */
 
 .table .t-d td {
   white-space: nowrap;
