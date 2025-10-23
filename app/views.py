@@ -181,7 +181,7 @@ def addGateway(request, server_id):
                     gw.server = server
                     gw.parent_lat = server.lat
                     gw.parent_long = server.long
-                elif parent_choice.startswith("gateway-"):
+                elif parent_choice.startswith("odp-"):
                     # parent adalah ODP / gateway lain
                     gw_id = int(parent_choice.split("-")[1])
                     parent_gw = get_object_or_404(Gateway, id=gw_id)
@@ -200,7 +200,7 @@ def addGateway(request, server_id):
                 gw.parent_long = server.long
 
             gw.save()
-            messages.success(request, "Gateway berhasil ditambahkan.")
+            messages.success(request, "ODP berhasil ditambahkan.")
             return redirect("detail-server", server_id=server.id)
 
         else:
@@ -209,7 +209,7 @@ def addGateway(request, server_id):
                 f"{field}: {', '.join(errors)}"
                 for field, errors in form.errors.items()
             )
-            messages.error(request, f"Gagal menambahkan Gateway:\n{error_message}")
+            messages.error(request, f"Gagal menambahkan ODP:\n{error_message}")
 
     else:
         form = GatewayForm(server=server)
@@ -478,7 +478,7 @@ def edit_gateway(request, server_id, pk):
                     gw.server = server
                     gw.parent_lat = server.lat
                     gw.parent_long = server.long
-                elif parent_choice.startswith("gateway-"):
+                elif parent_choice.startswith("odp-"):
                     # parent adalah ODP / gateway lain
                     gw_id = int(parent_choice.split("-")[1])
                     parent_gw = get_object_or_404(Gateway, id=gw_id)
@@ -496,7 +496,7 @@ def edit_gateway(request, server_id, pk):
                 gw.parent_long = server.long
 
             gw.save()
-            messages.success(request, "Gateway berhasil diupdate.")
+            messages.success(request, "ODP berhasil diupdate.")
             success = True
 
             # redirect ke detail server setelah edit
@@ -506,7 +506,7 @@ def edit_gateway(request, server_id, pk):
                 f"{field}: {', '.join(errors)}"
                 for field, errors in form.errors.items()
             )
-            messages.error(request, f"Gagal mengupdate Gateway:\n{error_message}")
+            messages.error(request, f"Gagal mengupdate ODP:\n{error_message}")
 
     else:
         # untuk GET, form harus aware server supaya dropdown parent_choice benar
