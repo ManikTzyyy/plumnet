@@ -8,11 +8,17 @@
         <span class="title">Pelanggan</span>
       </div>
       <a href="{% url 'client' %}" class="main-button">Kembali</a>
-      {% if perms.app.can_verif_edited %}
-        {% if not client.isApproved %}
-      <button  class="info-button" id="data-baru-btn" onclick="cekModifyClientData('{{ client.id }}','{{client.temp_name}}','{{client.temp_address}}','{{client.temp_phone}}', '{{client.temp_paket.id_ip_pool.id_server.name}}', '{{ client.temp_paket.name }} - {{ client.temp_paket.price|rupiah }} - {{ client.temp_paket.limit }}', '{{client.temp_pppoe}}', '{{client.temp_lat}}', '{{client.temp_long}}', '{{client.temp_local_ip}}', '{{client.temp_email}}')">Pembaruan</button>
+      {% if not client.isApproved %}
+        {% if perms.app.can_verif_edited %}
+          <button  class="info-button" id="data-baru-btn" onclick="cekModifyClientData('{{ client.id }}','{{client.temp_name}}','{{client.temp_address}}','{{client.temp_phone}}', '{{client.temp_paket.id_ip_pool.id_server.name}}', '{{ client.temp_paket.name }} - {{ client.temp_paket.price|rupiah }} - {{ client.temp_paket.limit }}', '{{client.temp_pppoe}}', '{{client.temp_lat}}', '{{client.temp_long}}', '{{client.temp_local_ip}}', '{{client.temp_email}}')">Pembaruan</button>
+        {% else %}
+         <div class="waiting-t">
+            Data has change!
+          </div>
         {% endif %}
       {% endif %}
+
+      
     </div>
     <div class="info-client relative row">
       <div class="wrapper column">
