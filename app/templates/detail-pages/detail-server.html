@@ -36,7 +36,7 @@
             <div class="row button-wrapper">
               <button onclick="test_connection('{{ server.host }}', '{{ server.username }}', '{{ server.password }}')" class="main-button">Test Connection</button>
               {% if perms.app.add_gateway %}
-              <a href="{% url 'add-gateway' server.id %}" class="success-button">Add Gateway</a>
+              <a href="{% url 'add-gateway' server.id %}" class="success-button">Add ODP</a>
               {% endif %}
               {% if perms.app.change_server %}
               <a href="{% url 'edit-server' server.id %}" class="warning-button">Edit</a>
@@ -74,7 +74,7 @@
                 {% endif %}
               </th>
               <th>#</th>
-              <th>Gateway Name</th>
+              <th>ODP Name</th>
               <th>lat</th>
               <th>long</th>
               <th class="center-th"></th>
