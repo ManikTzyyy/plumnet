@@ -43,8 +43,10 @@
             <th>Alamat</th>
             <th>Paket</th>
             <th>Server</th>
+            <th>ID PPPoE</th>
             <th>Status</th>
             <th>Payment</th>
+            <th>verified</th>
             <th></th>
           </tr>
         </thead>
@@ -59,6 +61,7 @@
             <td>{{ client.address }}</td>
             <td>{{ client.id_paket.price|rupiah }} - {{ client.id_paket.limit }}</td>
             <td>{{ client.id_paket.id_ip_pool.id_server.name }}</td>
+            <td>{{ client.pppoe }}</td>
             <td>
               <div class="{% if client.isActive %}enable-t{% else %}disable-t{% endif %}">
                 {% if client.isActive %}Online{% else %}Offline{% endif %}
@@ -67,6 +70,11 @@
             <td>
               <div class="{% if client.isPayed %}enable-t{% else %}waiting-t{% endif %}">
                 {% if client.isPayed %}Done{% else %}Waiting{% endif %}
+              </div>
+            </td>
+            <td>
+              <div class="{% if  client.isApproved %}enable-t{% else %}waiting-t{% endif %}">
+                {% if client.isActive %}verified{% else %}pembaruan{% endif %}
               </div>
             </td>
             <td>
