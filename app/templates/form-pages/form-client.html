@@ -16,12 +16,13 @@
       {% csrf_token %}
       <div class="column">
         <label for="server">Server</label>
-        <select name="server" id="id_server" class="form-control" {% if form.instance.pk %}disabled{% endif %}>
+        <select name="server" id="id_server" class="form-control" {% if form.instance.pk %}{% endif %}>
           <option value="">-- Pilih Server --</option>
             {% for server in servers %}
               <option value="{{ server.id }}" {% if server.id == server_selected %}selected{% endif %}>
                 {{ server.name }}
               </option>
+             
             {% endfor %}
         </select>
       </div>
@@ -130,7 +131,6 @@
 {% endif %}
 
 
-
 <script>
 function formatRupiah(angka) {
   if (!angka) return "0";
@@ -142,17 +142,18 @@ $(document).ready(function() {
   const paketSelect = $('#id_id_paket');
   const serverSelect = $('#id_server');
 
-  // Inisialisasi select2
+  // Inisialisasi Select2
   serverSelect.select2({ placeholder: "Pilih Server...", allowClear: true });
   poolSelect.select2({ placeholder: "Pilih IP Pool...", allowClear: true });
   paketSelect.select2({ placeholder: "Pilih Paket...", allowClear: true });
 
+  // Data dari Django
   const isEditMode = "{{ form.instance.pk|yesno:'true,false' }}" === "true";
   const currentServerId = "{{ server_selected|default:'' }}";
   const currentPoolId = "{{ form.instance.id_paket.id_ip_pool.id|default:'' }}";
   const currentPaketId = "{{ form.instance.id_paket.id|default:'' }}";
 
-  // Helper: Load IP Pool berdasarkan Server
+  // Helper: Load Pools
   function loadPools(serverId, selectedPoolId = null, callback = null) {
     poolSelect.html('<option value="">-- Pilih Pool --</option>');
     if (!serverId) return;
@@ -178,7 +179,7 @@ $(document).ready(function() {
       });
   }
 
-  // Helper: Load Paket berdasarkan Pool
+  // Helper: Load Paket
   function loadPakets(poolId, selectedPaketId = null) {
     paketSelect.html('<option value="">Loading paket...</option>');
     if (!poolId) return;
@@ -212,12 +213,35 @@ $(document).ready(function() {
   // MODE EDIT
   // ==========================
   if (isEditMode) {
-    // Delay sedikit supaya Select2 siap sepenuhnya
-    setTimeout(() => {
-      if (currentServerId) {
-        serverSelect.val(currentServerId).trigger('change.select2');
+    const allowServerEdit = !currentServerId; // True kalau server_selected == None/null
 
-        // Load pool → setelah itu load paket
+    // Kalau client belum punya server → biarkan pilih server
+    if (allowServerEdit) {
+      poolSelect.closest('.column').hide();
+      paketSelect.closest('.column').hide();
+
+      serverSelect.on('change', function() {
+        const serverId = $(this).val();
+        poolSelect.html('<option value="">-- Pilih Pool --</option>');
+        paketSelect.html('<option value="">-- Pilih Paket --</option>');
+        paketSelect.closest('.column').hide();
+
+        if (serverId) {
+          loadPools(serverId);
+          poolSelect.closest('.column').fadeIn(200);
+        } else {
+          poolSelect.closest('.column').hide();
+          paketSelect.closest('.column').hide();
+        }
+      });
+    }
+
+    // Kalau client sudah punya server → lock server dan langsung load data
+    else {
+      setTimeout(() => {
+        serverSelect.val(currentServerId).trigger('change.select2');
+        serverSelect.prop('disabled', true); // dikunci
+
         loadPools(currentServerId, currentPoolId, () => {
           if (currentPoolId) {
             loadPakets(currentPoolId, currentPaketId);
@@ -226,8 +250,8 @@ $(document).ready(function() {
 
         poolSelect.closest('.column').show();
         paketSelect.closest('.column').show();
-      }
-    }, 200);
+      }, 200);
+    }
   }
 
   // ==========================
@@ -254,7 +278,7 @@ $(document).ready(function() {
   }
 
   // ==========================
-  // EVENT: Ganti Pool (aktif di dua mode)
+  // EVENT: Ganti Pool
   // ==========================
   poolSelect.on('change', function() {
     const poolId = $(this).val();
@@ -268,6 +292,7 @@ $(document).ready(function() {
   });
 });
 </script>
+
 
 
 

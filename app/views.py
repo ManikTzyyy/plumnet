@@ -230,8 +230,6 @@ def addProfile(request):
             pools = form.cleaned_data['id_ip_pool']
             profile_base_name = form.cleaned_data['name']
             price = form.cleaned_data['price']
-
-
             errors = []
             for ip_pool in pools:
                 
@@ -243,6 +241,7 @@ def addProfile(request):
                     continue
 
                 paket = Paket(
+                    id_server=server,
                     name=profile_name,
                     price=price,
                     limit=limit,
@@ -345,6 +344,9 @@ def addClient(request) :
     if request.method == "POST":
         paket_id = request.POST.get('id_paket')
         paket = Paket.objects.get(pk=paket_id) if paket_id else None
+
+        
+        
         
         ip_pool = getattr(paket, 'id_ip_pool', None)
         server = getattr(ip_pool, 'id_server', None)
@@ -363,10 +365,15 @@ def addClient(request) :
         form = ClientForm(request.POST)
         if form.is_valid():
             cd = form.cleaned_data
+
+            id_paket_form = cd['id_paket']
+            id_server = id_paket_form.id_ip_pool.id_server
+
             if not cd.get('id_paket'):
                 error_message = "Paket tidak boleh kosong."
 
             client = Client(
+                    id_server=id_server,
                     id_paket=cd['id_paket'],
                     name=cd['name'],
                     address=cd['address'],
@@ -549,6 +556,7 @@ def edit_paket(request, pk):
                             create_profile(new_server.host, new_server.username, new_server.password,
                                            profile_name, ip_pool.name, limit)
                             paket.id_ip_pool = ip_pool
+                            paket.id_server = new_server
                             paket.limit = limit
                             paket.save()
                             info_message = f"Profile '{profile_name}' berhasil dibuat."
@@ -561,6 +569,7 @@ def edit_paket(request, pk):
                             edit_profile(new_server.host, new_server.username, new_server.password,
                                          profile_name, ip_pool.name, limit, old_name)
                             paket.id_ip_pool = ip_pool
+                            paket.id_server = current_server
                             paket.limit = limit
                             paket.save()
                             info_message = f"Profile '{profile_name}' berhasil diupdate."
@@ -741,6 +750,8 @@ def edit_client(request, pk):
             )
     else:
         form = ClientForm(instance=client)
+
+
 
     return render(request, 'form-pages/form-client.html', {
         'form': form,
@@ -1191,6 +1202,7 @@ def toggle_verif_internal(client_id, user):
 
     # update data client
     client.id_paket = new_paket
+    client.id_server = new_server
     client.name = client.temp_name
     client.address = client.temp_address
     client.email = client.temp_email
