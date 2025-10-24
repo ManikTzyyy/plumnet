@@ -125,6 +125,13 @@ def activasi(request) :
 
 
 #forms
+def get_pools(request, server_id):
+    pools = IPPool.objects.filter(id_server_id=server_id).values('id', 'name')
+    return JsonResponse({'pools': list(pools)})
+
+def get_pakets(request, pool_id):
+    pakets = Paket.objects.filter(id_ip_pool_id=pool_id).values('id', 'name', 'price', 'limit')
+    return JsonResponse({'pakets': list(pakets)})
 
 
 @login_required(login_url='/login/')
@@ -330,7 +337,6 @@ def addIp(request) :
 
 @login_required(login_url='/login/')
 def addClient(request) : 
-
     servers = Server.objects.all().values("id", 'name', 'lat', 'long')
     gateways = Gateway.objects.all().values("id", "name", "lat", "long", "parent_lat", "parent_long")
 
@@ -407,6 +413,7 @@ def addClient(request) :
 
     context = {''
     'form': form, 
+    'servers': servers,
     'success': success, 
     'error_message':error_message,
     "servers_json": json.dumps(list(servers), cls=DjangoJSONEncoder),
@@ -654,7 +661,9 @@ def edit_client(request, pk):
     success = False
     error_message = None
     local_ip = None
-
+    server_selected = None
+    if client.id_paket and client.id_paket.id_ip_pool and client.id_paket.id_ip_pool.id_server:
+        server_selected = client.id_paket.id_ip_pool.id_server.id
 
     servers = Server.objects.all().values("id", 'name', 'lat', 'long')
     gateways = Gateway.objects.all().values("id", "name", "lat", "long", "parent_lat", "parent_long")
@@ -736,7 +745,9 @@ def edit_client(request, pk):
     return render(request, 'form-pages/form-client.html', {
         'form': form,
         'is_edit': True,
+        'servers': servers,
         'success': success,
+        'server_selected': server_selected,
         'error_message': error_message,
         "servers_json": json.dumps(list(servers), cls=DjangoJSONEncoder),
         "gateways_json": json.dumps(list(gateways), cls=DjangoJSONEncoder),

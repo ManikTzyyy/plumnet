@@ -79,6 +79,9 @@ urlpatterns = [
 
     path("api/genieacs/<int:client_id>/", views.get_genieacs_data, name="get_genieacs_data"),
 
+    path('get-pools/<int:server_id>/', views.get_pools, name='get_pools'),
+    path('get-pakets/<int:pool_id>/', views.get_pakets, name='get_pakets'),
+
 
 
 
