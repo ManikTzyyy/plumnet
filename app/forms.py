@@ -1,6 +1,6 @@
 from django import forms
 import ipaddress
-from .models import ConfigSystem, Gateway, Server, Paket, IPPool, Client
+from .models import Gateway, Server, Paket, IPPool, Client
 import re
 
 
@@ -107,11 +107,11 @@ class PaketForm(forms.ModelForm):
                 initial=self.instance.id_ip_pool if self.instance else None
             )
 
-        # kalau edit (instance ada), parse limit "10M/2M" -> download=10, upload=2
+       
         if self.instance and self.instance.pk and self.instance.limit:
             try:
                 down, up = self.instance.limit.split("/")
-                # ambil angka & satuan (misal "10M" -> 10 + M)
+        
                 self.fields['download_rate'].initial = int(''.join(filter(str.isdigit, down)))
                 self.fields['download_unit'].initial = ''.join(filter(str.isalpha, down))
 
@@ -362,8 +362,3 @@ class ClientForm(forms.ModelForm):
 
         return cleaned_data
 
-
-class ConfigSystemForm(forms.ModelForm):
-    class Meta:
-        model = ConfigSystem
-        fields = ["cut_network_after", "reminder_before_bill", "interval_check"]

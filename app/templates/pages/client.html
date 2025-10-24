@@ -40,7 +40,6 @@
             <th><input type="checkbox" id="select-all-checkbox"></th>
             <th>#</th>
             <th>Nama</th>
-            <th>Alamat</th>
             <th>Paket</th>
             <th>Server</th>
             <th>ID PPPoE</th>
@@ -58,7 +57,6 @@
             </td>
             <td>{{ client.id }}</td>
             <td>{{ client.name }}</td>
-            <td>{{ client.address }}</td>
             <td>{{ client.id_paket.price|rupiah }} - {{ client.id_paket.limit }}</td>
             <td>{{ client.id_paket.id_ip_pool.id_server.name }}</td>
             <td>{{ client.pppoe }}</td>

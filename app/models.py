@@ -53,7 +53,8 @@ class Paket(models.Model):
         server_name = self.id_ip_pool.id_server.name if self.id_ip_pool and self.id_ip_pool.id_server else "No Server"
         pool_name = self.id_ip_pool.name if self.id_ip_pool else "No IP Pool"
         range = self.id_ip_pool.ip_range if self.id_ip_pool else "No Range"
-        return f"{self.name} | {pool_name} | {format_rupiah(self.price)} | {self.limit} | {server_name}. ({range})"
+        # return f"{self.name} | {pool_name} | {format_rupiah(self.price)} | {self.limit} | {server_name}. ({range})"
+        return f"{format_rupiah(self.price)} | {self.limit}"
     @property
     def total_ips(self):
         return self.id_ip_pool.total_ips if self.id_ip_pool else 0
@@ -168,12 +169,3 @@ class Redaman(models.Model):
     value = models.CharField(max_length=255)
     create_at = models.DateTimeField(auto_now_add=True)
   
-class ConfigSystem(models.Model):
-    cut_network_after = models.IntegerField(default=2, help_text="Berapa hari setelah jatuh tempo layanan diputus")
-    reminder_before_bill = models.IntegerField(default=3, help_text="Berapa hari sebelum cut date reminder dikirim")
-    interval_check = models.IntegerField(default=300, help_text="Interval pengecekan (detik)")
-
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return f"Config (cut_after={self.cut_network_after}, reminder={self.reminder_before_bill}, interval={self.interval_check})"

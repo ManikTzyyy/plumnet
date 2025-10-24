@@ -15,6 +15,14 @@
     <form method="post" class="column">
       {% csrf_token %}
       <div class="column">
+        <label for="server">Server</label>
+        <select name="server" id="id_server"></select>
+      </div>
+      <div class="column">
+        <label for="pool">IP Pool</label>
+        <select name="pool" id="id_pool"></select>
+      </div>
+      <div class="column">
         <label for="profile">Paket</label>
         {{ form.id_paket }}
       </div>
@@ -112,7 +120,15 @@
 <script>
   $(document).ready(function() {
     $('#id_id_paket').select2({
+      placeholder: "Pilih Paket...",
+      allowClear: true
+    });
+     $('#id_server').select2({
       placeholder: "Pilih server...",
+      allowClear: true
+    });
+     $('#id_pool').select2({
+      placeholder: "Pilih IP Pool...",
       allowClear: true
     });
   });

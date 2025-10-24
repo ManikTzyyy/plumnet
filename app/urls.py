@@ -79,7 +79,7 @@ urlpatterns = [
 
     path("api/genieacs/<int:client_id>/", views.get_genieacs_data, name="get_genieacs_data"),
 
-    path("config/update/", views.update_config, name="update_config"),
+
 
 
 ]
