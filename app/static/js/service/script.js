@@ -536,6 +536,8 @@ function addServerWithConfig() {
 function handleMultiple(data, object, url, action) {
   let title
 
+  console.log(data)
+
   if (action == 'delete'){
     title = 'Hapus Data Terpilih?'
   } else if(action == 'verif'){
@@ -580,7 +582,6 @@ function handleMultiple(data, object, url, action) {
         if (!data.success)
           throw new Error(data.message || "Gagal melakukan action");
 
-        // Buat pesan per client
 
         const container = document.createElement("div");
         container.style.maxHeight = "300px"; // tinggi maksimal
@@ -588,15 +589,7 @@ function handleMultiple(data, object, url, action) {
         container.style.textAlign = "left";
         container.style.fontSize = "0.8em";
 
-        // const messages = response.results
-        //   .map((item) => {
-        //     if (item.deleted_on_mikrotik) {
-        //       return `${item.name} - Delete with server action`;
-        //     } else {
-        //       return `${item.name} - Delete without server action`;
-        //     }
-        //   })
-        //   .join("<br>");
+        
 
         container.innerHTML = data.results
           .map(
@@ -682,3 +675,8 @@ function rebootDevice(name, device, genieacs) {
       });
   });
 }
+
+
+
+
+

@@ -5,10 +5,11 @@ document.addEventListener("DOMContentLoaded", function () {
   const btnGO = document.getElementById("go-action");
   const action = document.getElementById("action-dropdown");
 
-
   function updateActivateBtn() {
     if (!activateBtn) return;
-    const selectedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
+    const selectedCount = Array.from(checkboxes).filter(
+      (cb) => cb.checked
+    ).length;
 
     if (selectedCount === 0) {
       activateBtn.disabled = true;
@@ -20,7 +21,6 @@ document.addEventListener("DOMContentLoaded", function () {
       activateBtn.classList.add("success-button");
     }
   }
-
 
   // Toggle row highlight
   function toggleRowHighlight(cb) {
@@ -36,7 +36,7 @@ document.addEventListener("DOMContentLoaded", function () {
   checkboxes.forEach((cb) => {
     cb.addEventListener("change", () => {
       toggleRowHighlight(cb);
-      updateActivateBtn()
+      updateActivateBtn();
     });
   });
 
@@ -48,7 +48,7 @@ document.addEventListener("DOMContentLoaded", function () {
         cb.checked = checked;
         toggleRowHighlight(cb);
       });
-      updateActivateBtn()
+      updateActivateBtn();
     });
   }
 
@@ -85,6 +85,9 @@ document.addEventListener("DOMContentLoaded", function () {
           pppoe: cb.dataset.pppoe,
           profile: cb.dataset.paket,
           local_address: cb.dataset.iplocal,
+          idpaket: cb.dataset.idpaket,
+          idpool: cb.dataset.idpool,
+          poolname: cb.dataset.poolname,
         }));
 
       if (selectedIds.length === 0) {
@@ -92,25 +95,55 @@ document.addEventListener("DOMContentLoaded", function () {
           title: "Pilih Data terlebih dahulu!",
           icon: "warning",
         });
+
         return;
       }
 
       if (actionValue === "delete") {
-        handleMultiple(selectedIds, "client", "client", 'delete');
+        handleMultiple(selectedIds, "client", "client", "delete");
       } else if (actionValue === "payment") {
-        handleMultiple(selectedIds, "client", "client", 'payment');
+        handleMultiple(selectedIds, "client", "client", "payment");
       } else if (actionValue === "delete-gw") {
-        handleMultiple(selectedIds, "gateway", "server-list", 'delete');
+        handleMultiple(selectedIds, "gateway", "server-list", "delete");
       } else if (actionValue === "delete-paket") {
-        handleMultiple(selectedIds, "paket", "paket-list", 'delete');
+        handleMultiple(selectedIds, "paket", "paket-list", "delete");
       } else if (actionValue === "delete-ts") {
-        handleMultiple(selectedIds, "trans", "client", 'delete');
+        handleMultiple(selectedIds, "trans", "client", "delete");
       } else if (actionValue === "verifikasi") {
-        handleMultiple(selectedIds, "client", "client", 'verif');
+        handleMultiple(selectedIds, "client", "client", "verif");
       } else if (actionValue === "network-status") {
-        handleMultiple(selectedIds, "client", "client", 'network');
-      }
-      else {
+        handleMultiple(selectedIds, "client", "client", "network");
+      } else if (actionValue === "migrasi") {
+        let datatoSend = selectedIds;
+
+        datatoSend = selectedIds.map((item) => ({
+          id_client: item.id,
+          id_paket: item.idpaket,
+          paket_name: item.profile,
+          id_pool: item.idpool,
+          pool_name: item.poolname,
+        }));
+
+        const invalidData = datatoSend.filter(
+          (d) => !d.id_paket || !d.paket_name || !d.id_pool || !d.pool_name
+        );
+
+        // if (invalidData.length > 0) {
+        //   const invalidList = invalidData
+        //     .map((d) => `Client ID: ${d.id_client || "(tidak diketahui)"}`)
+        //     .join("\n");
+        //   Swal.fire({
+        //     title: "Data tidak lengkap!",
+        //     html: `Client tidak memiliki paket, mohon set paket dulu:<br><pre>${invalidList}</pre>`,
+        //     icon: "warning",
+        //   });
+        //   return;
+        // }
+
+        console.log(datatoSend)
+
+        migrateDatas(datatoSend);
+      } else {
         Swal.fire({
           title: "Pilih Action terlebih dahulu!",
           icon: "warning",
@@ -173,7 +206,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       if (actionValueIP === "delete-ip") {
-        handleMultiple(selectedIdsIP, "ip", "paket-list", 'delete');
+        handleMultiple(selectedIdsIP, "ip", "paket-list", "delete");
         // alert("delete ip" + selectedIdsIP);
       } else {
         Swal.fire({

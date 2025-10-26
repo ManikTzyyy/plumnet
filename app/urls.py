@@ -73,14 +73,14 @@ urlpatterns = [
 
     path("client/reboot/", views.reboot, name="reboot"),
 
-    path("api/", views.random_devices),
-
     path("api/client-remote/<int:client_id>/", views.get_client_remote, name="client-remote"),
 
     path("api/genieacs/<int:client_id>/", views.get_genieacs_data, name="get_genieacs_data"),
 
     path('get-pools/<int:server_id>/', views.get_pools, name='get_pools'),
     path('get-pakets/<int:pool_id>/', views.get_pakets, name='get_pakets'),
+
+    path('migrate/<int:dst_id>/', views.migration_internal, name='migrate')
 
 
 

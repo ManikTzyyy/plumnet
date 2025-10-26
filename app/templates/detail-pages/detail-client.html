@@ -17,6 +17,7 @@
           </div>
         {% endif %}
       {% endif %}
+      <button  class="info-button" onclick="migration('{{client.id}}', '{{client.id_paket.id}}','{{client.id_paket.name}}', '{{client.id_paket.id_ip_pool.id}}', '{{client.id_paket.id_ip_pool.name}}')">Migrasi Data</button>
     </div>
     <div class="info-client relative row">
       <div class="wrapper column">
@@ -259,10 +260,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-  fetch("/api/client-remote/{{ client.id }}/")
+  const paket = "{{client.id_paket}}"
+  if(paket != "None"){
+    fetch("/api/client-remote/{{ client.id }}/")
     .then(res => res.json())
     .then(data => {
-      console.log("GenieACS data:", data);
+    
       const remoteLink = document.getElementById("remote");
       if (data.remote && data.remote !== "-") {
         remoteLink.href = "http://" + data.remote;
@@ -273,6 +276,9 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     })
     .catch(err => console.error("MikroTik API error:", err));
+  }
+
+
 });
 </script>
 
@@ -331,6 +337,86 @@ document.addEventListener("DOMContentLoaded", function () {
 </script>
 
 
+
+<script>
+  function migration(client, paket, paket_name, pool, pool_name){
+  Swal.fire({
+    icon: "info",
+    title: "Migrasi Data",
+    confirmButtonColor:"#316ac4",
+    confirmButtonText: "Proses Migrasi",
+    didOpen: () => {
+      $('#id_server').select2({
+        placeholder: "Pilih server...",
+        allowClear: true,
+        dropdownParent: $('.swal2-popup') 
+      });
+    },
+    html:`
+    <div class="column ">
+        <label for="server">Server</label>
+        <select name="server" id="id_server" class="form-control">
+          <option value="" class="">-- Pilih Server --</option>
+            {% for server in other_server %}
+              <option value="{{ server.id }}" class="">
+                {{ server.name }}
+              </option>
+            {% endfor %}
+        </select>
+      </div>
+    `
+  }).then((result) => {
+    if(!result.isConfirmed) return;
+    if(!paket)throw new Error('Tidak bisa melakukan migrasi jika pelanggan tidak memiliki paket!')
+    showMyLoader()
+  
+  const dropdown = document.getElementById("id_server")
+  const target_dst = dropdown.value
+  if(!target_dst)throw new Error('Mohon pilih target server terlebih dahulu!')
+  
+  const data = []
+  
+  data.push({id_client:client, id_paket:paket, paket_name:paket_name, id_pool:pool, pool_name:pool_name})
+
+    fetch(`/migrate/${target_dst}/`,{
+      method: "POST",
+      headers:{
+        "X-CSRFToken": getCSRFToken(),
+        Accept: "application/json",
+      },
+      body:JSON.stringify(data)
+    }).then((res)=>{
+      if(!res.ok) throw new Error(`Server Error: ${res.status}`)
+      return res.json();
+   
+
+    }).then((data)=>{
+
+
+       let icon = data.success ? "success" : "warning";
+      
+
+      hideLoader()
+      if (!data.success) {
+        const errMsg = data.results?.map(r => r.message).join('\n') || "Task Failed";
+        throw new Error(errMsg);
+      }
+
+      Swal.fire({
+        title: 'Task Done',
+        icon: icon,
+        text: data.results.map(r => r.action).join('\n')
+      }).then(()=>{
+        location.href =`/client/id=${client}`
+      })
+    })
+
+  }).catch((err) => {
+    hideLoader()
+    Swal.fire("Gagal!", err.message, "error")
+  });
+}
+</script>
 
 
 

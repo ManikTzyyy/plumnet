@@ -1,6 +1,7 @@
 # Standard library
 from datetime import date, timedelta
 import random
+import pprint
 import json
 import urllib.parse
 from urllib.parse import quote
@@ -107,8 +108,10 @@ def paket(request) :
 @login_required(login_url='/login/')
 def client(request) : 
     client_list = Client.objects.all()
+    server_list = Server.objects.all()
     context = {
         'clients': client_list, 
+        'servers': server_list
         }
 
     return render(request, 'pages/client.html', context )
@@ -987,6 +990,20 @@ def detailClient(request, client_id):
     next_bill = client.get_next_bill_date()
 
 
+    server_instance = (
+        client.id_paket.id_ip_pool.id_server
+        if client.id_paket and client.id_paket.id_ip_pool and client.id_paket.id_ip_pool.id_server
+        else None
+    )
+
+    if server_instance:
+        other_servers = Server.objects.exclude(id=server_instance.id)
+    else:
+        other_servers = Server.objects.all()
+
+
+
+
     acs_ip = client.id_paket.id_ip_pool.id_server.genieacs if client.id_paket else None
 
    
@@ -999,6 +1016,7 @@ def detailClient(request, client_id):
         'transaction':transaction,
         "last_payment": last_payment,
         "next_bill": next_bill,
+        "other_server": other_servers
     }
     return render(request, "detail-pages/detail-client.html", context)
 
@@ -1435,6 +1453,237 @@ def delete_paket_internal(paket_id):
 
 # =========================other===================================
 
+def migration_internal(request, dst_id):
+    datas = json.loads(request.body.decode("utf-8"))
+    result = []
+
+
+    dst_server = get_object_or_404(Server, id=dst_id)
+
+
+    dst_pools_dict = {p.name: p for p in IPPool.objects.filter(id_server=dst_id)}
+    dst_pakets_dict = {p.name: p for p in Paket.objects.filter(id_server=dst_id)}
+
+
+    pools_cache = {}
+    pakets_cache = {}
+
+    for data in datas:
+        client_id = data.get("id_client")
+        pool_name = data.get("pool_name")
+        paket_name = data.get("paket_name")
+        pool_id = data.get("id_pool")
+        paket_id = data.get("id_paket")
+
+
+        if not pool_id or not paket_id:
+            result.append({
+                "success": False,
+                "client_id": client_id,
+                "message": f"Client {client_id or '-'} tidak memiliki paket (id_pool={pool_id}, id_paket={paket_id})",
+            })
+            continue
+
+
+        if pool_id not in pools_cache:
+            pool = IPPool.objects.filter(id=pool_id).only("name", "ip_range", "total_ips").first()
+            if pool:
+                pools_cache[pool_id] = {
+                    "name": pool.name,
+                    "ip_range": pool.ip_range,
+                    "total_ips": pool.total_ips,
+                }
+
+ 
+        if paket_id not in pakets_cache:
+            paket = Paket.objects.filter(id=paket_id).only("name", "id_ip_pool", "price", "limit", "used_ips").first()
+            if paket:
+                pakets_cache[paket_id] = {
+                    "name": paket.name,
+                    "id_pool": paket.id_ip_pool,
+                    "price": paket.price,
+                    "limit": paket.limit,
+                    "used_ips": paket.used_ips,
+                }
+
+        try:
+            client_obj = Client.objects.filter(id=client_id).first()
+
+            pool_exists = pool_name in dst_pools_dict
+            paket_exists = paket_name in dst_pakets_dict
+
+
+            pool_data = pools_cache.get(pool_id, {})
+            paket_data = pakets_cache.get(paket_id, {})
+
+            range_ip = pool_data.get("ip_range")
+            total_ips = pool_data.get("total_ips")
+
+            price = paket_data.get("price")
+            limit = paket_data.get("limit")
+            used_ips = paket_data.get("used_ips")
+
+            local_ip = None
+            if range_ip:
+                start_ip = range_ip.split("-")[0].strip() 
+                parts = start_ip.split(".")
+                if len(parts) == 4:
+                    local_ip = f"{parts[0]}.{parts[1]}.{parts[2]}.1"
+            else:
+                local_ip = None
+
+
+            if pool_exists and paket_exists:
+                dst_pool = dst_pools_dict[pool_name]
+                dst_paket = dst_pakets_dict[paket_name]
+                try:
+                    create_pppoe(
+                        dst_server.host,
+                        dst_server.username,
+                        dst_server.password,
+                        client_obj.pppoe,
+                        client_obj.password,
+                        dst_paket.name,
+                        local_ip
+                    )
+                    action = "buat PPPoE (pool & paket sudah ada)"
+                except Exception as e:
+                    result.append({"success": False, "message": str(e)})
+                    continue
+                
+
+            elif not pool_exists and not paket_exists:
+
+                try:
+                    create_pool(
+                        dst_server.host, 
+                        dst_server.username, 
+                        dst_server.password,
+                        pool_name,
+                        range_ip
+                    )
+                    new_pool = IPPool.objects.create(
+                        id_server=dst_server,
+                        name=pool_name,
+                        ip_range=range_ip,
+                        total_ips=total_ips,
+                    )
+
+                    dst_pools_dict[pool_name] = new_pool
+
+                    create_profile(
+                        dst_server.host,
+                        dst_server.username,
+                        dst_server.password,
+                        paket_name,
+                        pool_name,
+                        limit
+                    )
+
+                    new_paket = Paket.objects.create(
+                        id_ip_pool=new_pool,
+                        id_server=dst_server,
+                        name=paket_name,
+                        price=price,
+                        limit=limit,
+                        used_ips=used_ips,
+                    )
+
+                    dst_pool = new_pool
+                    dst_paket = new_paket
+                    dst_pakets_dict[paket_name] = new_paket
+                     
+                    create_pppoe(
+                        dst_server.host,
+                        dst_server.username,
+                        dst_server.password,
+                        client_obj.pppoe,
+                        client_obj.password,
+                        dst_paket.name,
+                        local_ip
+                    )
+                    action = "buat pool, paket, lalu PPPoE"
+                except Exception as e:
+                    result.append({"success": False, "message": str(e)})
+                    continue  
+
+            elif pool_exists and not paket_exists:
+
+                try:
+                    existing_pool = dst_pools_dict.get(pool_name)
+                    create_profile(
+                        dst_server.host,
+                        dst_server.username,
+                        dst_server.password,
+                        paket_name,
+                        pool_name,
+                        limit
+                    )
+                    Paket.objects.create(
+                        id_ip_pool=existing_pool,
+                        id_server=dst_server,
+                        name=paket_name,
+                        price=price,
+                        limit=limit,
+                        used_ips=used_ips,
+                    )
+                    dst_pool = existing_pool
+                    dst_paket = new_paket
+                    dst_pakets_dict[paket_name] = new_paket
+
+                    create_pppoe(
+                        dst_server.host,
+                        dst_server.username,
+                        dst_server.password,
+                        client_obj.pppoe,
+                        client_obj.password,
+                        dst_paket.name,
+                        local_ip
+                    )
+                    action = "buat paket dari pool yang sudah ada, lalu PPPoE"
+                except Exception as e:
+                    result.append({"success": False, "message": str(e)})
+                    continue
+            else:
+                action = "kasus tidak umum: paket ada tapi pool belum ada"
+            if client_obj:
+                client_obj.id_server = dst_server
+                client_obj.id_paket = dst_paket
+                client_obj.save(update_fields=["id_server", "id_paket"])
+                action += " & migrasi client berhasil"
+            else:
+                result.append({
+                    "success": False,
+                    "client_id": client_id,
+                    "message": f"Client {client_id} tidak ditemukan di database.",
+                })
+                continue
+
+            result.append({
+                "action": action,
+                "success": True,
+                "client_id": client_id,
+            })
+
+        except Exception as e:
+            result.append({
+                "success": False,
+                "message": str(e),
+            })
+
+    return JsonResponse({"success": True, "results": result})
+
+
+
+
+
+
+    
+    
+
+
+
+
 
 def toggle_activasi(request, client_id):
     if request.method != "POST":
@@ -1564,31 +1813,6 @@ def auto_config(request):
             return JsonResponse({"success": False, "message": f"Error: {e}"})  
          
     return JsonResponse({"success": False, "message": "Invalid request"})  
-
-
-
-def random_devices(request):
-    pppoe_ids = [
-        "alex@plumnet",
-        "agung@plumnet",
-        "josep@plumnet",
-        "cika@plumnet",
-        "michael@plumnet"
-    ]
-
-    data = []
-    for idx, pppoe in enumerate(pppoe_ids, start=1):
-        data.append({
-            "_id": str(idx),
-            "VirtualParameters": {
-                "RXpower": {"_value": f"{round(random.uniform(-25, -10), 2)}"},
-                "ipTR069": {"_value": f"192.168.76.{random.randint(1,254)}"},
-                "IDPPPoE": {"_value": pppoe},
-                "hostActive": {"_value": str(random.randint(1, 10))}
-            }
-        })
-
-    return JsonResponse(data, safe=False)
 
 
 def get_theme_settings():
