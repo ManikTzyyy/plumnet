@@ -29,6 +29,7 @@
         {% if perms.app.can_change_is_active %}
         <option value="network-status">Toggle Network Status</option>
         {% endif %}
+        <option value="migrasi">Migrasi Data</option>
       </select>
       <button class="button success-button" id="go-action">Go</button>
     </div>    
@@ -40,13 +41,12 @@
             <th><input type="checkbox" id="select-all-checkbox"></th>
             <th>#</th>
             <th>Nama</th>
-            <th>Alamat</th>
             <th>Paket</th>
             <th>Server</th>
             <th>ID PPPoE</th>
-            <th>Status</th>
+            <th>Internet</th>
             <th>Payment</th>
-            <th>data status</th>
+            <th>verified</th>
             <th></th>
           </tr>
         </thead>
@@ -54,11 +54,10 @@
           {% for client in clients %}
           <tr class="t-d">
             <td>
-              <input type="checkbox" class="client-checkbox" data-id="{{ client.id }}" data-name="{{ client.name }}" data-pppoe="{{client.pppoe}}" data-host="{{client.id_paket.id_ip_pool.id_server.host}}" data-username="{{client.id_paket.id_ip_pool.id_server.username}}" data-password="{{client.id_paket.id_ip_pool.id_server.password}}" data-paket="{{ client.id_paket.name }}" data-iplocal="{{client.local_ip}}" >
+              <input type="checkbox" class="client-checkbox" data-id="{{ client.id }}" data-name="{{ client.name }}" data-pppoe="{{client.pppoe}}" data-host="{{client.id_paket.id_ip_pool.id_server.host}}" data-username="{{client.id_paket.id_ip_pool.id_server.username}}" data-password="{{client.id_paket.id_ip_pool.id_server.password}}" data-paket="{{ client.id_paket.name }}" data-iplocal="{{client.local_ip}}" data-idpaket="{{client.id_paket.id}}" data-idpool="{{client.id_paket.id_ip_pool.id}}" data-poolname="{{client.id_paket.id_ip_pool.name}}">
             </td>
             <td>{{ client.id }}</td>
             <td>{{ client.name }}</td>
-            <td>{{ client.address }}</td>
             <td>{{ client.id_paket.price|rupiah }} - {{ client.id_paket.limit }}</td>
             <td>{{ client.id_paket.id_ip_pool.id_server.name }}</td>
             <td>{{ client.pppoe }}</td>
@@ -102,10 +101,110 @@
       searching: true,
       stateSave: true,
       columnDefs: [
-      { targets: [0,8], orderable: false, searchable: false }
+      { targets: [0,9], orderable: false, searchable: false }
         ]
     });
   });
+</script>
+
+
+<script>
+function migrateDatas(datas){
+  Swal.fire({
+    icon: "info",
+    title: "Migrasi Data",
+    confirmButtonColor:"#316ac4",
+    confirmButtonText: "Proses Migrasi",
+    didOpen: () => {
+      $('#id_server').select2({
+        placeholder: "Pilih server...",
+        allowClear: true,
+        dropdownParent: $('.swal2-popup') 
+      });
+    },
+    html:`
+    <div class="column ">
+        <label for="server">Server</label>
+        <select name="server" id="id_server" class="form-control">
+          <option value="" class="">-- Pilih Server --</option>
+            {% for server in servers %}
+              <option value="{{ server.id }}" class="">
+                {{ server.name }}
+              </option>
+            {% endfor %}
+        </select>
+      </div>
+    `
+  }).then((result) => {
+    if(!result.isConfirmed) return;
+    // if(!paket)throw new Error('Tidak bisa melakukan migrasi jika pelanggan tidak memiliki paket!')
+    showMyLoader()
+  
+  const dropdown = document.getElementById("id_server")
+  const target_dst = dropdown.value
+  if(!target_dst)throw new Error('Mohon pilih target server terlebih dahulu!')
+  
+  const data = datas
+  
+ 
+
+    fetch(`/migrate/${target_dst}/`,{
+      method: "POST",
+      headers:{
+        "X-CSRFToken": getCSRFToken(),
+        Accept: "application/json",
+      },
+      body:JSON.stringify(data)
+    }).then((res)=>{
+      if(!res.ok) throw new Error(`Server Error: ${res.status}`)
+      return res.json();
+   
+
+    }).then((data)=>{
+      console.log(data)
+
+    const successList = data.results.filter(r => r.success).map(r => r.client_id).filter(Boolean);
+    const failedList = data.results.filter(r => !r.success).map(r => r.client_id).filter(Boolean);
+  
+    const successMsg = successList.length
+      ? `Migrasi Berhasil:\n${successList.join(', ')}`
+      : "Tidak ada client yang berhasil.";
+
+    const failedMsg = failedList.length
+      ? `\n\nMigrasi Gagal:\n${failedList.join(', ')}`
+      : "";
+
+    const finalMsg = successMsg + failedMsg;
+
+       let icon = data.success ? "success" : "warning";
+      
+
+      hideLoader()
+      if (!data.success) {
+        const errMsg =
+          data.results?.map(r => r.message).join('\n') ||
+          data.message ||
+          "Task Failed";
+        throw new Error(errMsg);
+      }
+
+      
+
+      Swal.fire({
+        title: 'Task Done',
+        icon: icon,
+        html: `<pre style="text-align:left; font-size:14px;">${finalMsg}</pre>`,
+      }).then(()=>{
+        location.href =`/client/`
+      })
+    })
+
+  }).catch((err) => {
+    hideLoader()
+    Swal.fire("Gagal!", err.message, "error")
+  });
+}
+
 </script>
 
 {% endif %}

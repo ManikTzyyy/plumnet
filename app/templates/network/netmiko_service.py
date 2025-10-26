@@ -86,7 +86,8 @@ def delete_pool(host, username, password, current_pool, profiles):
     
 
     except Exception as e:
-        raise Exception(f"Gagal hapus IP pool: {e}")
+        # raise Exception(f"Gagal hapus IP pool: {e}")
+        raise Exception(f"Gagal hapus IP pool")
     
 
 def create_profile(host, username, password, profile_name, pool_name, limit):
@@ -122,7 +123,8 @@ def delete_profile(host, username, password, current_profile, pppoe_clients):
         conn.disconnect()
         return output
     except Exception as e:
-        raise Exception(f"Gagal hapus Profile: {e}")
+        # raise Exception(f"Gagal hapus Profile: {e}")
+        raise Exception(f"Gagal Hapus Paket")
     
 
 def create_pppoe(host, username, password, pppoe, password_pppoe, profile, local_ip):
@@ -154,7 +156,8 @@ def delete_pppoe(host, username, password, current_pppoe):
         conn.disconnect()
         return output
     except Exception as e:
-        raise Exception(f'Gagal hapus PPPoE : {e}')
+        # raise Exception(f'Gagal hapus PPPoE : {e}')
+        raise Exception(f'Gagal Hapus Client')
 
         
 

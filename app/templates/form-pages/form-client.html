@@ -15,9 +15,30 @@
     <form method="post" class="column">
       {% csrf_token %}
       <div class="column">
-        <label for="profile">Paket</label>
-        {{ form.id_paket }}
+        <label for="server">Server</label>
+        <select name="server" id="id_server" class="form-control" {% if form.instance.pk %}{% endif %}>
+          <option value="">-- Pilih Server --</option>
+            {% for server in servers %}
+              <option value="{{ server.id }}" {% if server.id == server_selected %}selected{% endif %}>
+                {{ server.name }}
+              </option>
+             
+            {% endfor %}
+        </select>
       </div>
+
+      <div class="column">
+        <label for="pool">IP Pool</label>
+          <select name="pool" id="id_pool" class="form-control">
+          <option value="">-- Pilih Pool --</option>
+        </select>
+      </div>
+      <div class="column">
+        <label for="profile">Paket</label>
+          {{ form.id_paket }}
+      </div>
+
+
       <div class="column">
         <label for="fullname">Name </label>
         {{ form.name }}
@@ -109,14 +130,172 @@
 </script>
 {% endif %}
 
+
 <script>
-  $(document).ready(function() {
-    $('#id_id_paket').select2({
-      placeholder: "Pilih server...",
-      allowClear: true
+function formatRupiah(angka) {
+  if (!angka) return "0";
+  return angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+}
+
+$(document).ready(function() {
+  const poolSelect = $('#id_pool');
+  const paketSelect = $('#id_id_paket');
+  const serverSelect = $('#id_server');
+
+  // Inisialisasi Select2
+  serverSelect.select2({ placeholder: "Pilih Server...", allowClear: true });
+  poolSelect.select2({ placeholder: "Pilih IP Pool...", allowClear: true });
+  paketSelect.select2({ placeholder: "Pilih Paket...", allowClear: true });
+
+  // Data dari Django
+  const isEditMode = "{{ form.instance.pk|yesno:'true,false' }}" === "true";
+  const currentServerId = "{{ server_selected|default:'' }}";
+  const currentPoolId = "{{ form.instance.id_paket.id_ip_pool.id|default:'' }}";
+  const currentPaketId = "{{ form.instance.id_paket.id|default:'' }}";
+
+  // Helper: Load Pools
+  function loadPools(serverId, selectedPoolId = null, callback = null) {
+    poolSelect.html('<option value="">-- Pilih Pool --</option>');
+    if (!serverId) return;
+
+    fetch(`/get-pools/${serverId}/`)
+      .then(res => res.json())
+      .then(data => {
+        data.pools.forEach(pool => {
+          poolSelect.append(`<option value="${pool.id}">${pool.name}</option>`);
+        });
+
+        if (selectedPoolId) {
+          poolSelect.val(selectedPoolId).trigger('change.select2');
+        }
+        if (callback) callback();
+      })
+      .catch(() => {
+        Swal.fire({
+          icon: 'error',
+          title: 'Gagal Mengambil Pool',
+          text: 'Terjadi kesalahan saat mengambil data IP Pool.'
+        });
+      });
+  }
+
+  // Helper: Load Paket
+  function loadPakets(poolId, selectedPaketId = null) {
+    paketSelect.html('<option value="">Loading paket...</option>');
+    if (!poolId) return;
+
+    fetch(`/get-pakets/${poolId}/`)
+      .then(res => res.json())
+      .then(data => {
+        paketSelect.html('<option value="">-- Pilih Paket --</option>');
+        data.pakets.forEach(paket => {
+          const harga = formatRupiah(paket.price);
+          paketSelect.append(
+            `<option value="${paket.id}">${paket.name} - Rp ${harga} - ${paket.limit}</option>`
+          );
+        });
+
+        if (selectedPaketId) {
+          paketSelect.val(selectedPaketId).trigger('change.select2');
+        }
+      })
+      .catch(() => {
+        Swal.fire({
+          icon: 'error',
+          title: 'Gagal Mengambil Paket',
+          text: 'Terjadi kesalahan saat mengambil data paket.'
+        });
+        paketSelect.html('<option value="">-- Pilih Paket --</option>');
+      });
+  }
+
+  // ==========================
+  // MODE EDIT
+  // ==========================
+  if (isEditMode) {
+    const allowServerEdit = !currentServerId; // True kalau server_selected == None/null
+
+    // Kalau client belum punya server → biarkan pilih server
+    if (allowServerEdit) {
+      poolSelect.closest('.column').hide();
+      paketSelect.closest('.column').hide();
+
+      serverSelect.on('change', function() {
+        const serverId = $(this).val();
+        poolSelect.html('<option value="">-- Pilih Pool --</option>');
+        paketSelect.html('<option value="">-- Pilih Paket --</option>');
+        paketSelect.closest('.column').hide();
+
+        if (serverId) {
+          loadPools(serverId);
+          poolSelect.closest('.column').fadeIn(200);
+        } else {
+          poolSelect.closest('.column').hide();
+          paketSelect.closest('.column').hide();
+        }
+      });
+    }
+
+    // Kalau client sudah punya server → lock server dan langsung load data
+    else {
+      setTimeout(() => {
+        serverSelect.val(currentServerId).trigger('change.select2');
+        serverSelect.prop('disabled', true); // dikunci
+
+        loadPools(currentServerId, currentPoolId, () => {
+          if (currentPoolId) {
+            loadPakets(currentPoolId, currentPaketId);
+          }
+        });
+
+        poolSelect.closest('.column').show();
+        paketSelect.closest('.column').show();
+      }, 200);
+    }
+  }
+
+  // ==========================
+  // MODE TAMBAH
+  // ==========================
+  else {
+    poolSelect.closest('.column').hide();
+    paketSelect.closest('.column').hide();
+
+    serverSelect.on('change', function() {
+      const serverId = $(this).val();
+      poolSelect.html('<option value="">-- Pilih Pool --</option>');
+      paketSelect.html('<option value="">-- Pilih Paket --</option>');
+      paketSelect.closest('.column').hide();
+
+      if (serverId) {
+        loadPools(serverId);
+        poolSelect.closest('.column').fadeIn(200);
+      } else {
+        poolSelect.closest('.column').hide();
+        paketSelect.closest('.column').hide();
+      }
     });
+  }
+
+  // ==========================
+  // EVENT: Ganti Pool
+  // ==========================
+  poolSelect.on('change', function() {
+    const poolId = $(this).val();
+    if (poolId) {
+      loadPakets(poolId);
+      paketSelect.closest('.column').fadeIn(200);
+    } else {
+      paketSelect.closest('.column').hide();
+      paketSelect.html('<option value="">-- Pilih Paket --</option>');
+    }
   });
+});
 </script>
+
+
+
+
 
 
 <script>

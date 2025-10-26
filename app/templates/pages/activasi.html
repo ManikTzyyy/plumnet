@@ -28,6 +28,7 @@
             <th>Alamat</th>
             <th>Paket</th>
             <th>Server</th>
+            <th>PPPoE</th>
             <th>Payment</th>
             <th class="center-th">Action</th>
           </tr>
@@ -45,6 +46,7 @@
             <td>{{ client.address }}</td>
             <td>{{ client.id_paket.name }} - {{ client.id_paket.price|rupiah }}</td>
             <td>{{ client.id_paket.id_ip_pool.id_server.name }}</td>
+             <td>{{ client.pppoe }}</td>
             <td class="">
               <div class="{% if client.isPayed %}enable-t{% else %}waiting-t{% endif %}"> {% if client.isPayed %}Done{% else %}Waiting{% endif %}</div>
             </td>
@@ -75,7 +77,7 @@
       searching: true,
       // stateSave: true,
       columnDefs: [
-      { targets: [0,7], orderable: false, searchable: false }
+      { targets: [0,8], orderable: false, searchable: false }
         ]
     });
   });

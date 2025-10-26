@@ -38,6 +38,7 @@
             <th>Price</th>
             <th>Speed</th>
             <th>Ip Pool</th>
+            <th>Server</th>
             <th>Avaible IPs</th>
             <th>Used</th>
             <th class="center-th">Action</th>
@@ -56,6 +57,7 @@
             <td>{{ paket.price|rupiah }}</td>
             <td>{{ paket.limit }}</td>
             <td>{{ paket.id_ip_pool.name }}</td>
+            <td>{{ paket.id_server.name }}</td>
             <td>{{ paket.available_ips }}</td>
             <td>{{ paket.used_ips }}</td>
             <td>
@@ -167,7 +169,7 @@
       searching: true,
       // stateSave: true,
       columnDefs: [
-      { targets: [0,8], orderable: false, searchable: false }
+      { targets: [0,9], orderable: false, searchable: false }
         ]
     });
   });

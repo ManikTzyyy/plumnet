@@ -32,7 +32,7 @@ class Gateway(models.Model):
     
 
 class IPPool(models.Model):
-    id_server = models.ForeignKey(Server, on_delete=models.SET_NULL, null=True, blank=True, related_name='servers') 
+    id_server = models.ForeignKey(Server, on_delete=models.SET_NULL, null=True, blank=True, related_name='pools') 
     name = models.CharField(max_length=100)
     ip_range = models.CharField(max_length=100)
     total_ips = models.IntegerField(default=0)
@@ -42,10 +42,11 @@ class IPPool(models.Model):
         return f"{server_name} | {self.name} ({self.ip_range})"
     
 class Paket(models.Model):
+    id_ip_pool = models.ForeignKey(IPPool, on_delete=models.SET_NULL,null=True, blank=True, related_name='pakets')
+    id_server = models.ForeignKey(Server, on_delete=models.SET_NULL, null=True, blank=True, related_name='pakets')
     name = models.CharField(max_length=255)
     price = models.IntegerField()
     limit = models.CharField(max_length=255)
-    id_ip_pool = models.ForeignKey(IPPool, on_delete=models.SET_NULL,null=True, blank=True, related_name='ip_pools')
     used_ips = models.IntegerField(default=0)  
        
 
@@ -53,7 +54,8 @@ class Paket(models.Model):
         server_name = self.id_ip_pool.id_server.name if self.id_ip_pool and self.id_ip_pool.id_server else "No Server"
         pool_name = self.id_ip_pool.name if self.id_ip_pool else "No IP Pool"
         range = self.id_ip_pool.ip_range if self.id_ip_pool else "No Range"
-        return f"{self.name} | {pool_name} | {format_rupiah(self.price)} | {self.limit} | {server_name}. ({range})"
+        # return f"{self.name} | {pool_name} | {format_rupiah(self.price)} | {self.limit} | {server_name}. ({range})"
+        return f"{format_rupiah(self.price)} | {self.limit}"
     @property
     def total_ips(self):
         return self.id_ip_pool.total_ips if self.id_ip_pool else 0
@@ -73,12 +75,13 @@ class Paket(models.Model):
 
 
 class Client(models.Model):
+    id_server = models.ForeignKey(Server, on_delete=models.SET_NULL, null=True, blank=True, related_name='clients') 
     id_paket = models.ForeignKey(
         "Paket",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="pakets"
+        related_name="clients"
     )
     name = models.CharField(max_length=255)
     address = models.CharField(max_length=255)
@@ -94,7 +97,7 @@ class Client(models.Model):
     temp_paket = models.ForeignKey(
         "Paket",
         on_delete=models.SET_NULL,
-        related_name="temp_paket",
+        related_name="temp_clients",
         null=True,
         blank=True
     )
@@ -149,7 +152,7 @@ class Client(models.Model):
 class Transaction(models.Model):
     id_client = models.ForeignKey(
         Client,
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE,
         null=True,
         blank=True,
         related_name='clients_transaction'
@@ -160,20 +163,11 @@ class Transaction(models.Model):
 class Redaman(models.Model):
     id_client = models.ForeignKey(
         Client,
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE,
         null=True,
         blank=True,
-        related_name='clients'
+        related_name='redamans'
     )
     value = models.CharField(max_length=255)
     create_at = models.DateTimeField(auto_now_add=True)
   
-class ConfigSystem(models.Model):
-    cut_network_after = models.IntegerField(default=2, help_text="Berapa hari setelah jatuh tempo layanan diputus")
-    reminder_before_bill = models.IntegerField(default=3, help_text="Berapa hari sebelum cut date reminder dikirim")
-    interval_check = models.IntegerField(default=300, help_text="Interval pengecekan (detik)")
-
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return f"Config (cut_after={self.cut_network_after}, reminder={self.reminder_before_bill}, interval={self.interval_check})"
